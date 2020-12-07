@@ -3,12 +3,14 @@
 This project aims at building a preprocessing tool for extracting confounders from physiological (ECG, Respiratory and Pulse) signals. These confounders are then to be included in a design matrix for GLM analyses with fMRI data.
 
 
-Goals to achieve in this project:
+Goals to achieve in this project during brainhack:
 
 - Read physiological signal from the input data files.
 - Plot physiological signal for visual inspection.
 - Reconstruct the QRS peaks from both ECG and Pulse signal.
 
+
+*This tool will be part of a bigger toolbox that is under development (pyPhlem). Therefore, all contributors will be accordingly acknolewged.*
 
 References:
 
