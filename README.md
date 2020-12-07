@@ -10,7 +10,7 @@ Goals to achieve in this project during brainhack:
 - Reconstruct the QRS peaks from both ECG and Pulse signal.
 
 
-*This tool will be part of a bigger toolbox that is under development (pyPhlem). Therefore, all contributors will be accordingly acknolewged.*
+**This tool will be part of a bigger toolbox that is under development (pyPhlem). Therefore, all contributors will be accordingly acknolewged.**
 
 References:
 
