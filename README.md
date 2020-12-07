@@ -1,2 +1,19 @@
-# brainhack-physio-project
-Information related to the Pittsburgh brainhack 2020 project
+# Building a preprocessing tool for physiological confounds in fMRI
+
+This project aims at building a preprocessing tool for extracting confounders from physiological (ECG, Respiratory and Pulse) signals. These confounders are then to be included in a design matrix for GLM analyses with fMRI data.
+
+
+Goals to achieve in this project:
+
+- Read physiological signal from the input data files.
+- Plot physiological signal for visual inspection.
+- Reconstruct the QRS peaks from both ECG and Pulse signal.
+
+
+References:
+
+- Verstynen TD. Physiological Log Extraction for Modeling (PhLEM) Toolbox. https://sites.google.com/site/phlemtoolbox/
+- Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
+- Chang C, Cunningham JP, Glover GH. Influence of heart rate on the BOLD signal: the cardiac response function. Neuroimage. 2009 Feb 1;44(3):857-69.
+- Birn RM, Smith MA, Jones TB, Bandettini PA. The respiration response function: the temporal dynamics of fMRI signal fluctuations related to changes in respiration. Neuroimage. 2008;40(2):644-654.
+
