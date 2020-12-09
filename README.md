@@ -11,7 +11,7 @@ Goals to achieve in this project during brainhack:
 - Temporally filter the signals to remove artifacts (e.g., movement, gradient noise).
 - Provide a summary output (including visualizations) of physiological signals for inspection.
 - Provide quality metrics of signal to noise.
-- Output filtered signals into BIDS compliant format.
+- Output filtered signals into [BIDS compliant format](https://bids-specification.readthedocs.io/en/latest/04-modality-specific-files/06-physiological-and-other-continuous-recordings.html).
 
 
 **This tool will be part of a bigger toolbox that is under development (pyPhlem). Therefore, all contributors will be accordingly acknolewged.**
