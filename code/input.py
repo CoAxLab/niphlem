@@ -1,18 +1,15 @@
 import sys
 import numpy as np
+import matplotlib.pyplot as mpl
 
 ###############################################################################
-# imports data from input file                                                #
+# imports lines from input file                                               #
 # in:  fn - filename                                                          #
-#      startTrim - lines to trim from beginning of file                       #
-#      endTrim - lines to trim from end of file                               #
-#      cols - list of columns to extract data from                            #
-#      t0 - initial time to adjust by (didn't actually do anything with this) #
-# out: x - array of data                                                      #
-#      t0 - initial time                                                      #
+# out: lines - lines of file                                                  #
 ###############################################################################
 
-def getLines(fn,startTrim,endTrim,nCol,t0):
+def getLines(fn):
+
   lines = []
   try:
     fh = open(fn,'r')
@@ -25,19 +22,86 @@ def getLines(fn,startTrim,endTrim,nCol,t0):
       lines.append(l.rstrip('\n'))
     fh.close()
 
-  # Get t0 if not defined
-  if t0 == 0:
-    t0 = lines[len(lines)-2].split()
-    t0 = t0[2]
+  return lines
+
+###############################################################################
+# imports data from info file                                                 #
+# in:  fn - filename                                                          #
+#      startTrim - lines to trim from beginning of file                       #
+#      endTrim - lines to trim from end of file                               #
+#      cols - list of columns to extract data from                            #
+# out: x - array of data                                                      #
+#      t0 - initial time                                                      #
+#      tN - end time                                                          #
+###############################################################################
+
+def getInfoData(fn,startTrim,endTrim,cols):
+
+  lines = getLines(fn)
+  t0 = lines[len(lines)-2].split()
+  t0 = int(t0[2])
+  tN = lines[len(lines)-1].split()
+  tN = int(tN[2])
 
   # Pull data into numpy array
-  x = np.zeros((len(lines)-(startTrim+endTrim),len(nCol)))
+  x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
   for i in range(startTrim,len(lines)-endTrim):
     y = lines[i].split()
-    for j in range(len(nCol)):
-      x[i-startTrim,j] = y[nCol[j]]
+    for j in range(len(cols)):
+      x[i-startTrim,j] = y[cols[j]]
 
-  return x,t0
+  return x,t0,tN
+
+###############################################################################
+# imports data from input file                                                #
+# in:  fn - filename                                                          #
+#      startTrim - lines to trim from beginning of file                       #
+#      endTrim - lines to trim from end of file                               #
+#      cols - list of columns to extract data from                            #
+#      t0 - initial time                                                      #
+# out: x - array of data                                                      #
+###############################################################################
+
+def getData(fn,startTrim,endTrim,cols,t0):
+
+  lines = getLines(fn)
+  # Pull data into numpy array
+  x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
+  for i in range(startTrim,len(lines)-endTrim):
+    y = lines[i].split()
+    for j in range(len(cols)):
+      x[i-startTrim,j] = y[cols[j]]
+  x[:,0] = x[:,0]-t0
+
+  return x
+
+###############################################################################
+# imports data from ECG file                                                  #
+# in:  fn - filename                                                          #
+#      startTrim - lines to trim from beginning of file                       #
+#      endTrim - lines to trim from end of file                               #
+#      nch - number of channels                                               #
+#      t0 - initial time                                                      #
+#      tN - end time                                                          #
+# out: x - array of data                                                      #
+###############################################################################
+
+def getECGData(fn,startTrim,endTrim,nch,t0,tN):
+
+  lines = getLines(fn)
+
+  # Pull data into numpy array
+  x = np.zeros((tN-t0+1,nch+1))
+  x[:,0] = range(t0,tN+1)
+  for i in range(startTrim,len(lines)-endTrim):
+    y = lines[i].split()
+    j = int(y[1][-1])
+    z = np.where(x[:,0] == float(y[0]))  # find row that matches time
+    k = int(z[0][0])                     # weird... but this works
+    x[k,j] = float(y[2])
+  x[:,0] = x[:,0]-t0
+
+  return x
 
 ###############################################################################
 # main code                                                                   #
@@ -45,7 +109,20 @@ def getLines(fn,startTrim,endTrim,nCol,t0):
 
 fold = sys.argv[1]
 
-Info,t0 = getLines('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3],0)
-PULS,t0 = getLines('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
-RESP,t0 = getLines('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
-ECG,t0 = getLines('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,(0,2),t0)
+# get data
+Info,t0,tN = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
+PULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
+RESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
+ECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,4,t0,tN)
+
+mpl.plot(PULS[:,0]-t0,PULS[:,1])
+mpl.show()
+mpl.plot(RESP[:,0]-t0,RESP[:,1])
+mpl.show()
+mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
+mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
+mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
+mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
+mpl.show()
+
+
