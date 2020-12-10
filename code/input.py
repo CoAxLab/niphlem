@@ -37,7 +37,6 @@ def getLines(fn):
 #      nVol - number of volumes acquired                                      #
 #      nSlice - number of slices per acquisition                              #
 #      TR - repetition time                                                   #
-#      acqT - acquisition time                                                #
 ###############################################################################
 
 def getInfoData(fn,startTrim,endTrim,cols):
@@ -64,9 +63,8 @@ def getInfoData(fn,startTrim,endTrim,cols):
     for j in range(len(cols)):
       x[i-startTrim,j] = y[cols[j]]
   TR = round((x[-1,3]-x[0,2])/nVol)
-  acqT = x[0,3]-x[0,2]
 
-  return x,t0,tN,nVol,nSlice,TR,acqT
+  return x,t0,tN,nVol,nSlice,TR
 
 ###############################################################################
 # imports data from input file                                                #
@@ -202,7 +200,6 @@ meta['MRacquisition'].append({
   'Volumes': nVol,
   'Slices': nSlice,
   'TR': TR,
-  'acqTime': acqT     # is this the quantity of interest?
 })
 meta['ECGground'] = []
 meta['ECGground'].append({
