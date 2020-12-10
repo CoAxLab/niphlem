@@ -97,10 +97,7 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
     y = lines[i].split()
     j = int(y[1][-1])
     k = int(int(y[0]) - t0)
-    #z = np.where(x[:,0] == float(y[0]))  # find row that matches time
-    #k = int(z[0][0])                     # weird... but this works
     x[k,j] = float(y[2])
-#  x[:,0] = x[:,0]-t0
 
   return x
 
