@@ -95,13 +95,40 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
   x[:,0] = range(t0,tN+1)
   for i in range(startTrim,len(lines)-endTrim):
     y = lines[i].split()
-    j = int(y[1][-1])
+    j = int(y[1][-1])                    # get channel number
     z = np.where(x[:,0] == float(y[0]))  # find row that matches time
     k = int(z[0][0])                     # weird... but this works
     x[k,j] = float(y[2])
   x[:,0] = x[:,0]-t0
 
   return x
+
+###############################################################################
+# interpolates the missing ECG data points                                    #
+# in/out:  dat - array of ECG data                                            #
+###############################################################################
+
+def interpECGData(dat):
+
+  nch = np.ma.size(dat,1)    # number of channels
+  for j in range(1,nch):
+    for i in range(1,len(dat)-1):  # hoping no zeros in first or last positions!
+      if dat[i,j] == 0:
+        # find nearest non-zero neighbor below
+        for k in range(1,i):
+          y1 = dat[i-k,j]
+          if y1 != 0:
+            x1 = dat[i-k,0]
+            break
+        # find nearest non-zero neighbor above
+        for k in range(1,len(dat)-i):
+          y2 = dat[i+k,j]
+          if y2 != 0:
+            x2 = dat[i+k,0]
+            break
+        dat[i,j] = y1+(dat[i,0]-x1)*(y2-y1)/(x2-x1)
+
+  return dat
 
 ###############################################################################
 # main code                                                                   #
@@ -114,6 +141,7 @@ Info,t0,tN = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2
 PULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
 RESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
 ECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,4,t0,tN)
+ECG = interpECGData(ECG)
 
 mpl.plot(PULS[:,0]-t0,PULS[:,1])
 mpl.show()
