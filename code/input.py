@@ -102,14 +102,13 @@ def getData(fn,startTrim,endTrim,cols,t0):
 # in:  fn - filename                                                          #
 #      startTrim - lines to trim from beginning of file                       #
 #      endTrim - lines to trim from end of file                               #
-#      nch - number of channels (should actually pull this from the data)     #
 #      t0 - initial time                                                      #
 #      tN - end time                                                          #
 # out: x - array of data                                                      #
 #      sr - sampling rate                                                     #
 ###############################################################################
 
-def getECGData(fn,startTrim,endTrim,nch,t0,tN):
+def getECGData(fn,startTrim,endTrim,t0,tN):
 
   lines = getLines(fn)
 
@@ -119,6 +118,13 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
     if y[0] == 'SampleTime':
       sr = int(y[2])
       break
+  # Get number of channels (not particularly efficient, but thorough...)
+  nch = 0
+  for i in range(startTrim,len(lines)-endTrim):
+    y = lines[i].split()
+    j = int(y[1][-1])
+    if j > nch:
+      nch = j
   # Pull data into numpy array
   x = np.zeros((tN-t0+1,nch+1))
   x[:,0] = range(t0,tN+1)
@@ -128,7 +134,7 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
     k = int(int(y[0]) - t0)
     x[k,j] = float(y[2])
 
-  return x,sr
+  return x,nch,sr
 
 ###############################################################################
 # interpolates the missing ECG data points                                    #
@@ -138,8 +144,8 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
 def interpECGData(dat):
 
   dat = dat.copy() # add copy
-  nch = np.ma.size(dat,1)    # number of channels
-  for j in range(1,nch):
+  nch = np.ma.size(dat,1)-1        # number of channels
+  for j in range(1,nch+1):
     for i in range(1,len(dat)-1):  # hoping no zeros in first or last positions!
       if dat[i,j] == 0:
         # find nearest non-zero neighbor below
@@ -205,26 +211,25 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh,cardRange,respRange):
 # main code                                                                   #
 ###############################################################################
 
-# fold = sys.argv[1]
-# nch = 4
-# cardiacRange = [0.75,3.5]  # Hz
-# respRange = [0.01,0.5]     # Hz
-#
-# # get data
-# Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
-# PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
-# RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
-# ECG,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,nch,t0,tN)
-# ECG = interpECGData(ECG)
-#
-# #mpl.plot(PULS[:,0]-t0,PULS[:,1])
-# #mpl.show()
-# #mpl.plot(RESP[:,0]-t0,RESP[:,1])
-# #mpl.show()
-# #mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
-# #mpl.show()
-#
-# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch,cardiacRange,respRange)
+fold = sys.argv[1]
+cardiacRange = [0.75,3.5]  # Hz
+respRange = [0.01,0.5]     # Hz
+
+# get data
+Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
+PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
+RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
+ECG,nch,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,t0,tN)
+ECG = interpECGData(ECG)
+
+#mpl.plot(PULS[:,0]-t0,PULS[:,1])
+#mpl.show()
+#mpl.plot(RESP[:,0]-t0,RESP[:,1])
+#mpl.show()
+#mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
+#mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
+#mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
+#mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
+#mpl.show()
+
+genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch,cardiacRange,respRange)
