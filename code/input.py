@@ -108,6 +108,7 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
 
 def interpECGData(dat):
 
+  dat = dat.copy() # add copy
   nch = np.ma.size(dat,1)    # number of channels
   for j in range(1,nch):
     for i in range(1,len(dat)-1):  # hoping no zeros in first or last positions!
