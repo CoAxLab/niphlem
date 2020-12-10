@@ -52,9 +52,9 @@ def getInfoData(fn,startTrim,endTrim,cols):
     if len(y) == 0:
       continue
     if y[0] == 'NumVolumes':
-      nVol = float(y[2])
+      nVol = int(y[2])
     if y[0] == 'NumSlices':
-      nSlice = float(y[2])
+      nSlice = int(y[2])
 
   # Pull data into numpy array
   x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
@@ -85,7 +85,7 @@ def getData(fn,startTrim,endTrim,cols,t0):
   for i in range(startTrim):
     y = lines[i].split()
     if y[0] == 'SampleTime':
-      sr = float(y[2])
+      sr = int(y[2])
       break
   # Pull data into numpy array
   x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
@@ -117,7 +117,7 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
   for i in range(startTrim):
     y = lines[i].split()
     if y[0] == 'SampleTime':
-      sr = float(y[2])
+      sr = int(y[2])
       break
   # Pull data into numpy array
   x = np.zeros((tN-t0+1,nch+1))
@@ -158,6 +158,43 @@ def interpECGData(dat):
   return dat
 
 ###############################################################################
+# generates the json file                                                     #
+# in:  srECG/PULS/RESP - sampling rates for ECG, PULS, and RESP               #
+#      nVol,nSlice,TR - volumes, slices, and TR for fMRI acquisition          #
+#      gCh - ECG ground channel                                               #
+###############################################################################
+
+def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
+
+  meta = {}
+  meta['samplingRate'] = []
+  meta['samplingRate'].append({
+    'channel': 'ECG',
+    'rate': srECG
+  })
+  meta['samplingRate'].append({
+    'channel': 'PULS',
+    'rate': srPULS
+  })
+  meta['samplingRate'].append({
+    'channel': 'RESP',
+    'rate': srRESP
+  })
+  meta['MRacquisition'] = []
+  meta['MRacquisition'].append({
+    'Volumes': nVol,
+    'Slices': nSlice,
+    'TR': TR,
+  })
+  meta['ECGground'] = []
+  meta['ECGground'].append({
+    'Channel': gCh
+  })
+
+  with open('meta.txt','w') as outfile:
+    json.dump(meta,outfile)
+
+###############################################################################
 # main code                                                                   #
 ###############################################################################
 
@@ -165,7 +202,7 @@ fold = sys.argv[1]
 nch = 4
 
 # get data
-Info,t0,tN,nVol,nSlice,TR,acqT = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
+Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
 PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
 RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
 ECG,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,nch,t0,tN)
@@ -181,31 +218,4 @@ ECG = interpECGData(ECG)
 #mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
 #mpl.show()
 
-meta = {}
-meta['samplingRate'] = []
-meta['samplingRate'].append({
-  'channel': 'ECG',
-  'rate': srECG
-})
-meta['samplingRate'].append({
-  'channel': 'PULS',
-  'rate': srPULS
-})
-meta['samplingRate'].append({
-  'channel': 'RESP',
-  'rate': srRESP
-})
-meta['MRacquisition'] = []
-meta['MRacquisition'].append({
-  'Volumes': nVol,
-  'Slices': nSlice,
-  'TR': TR,
-})
-meta['ECGground'] = []
-meta['ECGground'].append({
-  'Channel': 4        # what should this actually be?
-})
-
-
-with open('meta.txt','w') as outfile:
-  json.dump(meta,outfile)
+genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch)
