@@ -132,23 +132,23 @@ def interpECGData(dat):
 # main code                                                                   #
 ###############################################################################
 
-fold = sys.argv[1]
+# fold = sys.argv[1]
 
-# get data
-Info,t0,tN = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
-PULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
-RESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
-ECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,4,t0,tN)
-ECG = interpECGData(ECG)
+# # get data
+# Info,t0,tN = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
+# PULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
+# RESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
+# ECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,4,t0,tN)
+# ECG = interpECGData(ECG)
 
-mpl.plot(PULS[:,0]-t0,PULS[:,1])
-mpl.show()
-mpl.plot(RESP[:,0]-t0,RESP[:,1])
-mpl.show()
-mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
-mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
-mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
-mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
-mpl.show()
+# mpl.plot(PULS[:,0]-t0,PULS[:,1])
+# mpl.show()
+# mpl.plot(RESP[:,0]-t0,RESP[:,1])
+# mpl.show()
+# mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
+# mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
+# mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
+# mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
+# mpl.show()
 
 
