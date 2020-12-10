@@ -71,7 +71,7 @@ def getData(fn,startTrim,endTrim,cols,t0):
     y = lines[i].split()
     for j in range(len(cols)):
       x[i-startTrim,j] = y[cols[j]]
-  x[:,0] = x[:,0]-t0
+  #x[:,0] = x[:,0]-t0
 
   return x
 
