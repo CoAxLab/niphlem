@@ -163,9 +163,10 @@ def interpECGData(dat):
 # in:  srECG/PULS/RESP - sampling rates for ECG, PULS, and RESP               #
 #      nVol,nSlice,TR - volumes, slices, and TR for fMRI acquisition          #
 #      gCh - ECG ground channel                                               #
+#      card/respRange - cardiac and respiratory range of frequencies          #
 ###############################################################################
 
-def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
+def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh,cardRange,respRange):
 
   meta = {}
   meta['samplingRate'] = []
@@ -191,6 +192,11 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
   meta['ECGground'].append({
     'Channel': gCh
   })
+  meta['frequencyRanges'] = []
+  meta['frequencyRanges'].append({
+    'Cardiac': cardRange,
+    'Respiratory': respRange
+  })
 
   with open('meta.txt','w') as outfile:
     json.dump(meta,outfile)
@@ -201,6 +207,8 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
 
 # fold = sys.argv[1]
 # nch = 4
+# cardiacRange = [0.75,3.5]  # Hz
+# respRange = [0.01,0.5]     # Hz
 #
 # # get data
 # Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
@@ -219,4 +227,4 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
 # #mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
 # #mpl.show()
 #
-# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch)
+# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch,cardiacRange,respRange)
