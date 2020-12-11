@@ -54,6 +54,7 @@ def getInfoData(fn,cols):
       t0 = int(y[2])
     if y[0] == 'LastTime':
       tN = int(y[2])
+    # Inherent assumption that all lines starting with a number are data
     if stt == 0:
       try:
         int(y[0])
@@ -98,6 +99,7 @@ def getData(fn,cols,t0):
       continue
     if y[0] == 'SampleTime':
       sr = int(y[2])
+    # Inherent assumption that all lines starting with a number are data
     if stt == 0:
       try:
         int(y[0])
@@ -136,6 +138,7 @@ def getECGData(fn,t0,tN):
       continue
     if y[0] == 'SampleTime':
       sr = int(y[2])
+    # Inherent assumption that all lines starting with a number are data
     if stt == 0:
       try:
         int(y[0])
