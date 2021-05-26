@@ -28,8 +28,6 @@ def getLines(fn):
 ###############################################################################
 # imports data from info file                                                 #
 # in:  fn - filename                                                          #
-#      startTrim - lines to trim from beginning of file                       #
-#      endTrim - lines to trim from end of file                               #
 #      cols - list of columns to extract data from                            #
 # out: x - array of data                                                      #
 #      t0 - initial time                                                      #
@@ -39,15 +37,12 @@ def getLines(fn):
 #      TR - repetition time                                                   #
 ###############################################################################
 
-def getInfoData(fn,startTrim,endTrim,cols):
+def getInfoData(fn,cols):
 
   lines = getLines(fn)
-  t0 = lines[len(lines)-2].split()
-  t0 = int(t0[2])
-  tN = lines[len(lines)-1].split()
-  tN = int(tN[2])
-  # Get number of volumes
-  for i in range(startTrim):
+  # Get parameters for meta file and lines containing data
+  stt = 0; stp = 0
+  for i in range(len(lines)):
     y = lines[i].split()
     if len(y) == 0:
       continue
@@ -55,13 +50,30 @@ def getInfoData(fn,startTrim,endTrim,cols):
       nVol = int(y[2])
     if y[0] == 'NumSlices':
       nSlice = int(y[2])
+    if y[0] == 'FirstTime':
+      t0 = int(y[2])
+    if y[0] == 'LastTime':
+      tN = int(y[2])
+    # Inherent assumption that all lines starting with a number are data
+    if stt == 0:
+      try:
+        int(y[0])
+        stt = i
+      except ValueError:
+        continue
+    if stp == 0:
+      try:
+        int(y[0])
+        continue
+      except ValueError:
+        stp = i
 
   # Pull data into numpy array
-  x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
-  for i in range(startTrim,len(lines)-endTrim):
+  x = np.zeros((stp-stt,len(cols)))
+  for i in range(stt,stp):
     y = lines[i].split()
     for j in range(len(cols)):
-      x[i-startTrim,j] = y[cols[j]]
+      x[i-stt,j] = y[cols[j]]
   TR = round((x[-1,3]-x[0,2])/nVol)
 
   return x,t0,tN,nVol,nSlice,TR
@@ -69,30 +81,38 @@ def getInfoData(fn,startTrim,endTrim,cols):
 ###############################################################################
 # imports data from input file                                                #
 # in:  fn - filename                                                          #
-#      startTrim - lines to trim from beginning of file                       #
-#      endTrim - lines to trim from end of file                               #
 #      cols - list of columns to extract data from                            #
 #      t0 - initial time                                                      #
 # out: x - array of data                                                      #
 #      sr - sampling rate                                                     #
 ###############################################################################
 
-def getData(fn,startTrim,endTrim,cols,t0):
+def getData(fn,cols,t0):
 
   lines = getLines(fn)
 
-  # Get sampling rate
-  for i in range(startTrim):
+  # Get sampling rate and start of data
+  stt = 0
+  for i in range(len(lines)):
     y = lines[i].split()
+    if len(y) == 0:
+      continue
     if y[0] == 'SampleTime':
       sr = int(y[2])
-      break
+    # Inherent assumption that all lines starting with a number are data
+    if stt == 0:
+      try:
+        int(y[0])
+        stt = i
+      except ValueError:
+        continue
+
   # Pull data into numpy array
-  x = np.zeros((len(lines)-(startTrim+endTrim),len(cols)))
-  for i in range(startTrim,len(lines)-endTrim):
+  x = np.zeros((len(lines)-stt,len(cols)))
+  for i in range(stt,len(lines)):
     y = lines[i].split()
     for j in range(len(cols)):
-      x[i-startTrim,j] = y[cols[j]]
+      x[i-stt,j] = y[cols[j]]
   #x[:,0] = x[:,0]-t0
 
   return x,sr
@@ -100,35 +120,50 @@ def getData(fn,startTrim,endTrim,cols,t0):
 ###############################################################################
 # imports data from ECG file                                                  #
 # in:  fn - filename                                                          #
-#      startTrim - lines to trim from beginning of file                       #
-#      endTrim - lines to trim from end of file                               #
-#      nch - number of channels (should actually pull this from the data)     #
 #      t0 - initial time                                                      #
 #      tN - end time                                                          #
 # out: x - array of data                                                      #
 #      sr - sampling rate                                                     #
 ###############################################################################
 
-def getECGData(fn,startTrim,endTrim,nch,t0,tN):
+def getECGData(fn,t0,tN):
 
   lines = getLines(fn)
 
-  # Get sampling rate
-  for i in range(startTrim):
+  # Get sampling rate and start of data
+  stt = 0
+  for i in range(len(lines)):
     y = lines[i].split()
+    if len(y) == 0:
+      continue
     if y[0] == 'SampleTime':
       sr = int(y[2])
-      break
+    # Inherent assumption that all lines starting with a number are data
+    if stt == 0:
+      try:
+        int(y[0])
+        stt = i
+      except ValueError:
+        continue
+
+  # Get number of channels (not particularly efficient, but thorough...)
+  nch = 0
+  for i in range(stt,len(lines)):
+    y = lines[i].split()
+    j = int(y[1][-1])
+    if j > nch:
+      nch = j
+
   # Pull data into numpy array
   x = np.zeros((tN-t0+1,nch+1))
   x[:,0] = range(t0,tN+1)
-  for i in range(startTrim,len(lines)-endTrim):
+  for i in range(stt,len(lines)):
     y = lines[i].split()
     j = int(y[1][-1])
     k = int(int(y[0]) - t0)
     x[k,j] = float(y[2])
 
-  return x,sr
+  return x,nch,sr
 
 ###############################################################################
 # interpolates the missing ECG data points                                    #
@@ -138,8 +173,8 @@ def getECGData(fn,startTrim,endTrim,nch,t0,tN):
 def interpECGData(dat):
 
   dat = dat.copy() # add copy
-  nch = np.ma.size(dat,1)    # number of channels
-  for j in range(1,nch):
+  nch = np.ma.size(dat,1)-1        # number of channels
+  for j in range(1,nch+1):
     for i in range(1,len(dat)-1):  # hoping no zeros in first or last positions!
       if dat[i,j] == 0:
         # find nearest non-zero neighbor below
@@ -163,9 +198,10 @@ def interpECGData(dat):
 # in:  srECG/PULS/RESP - sampling rates for ECG, PULS, and RESP               #
 #      nVol,nSlice,TR - volumes, slices, and TR for fMRI acquisition          #
 #      gCh - ECG ground channel                                               #
+#      card/respRange - cardiac and respiratory range of frequencies          #
 ###############################################################################
 
-def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
+def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh,cardRange,respRange):
 
   meta = {}
   meta['samplingRate'] = []
@@ -191,6 +227,11 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
   meta['ECGground'].append({
     'Channel': gCh
   })
+  meta['frequencyRanges'] = []
+  meta['frequencyRanges'].append({
+    'Cardiac': cardRange,
+    'Respiratory': respRange
+  })
 
   with open('meta.txt','w') as outfile:
     json.dump(meta,outfile)
@@ -200,23 +241,24 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh):
 ###############################################################################
 
 # fold = sys.argv[1]
-# nch = 4
+# cardiacRange = [0.75,3.5]  # Hz
+# respRange = [0.01,0.5]     # Hz
 #
 # # get data
-# Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',10,2,[0,1,2,3])
-# PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',8,0,(0,2),t0)
-# RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',8,0,(0,2),t0)
-# ECG,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',8,0,nch,t0,tN)
+# Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',range(4))
+# PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',(0,2),t0)
+# RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',(0,2),t0)
+# ECG,nch,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',t0,tN)
 # ECG = interpECGData(ECG)
 #
-# #mpl.plot(PULS[:,0]-t0,PULS[:,1])
-# #mpl.show()
-# #mpl.plot(RESP[:,0]-t0,RESP[:,1])
-# #mpl.show()
-# #mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
-# #mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
-# #mpl.show()
+# mpl.plot(PULS[:,0]-t0,PULS[:,1])
+# mpl.show()
+# mpl.plot(RESP[:,0]-t0,RESP[:,1])
+# mpl.show()
+# mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
+# mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
+# mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
+# mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
+# mpl.show()
 #
-# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch)
+# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch,cardiacRange,respRange)
