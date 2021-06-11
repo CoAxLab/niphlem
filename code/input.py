@@ -13,7 +13,7 @@ def getLines(fn):
 
   lines = []
   try:
-    fh = open(fn,'r')
+    fh = open(fn, 'r')
   except OSError:
     msg = 'Cannot open input file '+fn
     raise Warning(msg)
@@ -37,7 +37,7 @@ def getLines(fn):
 #      TR - repetition time                                                   #
 ###############################################################################
 
-def getInfoData(fn,cols):
+def getInfoData(fn, cols):
 
   lines = getLines(fn)
   # Get parameters for meta file and lines containing data
@@ -69,64 +69,26 @@ def getInfoData(fn,cols):
         stp = i
 
   # Pull data into numpy array
-  x = np.zeros((stp-stt,len(cols)))
-  for i in range(stt,stp):
+  x = np.zeros((stp-stt, len(cols)))
+  for i in range(stt, stp):
     y = lines[i].split()
     for j in range(len(cols)):
-      x[i-stt,j] = y[cols[j]]
-  TR = round((x[-1,3]-x[0,2])/nVol)
+      x[i-stt, j] = y[cols[j]]
+  TR = round((x[-1, 3]-x[0, 2])/nVol)
 
-  return x,t0,tN,nVol,nSlice,TR
-
-###############################################################################
-# imports data from input file                                                #
-# in:  fn - filename                                                          #
-#      cols - list of columns to extract data from                            #
-#      t0 - initial time                                                      #
-# out: x - array of data                                                      #
-#      sr - sampling rate                                                     #
-###############################################################################
-
-def getData(fn,cols,t0):
-
-  lines = getLines(fn)
-
-  # Get sampling rate and start of data
-  stt = 0
-  for i in range(len(lines)):
-    y = lines[i].split()
-    if len(y) == 0:
-      continue
-    if y[0] == 'SampleTime':
-      sr = int(y[2])
-    # Inherent assumption that all lines starting with a number are data
-    if stt == 0:
-      try:
-        int(y[0])
-        stt = i
-      except ValueError:
-        continue
-
-  # Pull data into numpy array
-  x = np.zeros((len(lines)-stt,len(cols)))
-  for i in range(stt,len(lines)):
-    y = lines[i].split()
-    for j in range(len(cols)):
-      x[i-stt,j] = y[cols[j]]
-  #x[:,0] = x[:,0]-t0
-
-  return x,sr
+  return x, t0, tN, nVol, nSlice, TR
 
 ###############################################################################
-# imports data from ECG file                                                  #
+# imports data from file                                                      #
 # in:  fn - filename                                                          #
 #      t0 - initial time                                                      #
 #      tN - end time                                                          #
 # out: x - array of data                                                      #
+#      nch - number of channels                                               #
 #      sr - sampling rate                                                     #
 ###############################################################################
 
-def getECGData(fn,t0,tN):
+def getData(fn, t0, tN):
 
   lines = getLines(fn)
 
@@ -147,49 +109,59 @@ def getECGData(fn,t0,tN):
         continue
 
   # Get number of channels (not particularly efficient, but thorough...)
-  nch = 0
-  for i in range(stt,len(lines)):
-    y = lines[i].split()
-    j = int(y[1][-1])
-    if j > nch:
-      nch = j
+  if y[1] == 'PULS' or y[1] == 'RESP':
+    nch = 1
+  else:
+    nch = 0
+    for i in range(stt, len(lines)):
+      y = lines[i].split()
+      j = int(y[1][-1])
+      if j > nch:
+        nch = j
 
   # Pull data into numpy array
-  x = np.zeros((tN-t0+1,nch+1))
-  x[:,0] = range(t0,tN+1)
-  for i in range(stt,len(lines)):
-    y = lines[i].split()
-    j = int(y[1][-1])
-    k = int(int(y[0]) - t0)
-    x[k,j] = float(y[2])
+  x = np.zeros((tN-t0+1, nch+1))
+  x[:, 0] = range(t0, tN+1)
+  if nch == 1:
+    # Use separate loop for single channel to avoid repeated ifs for channel #
+    for i in range(stt, len(lines)):
+      y = lines[i].split()
+      k = int(int(y[0]) - t0)
+      x[k, 1] = float(y[2])
+  else:
+    for i in range(stt, len(lines)):
+      y = lines[i].split()
+      j = int(y[1][-1])
+      k = int(int(y[0]) - t0)
+      x[k, j] = float(y[2])
 
-  return x,nch,sr
+  return x, nch, sr
 
 ###############################################################################
-# interpolates the missing ECG data points                                    #
-# in/out:  dat - array of ECG data                                            #
+# interpolates the missing data points                                        #
+# in/out:  dat - array of data                                                #
 ###############################################################################
 
-def interpECGData(dat):
+def interpMissingData(dat):
 
   dat = dat.copy() # add copy
-  nch = np.ma.size(dat,1)-1        # number of channels
-  for j in range(1,nch+1):
-    for i in range(1,len(dat)-1):  # hoping no zeros in first or last positions!
-      if dat[i,j] == 0:
+  nch = np.ma.size(dat, 1)-1        # number of channels
+  for j in range(1, nch+1):
+    for i in range(1, len(dat)-1):  # hoping no zeros in first or last positions!
+      if dat[i, j] == 0:
         # find nearest non-zero neighbor below
-        for k in range(1,i):
-          y1 = dat[i-k,j]
+        for k in range(1, i):
+          y1 = dat[i-k, j]
           if y1 != 0:
-            x1 = dat[i-k,0]
+            x1 = dat[i-k, 0]
             break
         # find nearest non-zero neighbor above
-        for k in range(1,len(dat)-i):
-          y2 = dat[i+k,j]
+        for k in range(1, len(dat)-i):
+          y2 = dat[i+k, j]
           if y2 != 0:
-            x2 = dat[i+k,0]
+            x2 = dat[i+k, 0]
             break
-        dat[i,j] = y1+(dat[i,0]-x1)*(y2-y1)/(x2-x1)
+        dat[i, j] = y1+(dat[i, 0]-x1)*(y2-y1)/(x2-x1)
 
   return dat
 
@@ -201,7 +173,7 @@ def interpECGData(dat):
 #      card/respRange - cardiac and respiratory range of frequencies          #
 ###############################################################################
 
-def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh,cardRange,respRange):
+def genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, gCh, cardRange, respRange):
 
   meta = {}
   meta['samplingRate'] = []
@@ -233,32 +205,56 @@ def genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,gCh,cardRange,respRange):
     'Respiratory': respRange
   })
 
-  with open('meta.txt','w') as outfile:
-    json.dump(meta,outfile)
+  with open('meta.txt', 'w') as outfile:
+    json.dump(meta, outfile)
 
 ###############################################################################
 # main code                                                                   #
+# In:  path - path to folder containing physio files, assumes common location #
+#      infoFile - Info file name                                              #
+#      pulsFile - PULS file name                                              #
+#      respFile - RESP file name                                              #
+#      ecgFile - ECG file name                                                #
+#      showSignals - flag to plot the signals (default False)                 #
+# Out: (meta.txt) - json file containing meta data                            #
+#      (signal.csv) - file containing condensed signal data                   #
 ###############################################################################
 
-# fold = sys.argv[1]
-# cardiacRange = [0.75,3.5]  # Hz
-# respRange = [0.01,0.5]     # Hz
-#
-# # get data
-# Info,t0,tN,nVol,nSlice,TR = getInfoData('../data/'+fold+'/Physio_'+fold+'_Info.log',range(4))
-# PULS,srPULS = getData('../data/'+fold+'/Physio_'+fold+'_PULS.log',(0,2),t0)
-# RESP,srRESP = getData('../data/'+fold+'/Physio_'+fold+'_RESP.log',(0,2),t0)
-# ECG,nch,srECG = getECGData('../data/'+fold+'/Physio_'+fold+'_ECG.log',t0,tN)
-# ECG = interpECGData(ECG)
-#
-# mpl.plot(PULS[:,0]-t0,PULS[:,1])
-# mpl.show()
-# mpl.plot(RESP[:,0]-t0,RESP[:,1])
-# mpl.show()
-# mpl.plot(ECG[:,0]-t0,ECG[:,1],'b')
-# mpl.plot(ECG[:,0]-t0,ECG[:,2],'r')
-# mpl.plot(ECG[:,0]-t0,ECG[:,3],'g')
-# mpl.plot(ECG[:,0]-t0,ECG[:,4],'k')
-# mpl.show()
-#
-# genJSON(srECG,srPULS,srRESP,nVol,nSlice,TR,nch,cardiacRange,respRange)
+def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
+
+  cardiacRange = [0.75, 3.5]  # Hz
+  respRange = [0.01, 0.5]     # Hz
+
+  # ensure path ends in /
+  if path[-1] != '/':
+    path = path+'/'
+
+  # get data
+  Info, t0, tN, nVol, nSlice, TR = getInfoData(path+infoFile, range(4))
+  PULS, nch, srPULS = getData(path+pulsFile, t0, tN)
+  RESP, nch, srRESP = getData(path+respFile, t0, tN)
+  # TODO: upsample these
+  ECG, nch, srECG = getData(path+ecgFile, t0, tN)
+  ECG = interpMissingData(ECG)
+  genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
+  signal = np.array((nch+3, len(ECG)))
+
+  if showSignals:
+    mpl.plot(PULS[:, 0]-t0, PULS[:, 1])
+    mpl.show()
+    mpl.plot(RESP[:, 0]-t0, RESP[:, 1])
+    mpl.show()
+    mpl.plot(ECG[:, 0]-t0, ECG[:, 1], 'b')
+    mpl.plot(ECG[:, 0]-t0, ECG[:, 2], 'r')
+    mpl.plot(ECG[:, 0]-t0, ECG[:, 3], 'g')
+    mpl.plot(ECG[:, 0]-t0, ECG[:, 4], 'k')
+    mpl.show()
+
+###############################################################################
+
+#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
+#infoFile = 'Physio_sample1_Info.log'
+#pulsFile = 'Physio_sample1_PULS.log'
+#respFile = 'Physio_sample1_RESP.log'
+#ecgFile = 'Physio_sample1_ECG.log'
+#procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
