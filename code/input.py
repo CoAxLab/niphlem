@@ -121,7 +121,7 @@ def getData(fn, t0, tN):
 
   # Pull data into numpy array
   x = np.zeros((tN-t0+1, nch+1))
-  x[:, 0] = range(t0, tN+1)
+  x[:, 0] = range(0, tN-t0+1)
   if nch == 1:
     # Use separate loop for single channel to avoid repeated ifs for channel #
     for i in range(stt, len(lines)):
@@ -277,24 +277,28 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
   RESP = interpMissingData(RESP)
   ECG = interpMissingData(ECG)
   genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
-  signal = np.array((nch+3, len(ECG)))
+  signal = np.zeros((len(ECG), nch+3))
+  signal[:, 0:(nch+1)] = ECG
+  signal[:, nch+1] = PULS[:, 1]
+  signal[:, nch+2] = RESP[:, 1]
+  np.save('signal', signal)
 
   if showSignals:
-    mpl.plot(PULS[:, 0]-t0, PULS[:, 1])
+    mpl.plot(PULS[:, 0], PULS[:, 1])
     mpl.show()
-    mpl.plot(RESP[:, 0]-t0, RESP[:, 1])
+    mpl.plot(RESP[:, 0], RESP[:, 1])
     mpl.show()
-    mpl.plot(ECG[:, 0]-t0, ECG[:, 1], 'b')
-    mpl.plot(ECG[:, 0]-t0, ECG[:, 2], 'r')
-    mpl.plot(ECG[:, 0]-t0, ECG[:, 3], 'g')
-    mpl.plot(ECG[:, 0]-t0, ECG[:, 4], 'k')
+    mpl.plot(ECG[:, 0], ECG[:, 1], 'b')
+    mpl.plot(ECG[:, 0], ECG[:, 2], 'r')
+    mpl.plot(ECG[:, 0], ECG[:, 3], 'g')
+    mpl.plot(ECG[:, 0], ECG[:, 4], 'k')
     mpl.show()
 
 ###############################################################################
 
-path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
-infoFile = 'Physio_sample1_Info.log'
-pulsFile = 'Physio_sample1_PULS.log'
-respFile = 'Physio_sample1_RESP.log'
-ecgFile = 'Physio_sample1_ECG.log'
-procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
+#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
+#infoFile = 'Physio_sample1_Info.log'
+#pulsFile = 'Physio_sample1_PULS.log'
+#respFile = 'Physio_sample1_RESP.log'
+#ecgFile = 'Physio_sample1_ECG.log'
+#procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
