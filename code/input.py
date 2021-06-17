@@ -147,7 +147,46 @@ def interpMissingData(dat):
   dat = dat.copy() # add copy
   nch = np.ma.size(dat, 1)-1        # number of channels
   for j in range(1, nch+1):
-    for i in range(1, len(dat)-1):  # hoping no zeros in first or last positions!
+
+    # extrapolate at beginning of series if needed
+    for i in range(0, len(dat)):
+      # move on if no empty values at beginning of series
+      if dat[i, j] != 0:
+        break
+      # find nearest non-zero neighbor above
+      for k in range(1, len(dat)-1):
+        y1 = dat[i+k, j]
+        if y1 != 0:
+          x1 = dat[i+k, 0]
+          break
+      # find next nearest non-zero neighbor above
+      for kk in range(k+1, len(dat)-1):
+        y2 = dat[i+kk, j]
+        if y2 != 0:
+          x2 = dat[i+kk, 0]
+          break
+      dat[i, j] = y1+(dat[i, 0]-x1)*(y2-y1)/(x2-x1)
+
+    # extrapolate at end of series if needed
+    for i in range(len(dat)-1, 0, -1):
+      # move on to interpolating interior values if no empty values at end of series
+      if dat[i, j] != 0:
+        break
+      # find nearest non-zero neighbor below
+      for k in range(1, len(dat)-1):
+        y1 = dat[i-k, j]
+        if y1 != 0:
+          x1 = dat[i-k, 0]
+          break
+      # find next nearest non-zero neighbor below
+      for kk in range(k+1, len(dat)-1):
+        y2 = dat[i-kk, j]
+        if y2 != 0:
+          x2 = dat[i-kk, 0]
+          break
+      dat[i, j] = y1+(dat[i, 0]-x1)*(y2-y1)/(x2-x1)
+
+    for i in range(1, len(dat)-1):
       if dat[i, j] == 0:
         # find nearest non-zero neighbor below
         for k in range(1, i):
@@ -233,8 +272,9 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
   Info, t0, tN, nVol, nSlice, TR = getInfoData(path+infoFile, range(4))
   PULS, nch, srPULS = getData(path+pulsFile, t0, tN)
   RESP, nch, srRESP = getData(path+respFile, t0, tN)
-  # TODO: upsample these
   ECG, nch, srECG = getData(path+ecgFile, t0, tN)
+  PULS = interpMissingData(PULS)
+  RESP = interpMissingData(RESP)
   ECG = interpMissingData(ECG)
   genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
   signal = np.array((nch+3, len(ECG)))
@@ -252,9 +292,9 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
 
 ###############################################################################
 
-#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
-#infoFile = 'Physio_sample1_Info.log'
-#pulsFile = 'Physio_sample1_PULS.log'
-#respFile = 'Physio_sample1_RESP.log'
-#ecgFile = 'Physio_sample1_ECG.log'
-#procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
+path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
+infoFile = 'Physio_sample1_Info.log'
+pulsFile = 'Physio_sample1_PULS.log'
+respFile = 'Physio_sample1_RESP.log'
+ecgFile = 'Physio_sample1_ECG.log'
+procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
