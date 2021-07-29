@@ -206,16 +206,20 @@ def interpMissingData(dat):
 
 ###############################################################################
 # generates the json file                                                     #
-# in:  srECG/PULS/RESP - sampling rates for ECG, PULS, and RESP               #
+# in:  sFreq - sampling frequency (1/tic in ms)                               #
+#      srECG/PULS/RESP - sampling rates for ECG, PULS, and RESP               #
 #      nVol,nSlice,TR - volumes, slices, and TR for fMRI acquisition          #
 #      gCh - ECG ground channel                                               #
 #      card/respRange - cardiac and respiratory range of frequencies          #
 ###############################################################################
 
-def genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, gCh, cardRange, respRange):
+def genJSON(sFreq, srECG, srPULS, srRESP, nVol, nSlice, TR, gCh, cardRange, respRange):
 
   meta = {}
   meta['samplingRate'] = []
+  meta['samplingRate'].append({
+    'freq': sFreq
+  })
   meta['samplingRate'].append({
     'channel': 'ECG',
     'rate': srECG
@@ -263,26 +267,35 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
 
   cardiacRange = [0.75, 3.5]  # Hz
   respRange = [0.01, 0.5]     # Hz
+  # TODO: Take this as an input or extract somehow
+  sFreq = 400                 # Hz
 
   # ensure path ends in /
   if path[-1] != '/':
     path = path+'/'
 
-  # get data
+  # get data from INFO file
   Info, t0, tN, nVol, nSlice, TR = getInfoData(path+infoFile, range(4))
+  # get data from PULS file
   PULS, nch, srPULS = getData(path+pulsFile, t0, tN)
+  # get data from RESP file
   RESP, nch, srRESP = getData(path+respFile, t0, tN)
+  # get data from ECG file
   ECG, nch, srECG = getData(path+ecgFile, t0, tN)
+  # interpolate missing data
   PULS = interpMissingData(PULS)
   RESP = interpMissingData(RESP)
   ECG = interpMissingData(ECG)
-  genJSON(srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
+  # generate JSON dictionary
+  genJSON(sFreq, srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
+  # store aligned signals in a single matrix, save to signal.npy
   signal = np.zeros((len(ECG), nch+3))
   signal[:, 0:(nch+1)] = ECG
   signal[:, nch+1] = PULS[:, 1]
   signal[:, nch+2] = RESP[:, 1]
   np.save('signal', signal)
 
+  # plot signals if desired
   if showSignals:
     mpl.plot(PULS[:, 0], PULS[:, 1])
     mpl.show()
@@ -296,9 +309,9 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
 
 ###############################################################################
 
-#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample1/'
-#infoFile = 'Physio_sample1_Info.log'
-#pulsFile = 'Physio_sample1_PULS.log'
-#respFile = 'Physio_sample1_RESP.log'
-#ecgFile = 'Physio_sample1_ECG.log'
+#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
+#infoFile = 'Physio_sample2_Info.log'
+#pulsFile = 'Physio_sample2_PULS.log'
+#respFile = 'Physio_sample2_RESP.log'
+#ecgFile = 'Physio_sample2_ECG.log'
 #procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)

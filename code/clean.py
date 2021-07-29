@@ -2,64 +2,85 @@ import numpy as np
 import json
 import matplotlib.pyplot as mpl
 
+################################################################################
+# applies Butterworth bandpass double filter (to minimize shift)               #
+# in:  data - signal to be filtered                                            #
+#      lowcut, highcut - cutoff frequencies (Hz)                               #
+#      fs - sampling frequency (Hz)                                            #
+#      order - filter order (will be rounded up to even integer)               #
+# out: bandpass filtered signal
+################################################################################
+
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-    # fs, lowcut and highcut are in frequency units (Hz)
-    from scipy.signal import (sosfiltfilt, butter)
+  # fs, lowcut and highcut are in frequency units (Hz)
+  from scipy.signal import (sosfiltfilt, butter)
 
-    low = lowcut / fs
-    high = highcut / fs
-    sos = butter(np.ceil(order/2), [low, high], analog=False, btype='band', output='sos')
+  nyq = 0.5 * fs
+  low = lowcut / nyq
+  high = highcut / nyq
+  sos = butter(np.ceil(order/2), [low, high], analog=False, btype='band', output='sos')
 
-    y = sosfiltfilt(sos, data)
-    return y
+  return sosfiltfilt(sos, data)
 
-def gaussian_lowpass_filter(data, fs, fwhm):
-    # sampling rate is frequency (in Hz)
-    # fwhm is time (in seconds)
+################################################################################
+# applies high pass filter (1-lowpass filter) to signal                        #
+# in:  data - signal to be filtered                                            #
+#      fs - sampling frequency (Hz)                                            #
+#      cut - cutoff frequency (Hz)                                             #
+# out: high pass filtered signal                                               #
+################################################################################
 
-    from scipy.ndimage import gaussian_filter1d
+def gaussian_highpass_filter(data, fs, cut):
 
-    sigma = fs*fwhm #
-    return gaussian_filter1d(data, sigma)
+  from scipy.ndimage import gaussian_filter1d
+
+  sigma = fs/(2*np.pi*cut)
+  return data-gaussian_filter1d(data, sigma)
 
 ################################################################################
 # main routine to read in signals and apply appropriate filter                 #
 # in:  meta - json file containing frequencies for filtering                   #
 #      sigFile - npy file containing processed signals                         #
+#      showSignals - flag to plot the filtered signals (default False)         #
 ################################################################################
 
-#def filter_signals(meta, sigFile):
+def filterSignals(meta, sigFile, showSignals=False):
 
-sigFile = 'signal.npy'
-meta = 'meta.txt'
+  # load signal, columns: time, channels * nch, pulse, resp
+  signal = np.load(sigFile)
+  nch = signal.shape[1]-3
 
-signal = np.load(sigFile)
-nch = signal.shape[1]-3
+  # extract filtering information from JSON file
+  meta = json.load(open(meta))
+  sf = meta['samplingRate'][0]['freq']
+  cardRange = meta['frequencyRanges'][0]['Cardiac']
+  respRange = meta['frequencyRanges'][0]['Respiratory']
 
-meta = json.load(open(meta))
-cardRange = meta['frequencyRanges'][0]['Cardiac']
-respRange = meta['frequencyRanges'][0]['Respiratory']
+  # filter
+  fSignal = np.zeros_like(signal)
+  fSignal[:, 0] = signal[:, 0]
+  fSignal[:, -2] = butter_bandpass_filter(signal[:, -2], cardRange[0], cardRange[1], sf)
+  fSignal[:, -1] = butter_bandpass_filter(signal[:, -1], respRange[0], respRange[1], sf)
+  # note: factor of 5 is empirical
+  for i in range(1, nch+1):
+    fSignal[:, i] = gaussian_highpass_filter(signal[:, i], sf, 5*cardRange[1])
+  # save filtered signal to fSignal.npy
+  np.save('fSignal', fSignal)
 
-sf = 1000
-# TODO: verify 1000 Hz is right
-#       extract this from the data
-#       make sure the filter is working as expected
-#       try to rectify the shift
-PULS = butter_bandpass_filter(signal[:, -2], 0.5*cardRange[0], 2*cardRange[1], sf)
-RESP = butter_bandpass_filter(signal[:, -1], 0.5*respRange[0], 2*respRange[1], sf)
-ECG = np.zeros((len(signal), nch))
-for i in range(nch):
-  ECG[:, i] = signal[:, i]-gaussian_lowpass_filter(signal[:, i], sf, 0.5/cardRange[1])
+  # plot signals if desired
+  if showSignals:
+    mpl.plot(signal[:, -2]-signal[:, -2].mean(), 'r')
+    mpl.plot(fSignal[:, -2], 'b')
+    mpl.show()
+    mpl.plot(signal[:, -1]-signal[:, -1].mean(), 'r')
+    mpl.plot(fSignal[:, -1], 'b')
+    mpl.show()
+    mpl.plot(signal[:, 1]-signal[:, 1].mean(), 'r')
+    mpl.plot(fSignal[:, 1], 'b')
+    mpl.show()
 
-mpl.plot(signal[:,-2]-signal[:,-2].mean(), 'r')
-mpl.plot(PULS, 'b')
-mpl.show()
+###############################################################################
 
-mpl.plot(signal[:,-1]-signal[:,-1].mean(), 'r')
-mpl.plot(PULS, 'b')
-mpl.show()
-
-mpl.plot(signal[:,1]-signal[:,1].mean(), 'r')
-mpl.plot(ECG[:,1], 'b')
-mpl.show()
-
+#meta = 'meta.txt'
+#sigFile = 'signal.npy'
+#filterSignals(meta, sigFile, showSignals=True)
