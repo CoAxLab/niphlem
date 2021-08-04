@@ -23,19 +23,20 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
   return sosfiltfilt(sos, data)
 
 ################################################################################
-# applies high pass filter (1-lowpass filter) to signal                        #
+# applies low pass filter to signal                                            #
 # in:  data - signal to be filtered                                            #
 #      fs - sampling frequency (Hz)                                            #
 #      cut - cutoff frequency (Hz)                                             #
-# out: high pass filtered signal                                               #
+# out: low pass filtered signal                                                #
 ################################################################################
 
-def gaussian_highpass_filter(data, fs, cut):
+def gaussian_lowpass_filter(data, fs, cut):
 
   from scipy.ndimage import gaussian_filter1d
 
   sigma = fs/(2*np.pi*cut)
-  return data-gaussian_filter1d(data, sigma)
+  signal = gaussian_filter1d(data, sigma)
+  return signal-np.mean(signal)
 
 ################################################################################
 # main routine to read in signals and apply appropriate filter                 #
@@ -63,7 +64,7 @@ def filterSignals(meta, sigFile, showSignals=False):
   fSignal[:, -1] = butter_bandpass_filter(signal[:, -1], respRange[0], respRange[1], sf)
   # note: factor of 5 is empirical
   for i in range(1, nch+1):
-    fSignal[:, i] = gaussian_highpass_filter(signal[:, i], sf, 5*cardRange[1])
+    fSignal[:, i] = gaussian_lowpass_filter(signal[:, i], sf, cardRange[1])
   # save filtered signal to fSignal.npy
   np.save('fSignal', fSignal)
 
