@@ -2,7 +2,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
 from scipy.interpolate import interp1d
-from .events import compute_max_events
+from events import compute_max_events
 
 
 class BasePhysio(BaseEstimator, TransformerMixin):
@@ -74,12 +74,12 @@ class RetroicorPhysio(BasePhysio):
         self.delta = delta
         self.peak_rise = peak_rise
 
-        super().__init__(filtering=self.filtering,
-                         high_pass=self.high_pass,
-                         low_pass=self.low_pass,
-                         physio_rate=self.physio_rate,
-                         columns=self.columns,
-                         n_jobs=self.n_jobs)
+        super().__init__(filtering=filtering,
+                         high_pass=high_pass,
+                         low_pass=low_pass,
+                         physio_rate=physio_rate,
+                         columns=columns,
+                         n_jobs=n_jobs)
 
     def _process_regressors(self, signal, time_physio, time_scan):
 
@@ -185,12 +185,12 @@ class HVPhysio(BasePhysio):
         self.delta = delta
         self.peak_rise = peak_rise
 
-        super().__init__(filtering=self.filtering,
-                         high_pass=self.high_pass,
-                         low_pass=self.low_pass,
-                         physio_rate=self.physio_rate,
-                         columns=self.columns,
-                         n_jobs=self.n_jobs)
+        super().__init__(filtering=filtering,
+                         high_pass=high_pass,
+                         low_pass=low_pass,
+                         physio_rate=physio_rate,
+                         columns=columns,
+                         n_jobs=n_jobs)
 
     def _process_regressors(self,
                             signal,
