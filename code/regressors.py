@@ -9,6 +9,7 @@ class BasePhysio(BaseEstimator, TransformerMixin):
 
     def __init__(self,
                  physio_rate,
+                 scan_rate,
                  filtering="butter",
                  high_pass=None,
                  low_pass=None,
@@ -16,12 +17,14 @@ class BasePhysio(BaseEstimator, TransformerMixin):
                  n_jobs=1):
 
         # common arguments for all classess
+        self.physio_rate = physio_rate
+        self.scan_rate = scan_rate
         self.filtering = filtering
         self.high_pass = high_pass
         self.low_pass = low_pass
-        self.physio_rate = physio_rate
         self.columns = columns
         self.n_jobs = n_jobs
+
 
     def compute_regressors(self,
                            signal,
@@ -61,6 +64,7 @@ class RetroicorPhysio(BasePhysio):
 
     def __init__(self,
                  physio_rate,
+                 scan_rate,
                  delta,
                  peak_rise=0.5,
                  order=1,
@@ -74,10 +78,11 @@ class RetroicorPhysio(BasePhysio):
         self.delta = delta
         self.peak_rise = peak_rise
 
-        super().__init__(filtering=filtering,
+        super().__init__(physio_rate=physio_rate,
+                         scan_rate=scan_rate,
+                         filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
-                         physio_rate=physio_rate,
                          columns=columns,
                          n_jobs=n_jobs)
 
@@ -174,6 +179,7 @@ class HVPhysio(BasePhysio):
 
     def __init__(self,
                  physio_rate,
+                 scan_rate,
                  delta,
                  peak_rise=0.5,
                  filtering="butter",
@@ -185,10 +191,11 @@ class HVPhysio(BasePhysio):
         self.delta = delta
         self.peak_rise = peak_rise
 
-        super().__init__(filtering=filtering,
+        super().__init__(physio_rate=physio_rate,
+                         scan_rate=scan_rate,
+                         filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
-                         physio_rate=physio_rate,
                          columns=columns,
                          n_jobs=n_jobs)
 
