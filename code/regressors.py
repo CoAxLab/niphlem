@@ -1,31 +1,26 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  8 15:27:12 2021
-
-@author: javi
-"""
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
+from scipy.interpolate import interp1d
+from .events import compute_max_events
 
 
 class BasePhysio(BaseEstimator, TransformerMixin):
 
     def __init__(self,
-                 sampling_rate,
+                 physio_rate,
                  filtering="butter",
                  high_pass=None,
                  low_pass=None,
-                 electrodes=None,
+                 columns=None,
                  n_jobs=1):
 
         # common arguments for all classess
         self.filtering = filtering
         self.high_pass = high_pass
         self.low_pass = low_pass
-        self.sampling_rate = sampling_rate
-        self.electrodes = electrodes
+        self.physio_rate = physio_rate
+        self.columns = columns
         self.n_jobs = n_jobs
 
     def compute_regressors(self,
@@ -36,17 +31,18 @@ class BasePhysio(BaseEstimator, TransformerMixin):
         # TODO: Add checks for input arguments and data
 
         # Decide how to handle data and loop through
-        if self.electrodes:
-            if self.electrodes == "mean":
-                signal = signal.dot(self.electrodes)
+        if self.columns:
+            if self.columns == "mean":
+                signal = signal.dot(self.columns)
             else:
-                signal = signal.dot(self.electrodes)
+                signal = signal.dot(self.columns)
 
         if signal.ndim == 1:
             signal = signal.reshape(-1, 1)
 
-        parallel = Parallel(n_jobs=self.n_jobs)
+        # TODO: Add previous transformations: Filtering, what else?
 
+        parallel = Parallel(n_jobs=self.n_jobs)
         func = self._process_regressors
         regressors = parallel(delayed(func)(s, time_physio, time_scan)
                               for s in signal.T)
@@ -64,14 +60,14 @@ class BasePhysio(BaseEstimator, TransformerMixin):
 class RetroicorPhysio(BasePhysio):
 
     def __init__(self,
-                 order,
-                 sampling_rate,
+                 physio_rate,
                  delta,
-                 peak_rise=0.05,
+                 peak_rise=0.5,
+                 order=1,
                  filtering="butter",
                  high_pass=None,
                  low_pass=None,
-                 electrodes=None,
+                 columns=None,
                  n_jobs=1):
 
         self.order = order
@@ -81,25 +77,43 @@ class RetroicorPhysio(BasePhysio):
         super().__init__(filtering=self.filtering,
                          high_pass=self.high_pass,
                          low_pass=self.low_pass,
-                         sampling_rate=self.sampling_rate,
-                         electrodes=self.electrodes,
+                         physio_rate=self.physio_rate,
+                         columns=self.columns,
                          n_jobs=self.n_jobs)
 
     def _process_regressors(self, signal, time_physio, time_scan):
 
+        # TODO: Add checks specific to this task, like the Fourier order
+        # expansion to be # greater > 0
+
         # Compute peaks in signal
-        peaks = compute_max_events(signal, peak_rise, delta)
-        # Phases
-        phases = compute_phaes(time, peaks)
+        peaks = compute_max_events(signal, self.peak_rise, self.delta)
+
+        # Compute phases according to peaks
+        phases = compute_phases(time_physio, peaks)
+
         # Expand phases according to Fourier expansion order
-        phases_expanded = expand_phases(phases, self.order)
+        phases_fourier = [(m*phases).reshape(-1, 1)
+                          for m in range(1, self.order+1)]
+        phases_fourier = np.column_stack(phases_fourier)
+
         # Downsample phases
-        phases_scan = downsample_phases(phases_expanded,
-                                        time_physio,
-                                        time_scan)
-        #
-        regressors = sin_cos_phases(phases_scan)
-        return regressors
+        phases_scan = np.zeros((len(time_scan), phases_fourier.shape[1]))
+        for ii, phases in enumerate(phases_fourier.T):
+            interp = interp1d(time_physio,
+                              phases,
+                              kind='linear',  # TODO: Add this as parameter?
+                              fill_value='extrapolate')
+            phases_scan[:, ii] = interp(time_scan)
+
+        # Apply sin and cos functions
+        sin_phases = np.sin(phases_scan)
+        cos_phases = np.cos(phases_scan)
+
+        # This is just to be ordered according to the fourier expansion
+        regressors = [np.column_stack((a, b))
+                      for a, b in zip(sin_phases.T, cos_phases.T)]
+        return np.column_stack(regressors)
 
 
 class RVPhysio(BasePhysio):
@@ -108,104 +122,125 @@ class RVPhysio(BasePhysio):
                             signal,
                             time_physio,
                             time_scan):
-       
-    N = len(scan_time)
+        """
+        Compute rate variations for respiration signal computed by taking
+        the standard deviation of the raw respiratory waveform over the 3 TR
+        time interval defined by the (k − 1)th, kth, and (k + 1)th TRs.
+        Thus, RV(k) is essentially a sliding-window measure related
+        to the inspired volume over time. (Chang et al 2009)
+        """
 
-    rv_values = np.zeros(N)
+        # TODO: Add checks specific to this task
 
-    for ii in range(N):
-        
-        # The 2 to account for this and the previous TR window
-        t_i = scan_time[ii] - 2.0*scan_time[0]
-        t_f = scan_time[ii] + scan_time[0]
-    
-        # Take points of recording between these times
-        mask_times = (physio_time >= t_i) & (physio_time <= t_f)
-        rv_values[ii] = np.std(signal[mask_times])
-    
-    #return zscores of these values
-    zscores  = (rv_values - np.nanmean(rv_values))/np.nanstd(rv_values)
-    return zscores
+        N = len(time_scan)
+        rv_values = np.zeros(N)
+
+        for ii in range(N):
+            # TODO: See border effects and maybe a way to optimize this
+            if ii == 0:
+                t_i = 0
+                t_f = time_scan[ii+1]
+            elif ii == N-1:
+                t_i = time_scan[ii-1]
+                t_f = time_scan[ii]
+            else:
+                t_i = time_scan[ii-1]
+                t_f = time_scan[ii+1]
+
+            # Take points of recording between these times
+            mask_times = (time_physio >= t_i) & (time_physio <= t_f)
+            rv_values[ii] = np.std(signal[mask_times])
+
+        # return zscores of these values
+        rv_values = zscore(rv_values)
+
+        def RRF(t):
+            """
+            Respiration Response Function (eq. 3 Birn 2008)
+            """
+            rrf = 0.6*(t**2.1)*np.exp(-t/1.6)
+            rrf -= 0.0023*(t**3.54)*np.exp(-t/4.25)
+            return rrf
+
+        t_rrf = np.arange(0, 28, self.scan_rate)
+        rrf = np.apply_along_axis(RRF, axis=0, arr=t_rrf)
+        # Convolve rv values with response function
+        regressors = np.convolve(rv_values, rrf)
+        regressors = regressors[:N]  # Trim excess
+        return regressors
 
 
 class HVPhysio(BasePhysio):
 
-    pass
+    def __init__(self,
+                 physio_rate,
+                 delta,
+                 peak_rise=0.5,
+                 filtering="butter",
+                 high_pass=None,
+                 low_pass=None,
+                 columns=None,
+                 n_jobs=1):
 
+        self.delta = delta
+        self.peak_rise = peak_rise
 
-def compute_rv_values(signal, physio_time, scan_time):
-    """
-    
-    Compute rate variations for respiration signal computed by taking 
-    the standard deviation of the raw respiratory waveform over the 3 TR time 
-    interval defined by the (k − 1)th, kth, and (k + 1)th TRs. 
-    Thus, RV(k) is essentially a sliding-window measure related 
-    to the inspired volume over time. (Chang et al 2009)
-    
-    Parameters
-    ----------
-    signal : str
-        The signal values
-    ticks : int
-        the times of each TR
+        super().__init__(filtering=self.filtering,
+                         high_pass=self.high_pass,
+                         low_pass=self.low_pass,
+                         physio_rate=self.physio_rate,
+                         columns=self.columns,
+                         n_jobs=self.n_jobs)
 
-    Returns
-    -------
-    list
-    
-        standarised rv_values
-    
-    """
-    
+    def _process_regressors(self,
+                            signal,
+                            time_physio,
+                            time_scan):
+        # Compute peaks in signal
+        peaks = compute_max_events(signal, self.peak_rise, self.delta)
+        # TODO: Add checks specific to this task
+        peaks = peaks.astype(int)
 
-def compute_hv_values(signal, physio_time, scan_time, max_pks):
-    """
-    
-    Compute rate variations for cardiac signal as the average of 
-    the time differences between pairs of adjacent ECG triggers contained in 
-    the 3 TR window defined by the (k − 1)th, kth, and (k + 1)th TRs, 
-    and dividing the result into 60 to convert it to units of beats-per-minute. 
-    (Chang 2009)
-       
-    Parameters
-    ----------
-    signal : str
-        The signal values
-    ticks : int
-        the times of each TR
+        # Compute times of maximum event peaks
+        time_peaks = time_physio[peaks]
 
-    Returns
-    -------
-    list
-    
-        standarised hv_values
-    
-    """
-    
-    maxpos = max_pks.astype(int)
-    
-    # Compute times of maximum event peaks
-    maxpos_time = physio_time[maxpos]
-    
-    N = len(scan_time)
-    #First TR?
-    hv_values = np.zeros(N)
-        
-    for ii in range(N):
-        
-        # The 2 to account for this and the previous TR window
-        t_i = scan_time[ii] - 2.0*scan_time[0]
-        t_f = scan_time[ii] + scan_time[0]
-        
-        #Take previous peaks?
-        peaks_tr = np.where((maxpos_time >= t_i) & (maxpos_time <= t_f))[0]
-        
-        hv_values[ii] = 60./np.mean(np.diff(maxpos_time[peaks_tr]))
-        
-        
-   #return zscores of these values
-    zscores  = (hv_values - np.nanmean(hv_values))/np.nanstd(hv_values)
-    return zscores
+        N = len(time_scan)
+
+        hv_values = np.zeros(N)
+        for ii in range(N):
+            # TODO: See border effects and maybe a way to optimize this
+            if ii == 0:
+                t_i = 0
+                t_f = time_scan[ii+1]
+            elif ii == N-1:
+                t_i = time_scan[ii-1]
+                t_f = time_scan[ii]
+            else:
+                t_i = time_scan[ii-1]
+                t_f = time_scan[ii+1]
+
+            mask_times = np.where((time_peaks >= t_i) & (time_peaks <= t_f))[0]
+            hv_values[ii] = 60./np.mean(np.diff(time_peaks[mask_times]))
+
+        # return zscores of these values
+        hv_values = zscore(hv_values)
+
+        def CRF(t):
+            """
+
+            Cardiac Response Function (eq. 5 Chang 2009)
+
+            """
+            crf = 0.6*(t**2.7)*np.exp(-t/1.6)
+            crf -= 16./(np.sqrt(2*np.pi*9))*np.exp(-(0.5/9)*(t-12.)**2)
+            return crf
+
+        t_crf = np.arange(0, 28, self.scan_rate)
+        crf = np.apply_along_axis(CRF, axis=0, arr=t_crf)
+        # Convolve rv values with response function
+        regressors = np.convolve(hv_values, crf)
+        regressors = regressors[:N]  # Trim excess
+        return regressors
 
 
 def compute_phases(time, max_peaks):
@@ -216,72 +251,28 @@ def compute_phases(time, max_peaks):
     (eq. 2 Glover 2000)
     """
 
-    n_maxs = max_peaks.size
+    n_maxs = len(max_peaks)
     phases = np.zeros_like(time, dtype=np.float)
     N = len(time)
 
     for ii in range(n_maxs):
-
-        #Look at the tails
+        # Look at the tails
         if ii == n_maxs-1:
-            i_o, i_f =  int(max_peaks[ii]), int(max_peaks[0])
+            i_o, i_f = int(max_peaks[ii]), int(max_peaks[0])
             t_o, t_f = time[i_o], time[::-1][0] + time[i_f]
 
             phases[i_o:] = 2*np.pi*(time[i_o:N] - t_o)/(t_f-t_o)
             phases[:i_f] = 2*np.pi*(time[::-1][0] + time[:i_f] - t_o)/(t_f-t_o)
         else:
-            i_o, i_f =  int(max_peaks[ii]), int(max_peaks[ii+1])
+            i_o, i_f = int(max_peaks[ii]), int(max_peaks[ii+1])
             t_o, t_f = time[i_o], time[i_f]
             phases[i_o:i_f] = 2*np.pi*(time[i_o:i_f] - t_o)/(t_f-t_o)
 
     return phases
 
-def expand_phases(phases, M):
-    phases_mat =  [(m+1)*phases for m in range(M)]
-
-    if len(phases_mat) == 1:
-        phases_mat = np.array(phases_mat).reshape(-1, 1)
-    else:
-        phases_mat =  np.column_stack(phases_mat)
-    return phases_mat
-
-def downsample_phases(phases_expanded, time, new_time):
-
-    from scipy.interpolate import interp1d
-
-    #TODO: This using np.apply_along_axis
-    downsampled_phases = []
-
-    for jj in range(phases_expanded.shape[1]):
-        original_phases = phases_expanded[:,jj]
-
-        interp = interp1d(time,
-                          original_phases,
-                          kind='linear',
-                          fill_value = 'extrapolate')
-
-
-        #new_phases = resample(original_phases, time, new_time)
-        new_phases = interp(new_time)
-        downsampled_phases.append(new_phases)
-
-    downsampled_phases = np.column_stack(downsampled_phases)
-    return downsampled_phases
-
-
-def sin_cos_phases(phases_mat):
-    regressors_mat =  []
-
-    #TODO: This using np.apply_along_axis
-    for jj in range(phases_mat.shape[1]):
-        sin_signal, cos_signal, = np.sin(phases_mat[:,jj]), np.cos(phases_mat[:,jj])
-        regressors_mat.append(np.column_stack((sin_signal, cos_signal)))
-
-    regressors_mat =  np.column_stack(regressors_mat)
-    return regressors_mat
-
 
 def zscore(x, axis=1, nan_omit=True):
+
     if nan_omit:
         mean = np.nanmean
         std = np.nanstd
@@ -289,5 +280,5 @@ def zscore(x, axis=1, nan_omit=True):
         mean = np.mean
         std = np.std
 
-    zscores = (x - mean(hv_values))/std(x)
+    zscores = (x - mean(x))/std(x)
     return zscores
