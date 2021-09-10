@@ -1,3 +1,5 @@
+"""Module for regressors computation."""
+
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -6,16 +8,44 @@ from events import compute_max_events
 
 
 class BasePhysio(BaseEstimator, TransformerMixin):
+    """
+     Bare class.
+
+     Bare class from which more specific, e.g. Retroicor and
+     Variational, classes will inherit.
+
+    Parameters
+    ----------
+    physio_rate : float
+        Sampling rate for the recording in Hz.
+        This is needed for filtering to define the nyquist frequency.
+    scan_rate : float
+        Sampling rate for the scanner (the usual T_R) in Hz.
+    filtering : {"butter", "gaussian", None}, optional
+        Filtering operation to perform. The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    columns : List of n_channels elements, "mean" or None, optional
+        It describe how to hande input signal channels. If a list,
+        it will take the dot product. If "mean", the average across
+        the channels. If None, it will consider each channel separately.
+        The default is None.
+    n_jobs : int, optional
+        Number of jobs to consider in parallel. The default is 1.
+    """
 
     def __init__(self,
                  physio_rate,
                  scan_rate,
-                 filtering="butter",
+                 filtering=None,
                  high_pass=None,
                  low_pass=None,
                  columns=None,
                  n_jobs=1):
-
         # common arguments for all classess
         self.physio_rate = physio_rate
         self.scan_rate = scan_rate
@@ -25,12 +55,30 @@ class BasePhysio(BaseEstimator, TransformerMixin):
         self.columns = columns
         self.n_jobs = n_jobs
 
-
     def compute_regressors(self,
                            signal,
                            time_physio,
                            time_scan):
+        """
+        Compute regressors.
 
+         It basically takes care of all the preprocessing before
+         concentrating on the specific type of physiological regressors
+
+        Parameters
+        ----------
+        signal : array -like of shape (n_physio_samples, n_channels)
+            Signal, where each column corresponds to a recording.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+        time_scan :  array -like of shape (n_scan_samples, )
+            Time ticks (in secs) at the scanner resolution.
+
+        Returns
+        -------
+        array-like with the physiological regressors
+
+        """
         # TODO: Add checks for input arguments and data
 
         # Decide how to handle data and loop through
@@ -61,6 +109,42 @@ class BasePhysio(BaseEstimator, TransformerMixin):
 
 
 class RetroicorPhysio(BasePhysio):
+    """
+     Physiological regressors using Retroicor.
+
+    Parameters
+    ----------
+    physio_rate : float
+        Sampling rate for the recording in Hz.
+        This is needed for filtering to define the nyquist frequency.
+    scan_rate : float
+        Sampling rate for the scanner (the usual T_R) in Hz.
+    delta: float
+        minimum separation (in physio recording units) between
+        events in signal to be considered peaks
+    peak_rise: float
+        relative height with respect to the 20th tallest events in signal
+        to consider events as peak.
+    order: int or array-like (# TODO) of shape (n_orders,)
+        Fourier expansion for phases. If int, the fourier expansion is
+        performed to that order, starting from 1. If an array is provided,
+        each element will multiply the phases.
+    filtering : {"butter", "gaussian", None}, optional
+        Filtering operation to perform. The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    columns : List of n_channels elements, "mean" or None, optional
+        It describe how to hande input signal channels. If a list,
+        it will take the dot product. If "mean", the average across
+        the channels. If None, it will consider each channel separately.
+        The default is None.
+    n_jobs : int, optional
+        Number of jobs to consider in parallel. The default is 1.
+    """
 
     def __init__(self,
                  physio_rate,
@@ -87,7 +171,29 @@ class RetroicorPhysio(BasePhysio):
                          n_jobs=n_jobs)
 
     def _process_regressors(self, signal, time_physio, time_scan):
+        """
+        Generate regressors as phases using RETROICOR method.
 
+        First, peaks in the signal are identified. Then, phases
+        are sampled such a complete cycle [0, 2pi] happens between peaks.
+        Then, phases are expanded up to or for a given fourier order. Then,
+        phases are subsampled to the scanner time. Finally, sine and cosine
+        are generated for each fourier mode.
+
+        Parameters
+        ----------
+        signal : array -like of shape (n_physio_samples, n_channels)
+            Signal, where each column corresponds to a recording.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+        time_scan :  array -like of shape (n_scan_samples, )
+            Time ticks (in secs) at the scanner resolution.
+
+        Returns
+        -------
+        array-like with the physiological regressors
+
+        """
         # TODO: Add checks specific to this task, like the Fourier order
         # expansion to be # greater > 0
 
@@ -122,19 +228,60 @@ class RetroicorPhysio(BasePhysio):
 
 
 class RVPhysio(BasePhysio):
+    """
+     Physiological regressors for variations in breathing rate/volume.
+
+    Parameters
+    ----------
+    physio_rate : float
+        Sampling rate for the recording in Hz.
+        This is needed for filtering to define the nyquist frequency.
+    scan_rate : float
+        Sampling rate for the scanner (the usual T_R) in Hz.
+    filtering : {"butter", "gaussian", None}, optional
+        Filtering operation to perform. The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    columns : List of n_channels elements, "mean" or None, optional
+        It describe how to hande input signal channels. If a list,
+        it will take the dot product. If "mean", the average across
+        the channels. If None, it will consider each channel separately.
+        The default is None.
+    n_jobs : int, optional
+        Number of jobs to consider in parallel. The default is 1.
+    """
 
     def _process_regressors(self,
                             signal,
                             time_physio,
                             time_scan):
         """
+        Generate regressors as variations in breathing rate/volume.
+
         Compute rate variations for respiration signal computed by taking
         the standard deviation of the raw respiratory waveform over the 3 TR
         time interval defined by the (k − 1)th, kth, and (k + 1)th TRs.
-        Thus, RV(k) is essentially a sliding-window measure related
-        to the inspired volume over time. (Chang et al 2009)
-        """
+        The resulting vector is then convolved with the respiratory response
+        function (Birn et al 2008).
 
+        Parameters
+        ----------
+        signal : array -like of shape (n_physio_samples, n_channels)
+            Signal, where each column corresponds to a recording.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+        time_scan :  array -like of shape (n_scan_samples, )
+            Time ticks (in secs) at the scanner resolution.
+
+        Returns
+        -------
+        array-like with the physiological regressors
+
+        """
         # TODO: Add checks specific to this task
 
         N = len(time_scan)
@@ -160,9 +307,7 @@ class RVPhysio(BasePhysio):
         rv_values = zscore(rv_values)
 
         def RRF(t):
-            """
-            Respiration Response Function (eq. 3 Birn 2008)
-            """
+            """Respiration Response Function (eq. 3 Birn 2008)."""
             rrf = 0.6*(t**2.1)*np.exp(-t/1.6)
             rrf -= 0.0023*(t**3.54)*np.exp(-t/4.25)
             return rrf
@@ -176,6 +321,38 @@ class RVPhysio(BasePhysio):
 
 
 class HVPhysio(BasePhysio):
+    """
+     Physiological regressors for variations in heart rate.
+
+    Parameters
+    ----------
+    physio_rate : float
+        Sampling rate for the recording in Hz.
+        This is needed for filtering to define the nyquist frequency.
+    scan_rate : float
+        Sampling rate for the scanner (the usual T_R) in Hz.
+    delta: float
+        minimum separation (in physio recording units) between
+        events in signal to be considered peaks
+    peak_rise: float
+        relative height with respect to the 20th tallest events in signal
+        to consider events as peak.
+    filtering : {"butter", "gaussian", None}, optional
+        Filtering operation to perform. The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    columns : List of n_channels elements, "mean" or None, optional
+        It describe how to hande input signal channels. If a list,
+        it will take the dot product. If "mean", the average across
+        the channels. If None, it will consider each channel separately.
+        The default is None.
+    n_jobs : int, optional
+        Number of jobs to consider in parallel. The default is 1.
+    """
 
     def __init__(self,
                  physio_rate,
@@ -203,6 +380,29 @@ class HVPhysio(BasePhysio):
                             signal,
                             time_physio,
                             time_scan):
+        """
+        Generate regressors as variations in hear rate.
+
+        Compute rate variations in heart rate by taking the average
+        time differences between peaks over the 3 TR
+        time interval defined by the (k − 1)th, kth, and (k + 1)th TRs.
+        The resulting vector is then convolved with the cardiac response
+        function (Chang et al 2009).
+
+        Parameters
+        ----------
+        signal : array -like of shape (n_physio_samples, n_channels)
+            Signal, where each column corresponds to a recording.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+        time_scan :  array -like of shape (n_scan_samples, )
+            Time ticks (in secs) at the scanner resolution.
+
+        Returns
+        -------
+        array-like with the physiological regressors
+
+        """
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
         # TODO: Add checks specific to this task
@@ -233,11 +433,7 @@ class HVPhysio(BasePhysio):
         hv_values = zscore(hv_values)
 
         def CRF(t):
-            """
-
-            Cardiac Response Function (eq. 5 Chang 2009)
-
-            """
+            """Cardiac Response Function (eq. 5 Chang 2009)."""
             crf = 0.6*(t**2.7)*np.exp(-t/1.6)
             crf -= 16./(np.sqrt(2*np.pi*9))*np.exp(-(0.5/9)*(t-12.)**2)
             return crf
@@ -252,12 +448,13 @@ class HVPhysio(BasePhysio):
 
 def compute_phases(time, max_peaks):
     """
+    Compute phases for RETROICOR.
+
     This function compute the phase between successive peaks
     events as provided by compute_max_events function.
     The values between peaks are mapped to being in the range [0, 2 pi]
     (eq. 2 Glover 2000)
     """
-
     n_maxs = len(max_peaks)
     phases = np.zeros_like(time, dtype=np.float)
     N = len(time)
@@ -279,7 +476,7 @@ def compute_phases(time, max_peaks):
 
 
 def zscore(x, axis=1, nan_omit=True):
-
+    """Standardize data."""
     if nan_omit:
         mean = np.nanmean
         std = np.nanstd
