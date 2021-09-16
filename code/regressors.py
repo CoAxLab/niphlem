@@ -87,16 +87,19 @@ class BasePhysio(BaseEstimator):
         array-like with the physiological regressors
 
         """
+        signal = np.asarray(signal)
+        if signal.ndim == 1:
+            signal = signal.shape(-1, 1)
         signal = check_array(signal)
         time_physio = column_or_1d(time_physio)
         time_scan = column_or_1d(time_scan)
 
         if self.transform not in ["mean", "zscore", "abs"]:
-            raise ValueError(f"{self.transform} transform option passed, "
+            raise ValueError(f"'{self.transform}' transform option passed, "
                              "but only 'mean' (default), 'zscore' or 'abs' "
                              "are allowed")
         if self.filtering not in [None, "butter", "gaussian"]:
-            raise ValueError(f"{self.transform} filtering option passed, "
+            raise ValueError(f"'{self.filtering}' filtering option passed, "
                              "but only None (default), 'butter' or 'gaussian' "
                              "are allowed")
         if self.filtering == "butter":
@@ -120,7 +123,7 @@ class BasePhysio(BaseEstimator):
 
         parallel = Parallel(n_jobs=self.n_jobs)
 
-        signal_clean = parallel(
+        signal_prep = parallel(
             delayed(_transform_filter)(data=s,
                                        transform=self.transform,
                                        filtering=self.filtering,
@@ -128,12 +131,13 @@ class BasePhysio(BaseEstimator):
                                        low_pass=self.low_pass,
                                        sampling_rate=self.physio_rate)
             for s in signal.T)
+        signal_prep = np.column_stack(signal_prep)
 
         func = self._process_regressors
         regressors = parallel(delayed(func)(s,
                                             time_physio,
                                             time_scan)
-                              for s in signal_clean.T)
+                              for s in signal_prep.T)
         regressors = np.column_stack(regressors)
         return regressors
 
