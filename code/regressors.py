@@ -25,7 +25,7 @@ class BasePhysio(BaseEstimator):
         This is needed for filtering to define the nyquist frequency.
     scan_rate : float
         Sampling rate for the scanner (the usual T_R) in Hz.
-    tranform : {"mean", "zscore", "abs"}, optional
+    transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
         Filtering operation to perform. The default is None.
@@ -170,7 +170,7 @@ class RetroicorPhysio(BasePhysio):
         Fourier expansion for phases. If int, the fourier expansion is
         performed to that order, starting from 1. If an array is provided,
         each element will multiply the phases.
-    tranform : {"mean", "zscore", "abs"}, optional
+    transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
         Filtering operation to perform. The default is None.
@@ -283,7 +283,7 @@ class RVPhysio(BasePhysio):
         This is needed for filtering to define the nyquist frequency.
     scan_rate : float
         Sampling rate for the scanner (the usual T_R) in Hz.
-    tranform : {"mean", "zscore", "abs"}, optional
+    transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
         Filtering operation to perform. The default is None.
@@ -384,7 +384,7 @@ class HVPhysio(BasePhysio):
     peak_rise: float
         relative height with respect to the 20th tallest events in signal
         to consider events as peak.
-    tranform : {"mean", "zscore", "abs"}, optional
+    transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
         Filtering operation to perform. The default is None.
