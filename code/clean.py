@@ -93,12 +93,12 @@ def filterSignals(meta, sigFile, showSignals=False):
 #filterSignals(meta, sigFile, showSignals=True)
 
 
-def clean_data(data,
-               transform,
-               filtering,
-               high_pass,
-               low_pass,
-               sampling_rate):
+def _transform_filter(data,
+                      transform,
+                      filtering,
+                      high_pass,
+                      low_pass,
+                      sampling_rate):
 
     # Guarantee original data is not overwritten
     data = data.copy()
