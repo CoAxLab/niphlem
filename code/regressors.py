@@ -2,12 +2,16 @@
 
 import numpy as np
 from joblib import Parallel, delayed
-from sklearn.base import BaseEstimator, TransformerMixin
 from scipy.interpolate import interp1d
+
+from sklearn.base import BaseEstimator
+from sklearn.utils.validation import (check_array, column_or_1d)
+
 from events import compute_max_events
+from clean import clean_data
 
 
-class BasePhysio(BaseEstimator, TransformerMixin):
+class BasePhysio(BaseEstimator):
     """
      Bare class.
 
@@ -41,6 +45,7 @@ class BasePhysio(BaseEstimator, TransformerMixin):
     def __init__(self,
                  physio_rate,
                  scan_rate,
+                 transform="mean",
                  filtering=None,
                  high_pass=None,
                  low_pass=None,
@@ -49,6 +54,7 @@ class BasePhysio(BaseEstimator, TransformerMixin):
         # common arguments for all classess
         self.physio_rate = physio_rate
         self.scan_rate = scan_rate
+        self.transform = transform
         self.filtering = filtering
         self.high_pass = high_pass
         self.low_pass = low_pass
@@ -79,7 +85,26 @@ class BasePhysio(BaseEstimator, TransformerMixin):
         array-like with the physiological regressors
 
         """
-        # TODO: Add checks for input arguments and data
+        signal = check_array(signal)
+        time_physio = column_or_1d(time_physio)
+        time_scan = column_or_1d(time_scan)
+
+        if self.transform not in ["mean", "zscore", "abs"]:
+            raise ValueError(f"{self.transform} transform option passed, "
+                             "but only 'mean' (default), 'zscore' or 'abs' "
+                             "are allowed")
+        if self.filtering not in [None, "butter", "gaussian"]:
+            raise ValueError(f"{self.transform} filtering option passed, "
+                             "but only None (default), 'butter' or 'gaussian' "
+                             "are allowed")
+        if self.filtering == "butter":
+            if (self.high_pass is None) or (self.low_pass is None):
+                raise ValueError("Butterworth bandapss selected, but "
+                                 "either high_pass or low_pass is missing")
+        elif self.filtering == "gaussian":
+            if self.low_pass is None:
+                raise ValueError("gaussian lowpass selected, but "
+                                 "low_pass argument is missing")
 
         # Decide how to handle data and loop through
         if self.columns:
@@ -91,12 +116,22 @@ class BasePhysio(BaseEstimator, TransformerMixin):
         if signal.ndim == 1:
             signal = signal.reshape(-1, 1)
 
-        # TODO: Add previous transformations: Filtering, what else?
-
         parallel = Parallel(n_jobs=self.n_jobs)
+
+        signal_clean = parallel(
+            delayed(clean_data)(data=s,
+                                transform=self.transform,
+                                filtering=self.filtering,
+                                high_pass=self.high_pass,
+                                low_pass=self.low_pass,
+                                sampling_rate=self.physio_rate)
+            for s in signal.T)
+
         func = self._process_regressors
-        regressors = parallel(delayed(func)(s, time_physio, time_scan)
-                              for s in signal.T)
+        regressors = parallel(delayed(func)(s,
+                                            time_physio,
+                                            time_scan)
+                              for s in signal_clean.T)
         regressors = np.column_stack(regressors)
         return regressors
 
@@ -152,6 +187,7 @@ class RetroicorPhysio(BasePhysio):
                  delta,
                  peak_rise=0.5,
                  order=1,
+                 transform="mean",
                  filtering="butter",
                  high_pass=None,
                  low_pass=None,
@@ -164,6 +200,7 @@ class RetroicorPhysio(BasePhysio):
 
         super().__init__(physio_rate=physio_rate,
                          scan_rate=scan_rate,
+                         transform=transform,
                          filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
@@ -359,6 +396,7 @@ class HVPhysio(BasePhysio):
                  scan_rate,
                  delta,
                  peak_rise=0.5,
+                 transform="mean",
                  filtering="butter",
                  high_pass=None,
                  low_pass=None,
@@ -370,6 +408,7 @@ class HVPhysio(BasePhysio):
 
         super().__init__(physio_rate=physio_rate,
                          scan_rate=scan_rate,
+                         transform=transform,
                          filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
@@ -403,6 +442,7 @@ class HVPhysio(BasePhysio):
         array-like with the physiological regressors
 
         """
+        from clean import zscore
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
         # TODO: Add checks specific to this task
@@ -473,16 +513,3 @@ def compute_phases(time, max_peaks):
             phases[i_o:i_f] = 2*np.pi*(time[i_o:i_f] - t_o)/(t_f-t_o)
 
     return phases
-
-
-def zscore(x, axis=1, nan_omit=True):
-    """Standardize data."""
-    if nan_omit:
-        mean = np.nanmean
-        std = np.nanstd
-    else:
-        mean = np.mean
-        std = np.std
-
-    zscores = (x - mean(x))/std(x)
-    return zscores
