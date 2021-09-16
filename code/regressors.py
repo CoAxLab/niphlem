@@ -8,7 +8,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import (check_array, column_or_1d)
 
 from events import compute_max_events
-from clean import clean_data
+from clean import _transform_filter
 
 
 class BasePhysio(BaseEstimator):
@@ -119,12 +119,12 @@ class BasePhysio(BaseEstimator):
         parallel = Parallel(n_jobs=self.n_jobs)
 
         signal_clean = parallel(
-            delayed(clean_data)(data=s,
-                                transform=self.transform,
-                                filtering=self.filtering,
-                                high_pass=self.high_pass,
-                                low_pass=self.low_pass,
-                                sampling_rate=self.physio_rate)
+            delayed(_transform_filter)(data=s,
+                                       transform=self.transform,
+                                       filtering=self.filtering,
+                                       high_pass=self.high_pass,
+                                       low_pass=self.low_pass,
+                                       sampling_rate=self.physio_rate)
             for s in signal.T)
 
         func = self._process_regressors
