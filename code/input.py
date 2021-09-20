@@ -308,9 +308,9 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
 
 ###############################################################################
 
-path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
-infoFile = 'Physio_sample2_Info.log'
-pulsFile = 'Physio_sample2_PULS.log'
-respFile = 'Physio_sample2_RESP.log'
-ecgFile = 'Physio_sample2_ECG.log'
-procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
+#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
+#infoFile = 'Physio_sample2_Info.log'
+#pulsFile = 'Physio_sample2_PULS.log'
+#respFile = 'Physio_sample2_RESP.log'
+#ecgFile = 'Physio_sample2_ECG.log'
+#procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
