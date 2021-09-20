@@ -31,7 +31,7 @@ def test_getInfoData():
 def test_getData():
 
   fn = '../data/sample1/Physio_sample1_ECG.log'
-  dat, nch, sr = unit.getData(fn, 21889410, 22113530)
+  dat, nch, sr = unit.getData(fn, 21889410, 22113530, False)
   assert nch == 4
   assert sr == 1
   assert dat.shape == (224121, 5)
