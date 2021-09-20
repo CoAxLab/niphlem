@@ -83,12 +83,13 @@ def getInfoData(fn, cols):
 # in:  fn - filename                                                          #
 #      t0 - initial time                                                      #
 #      tN - end time                                                          #
+#      interp - flag to interpolate missing values (upsamples to ECG freq.)   #
 # out: x - array of data                                                      #
 #      nch - number of channels                                               #
 #      sr - sampling rate                                                     #
 ###############################################################################
 
-def getData(fn, t0, tN):
+def getData(fn, t0, tN, interp):
 
   lines = getLines(fn)
 
@@ -134,6 +135,8 @@ def getData(fn, t0, tN):
       j = int(y[1][-1])
       k = int(int(y[0]) - t0)
       x[k, j] = float(y[2])
+  if interp:
+    x = interpMissingData(x)
 
   return x, nch, sr
 
@@ -277,15 +280,11 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
   # get data from INFO file
   Info, t0, tN, nVol, nSlice, TR = getInfoData(path+infoFile, range(4))
   # get data from PULS file
-  PULS, nch, srPULS = getData(path+pulsFile, t0, tN)
+  PULS, nch, srPULS = getData(path+pulsFile, t0, tN, True)
   # get data from RESP file
-  RESP, nch, srRESP = getData(path+respFile, t0, tN)
+  RESP, nch, srRESP = getData(path+respFile, t0, tN, True)
   # get data from ECG file
-  ECG, nch, srECG = getData(path+ecgFile, t0, tN)
-  # interpolate missing data
-  PULS = interpMissingData(PULS)
-  RESP = interpMissingData(RESP)
-  ECG = interpMissingData(ECG)
+  ECG, nch, srECG = getData(path+ecgFile, t0, tN, True)
   # generate JSON dictionary
   genJSON(sFreq, srECG, srPULS, srRESP, nVol, nSlice, TR, nch, cardiacRange, respRange)
   # store aligned signals in a single matrix, save to signal.npy
@@ -309,9 +308,9 @@ def procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False):
 
 ###############################################################################
 
-#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
-#infoFile = 'Physio_sample2_Info.log'
-#pulsFile = 'Physio_sample2_PULS.log'
-#respFile = 'Physio_sample2_RESP.log'
-#ecgFile = 'Physio_sample2_ECG.log'
-#procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
+path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
+infoFile = 'Physio_sample2_Info.log'
+pulsFile = 'Physio_sample2_PULS.log'
+respFile = 'Physio_sample2_RESP.log'
+ecgFile = 'Physio_sample2_ECG.log'
+procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=True)
