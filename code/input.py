@@ -38,7 +38,7 @@ def get_lines(fn):
 ###############################################################################
 
 
-def get_info_data(fn, cols):
+def load_cmrr_info(fn, cols):
 
     lines = get_lines(fn)
     # Get parameters for meta file and lines containing data
@@ -78,6 +78,8 @@ def get_info_data(fn, cols):
             x[i - stt, j] = y[cols[j]]
     repetition_time = round((x[-1, 3] - x[0, 2]) / n_vols)
 
+    # TODO: Maybe return here just two objects, x for signal and the rest
+    # in a dictionary as meta information?
     return x, first_time, last_time, n_vols, n_slices, repetition_time
 
 ###############################################################################
@@ -88,11 +90,11 @@ def get_info_data(fn, cols):
 #      interpolate - interpolate missing values (upsamples to ECG freq.)      #
 # out: x - array of data                                                      #
 #      n_channels - number of channels                                        #
-#      sr - sampling rate                                                     #
+#      sample_rate - sampling rate                                            #
 ###############################################################################
 
 
-def get_data(fn, first_time, last_time, interpolate=True):
+def load_cmrr_data(fn, first_time, last_time, interpolate=True):
 
     lines = get_lines(fn)
 
@@ -103,7 +105,7 @@ def get_data(fn, first_time, last_time, interpolate=True):
         if len(y) == 0:
             continue
         if y[0] == 'SampleTime':
-            sr = int(y[2])
+            sample_rate = int(y[2])
         # Inherent assumption that all lines starting with a number are data
         if stt == 0:
             try:
@@ -142,7 +144,7 @@ def get_data(fn, first_time, last_time, interpolate=True):
     if interpolate:
         x = interpolate_missing_data(x)
 
-    return x, n_channels, sr
+    return x, n_channels, sample_rate
 
 ###############################################################################
 # interpolates the missing data points                                        #
@@ -304,23 +306,23 @@ def proc_input(path,
 
     # get data from INFO file
     Info, first_time, last_time, \
-        n_vols, n_slices, repetition_time = get_info_data(path + info_file,
-                                                          range(4))
+        n_vols, n_slices, repetition_time = load_cmmr_info(path + info_file,
+                                                           range(4))
     # get data from PULS file
-    PULS, n_channels, sample_rate_puls = get_data(fn=path + puls_file,
-                                                  first_time=first_time,
-                                                  last_time=last_time,
-                                                  interpolate=True)
+    PULS, n_channels, sample_rate_puls = load_cmrr_data(fn=path + puls_file,
+                                                        first_time=first_time,
+                                                        last_time=last_time,
+                                                        interpolate=True)
     # get data from RESP file
-    RESP, n_channels, sample_rate_resp = get_data(fn=path + resp_file,
-                                                  first_time=first_time,
-                                                  last_time=last_time,
-                                                  interpolate=True)
+    RESP, n_channels, sample_rate_resp = load_cmrr_data(fn=path + resp_file,
+                                                        first_time=first_time,
+                                                        last_time=last_time,
+                                                        interpolate=True)
     # get data from ECG file
-    ECG, n_channels, sample_rate_ecg = get_data(fn=path + ecg_file,
-                                                first_time=first_time,
-                                                last_time=last_time,
-                                                interpolate=True)
+    ECG, n_channels, sample_rate_ecg = load_cmrr_data(fn=path + ecg_file,
+                                                      first_time=first_time,
+                                                      last_time=last_time,
+                                                      interpolate=True)
     # generate JSON dictionary
     gen_JSON(
         sFreq,
