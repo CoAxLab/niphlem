@@ -37,6 +37,7 @@ def get_lines(filename):
 #      repetition_time - repetition time                                      #
 ###############################################################################
 
+
 # Let's keep this function for comparisons
 def load_cmrr_info_old(fn, cols):
 
@@ -97,7 +98,7 @@ def load_cmrr_info(filename):
     traces : ndarray
         Time ticks of the scanner.
     meta_info : dict
-        DESCRIPTION.
+        Dictionary with meta information about the info log file.
 
     """
 
@@ -240,6 +241,29 @@ def load_cmrr_data_old(filename, first_time, last_time, interpolate=True):
 
 
 def load_cmrr_data(filename, info_dict, sync_scan=True):
+    """
+
+    Parameters
+    ----------
+    filename : str, pathlike
+         Path to recording log file..
+    info_dict : dict
+        Dictionary with the meta information of the Info log file. It needs
+        to be compute before by using the function load_cmrr_info.
+    sync_scan : bool, optional
+        Whether we want to resample the signal to be synchronized
+        with the scanner times. The default is True.
+
+    Returns
+    -------
+    signal : ndarray
+        The recording signal, where the number of columns corresponds
+        to the number of channels (ECG: 4, PULS: 1, RESP: 1) and the rows to
+        observations.
+    meta_info : dict
+        Meta info of the physiological recording.
+
+    """
 
     from scipy.interpolate import interp1d
 
@@ -277,7 +301,7 @@ def load_cmrr_data(filename, info_dict, sync_scan=True):
     # Pull data into numpy array
     n_samples = info_dict['end_physio'] - info_dict['init_physio'] + 1
 
-    signal = np.zeros((n_samples, n_channels))
+    full_signal = np.zeros((n_samples, n_channels))
     time = np.arange(0, n_samples)
     if n_channels == 1:
         # Use separate loop for single channel to avoid repeated ifs for
@@ -285,14 +309,14 @@ def load_cmrr_data(filename, info_dict, sync_scan=True):
         for i in range(stt, len(lines)):
             y = lines[i].split()
             k = int(int(y[0]) - info_dict['init_physio'])
-            signal[k, 0] = float(y[2])
+            full_signal[k, 0] = float(y[2])
             time[k] = int(y[0])
     else:
         for i in range(stt, len(lines)):
             y = lines[i].split()
             j = int(int(y[1][-1])-1)
             k = int(int(y[0]) - info_dict['init_physio'])
-            signal[k, j] = float(y[2])
+            full_signal[k, j] = float(y[2])
             time[k] = int(y[0])
 
     if sync_scan:
@@ -301,18 +325,18 @@ def load_cmrr_data(filename, info_dict, sync_scan=True):
     else:
         new_time = np.arange(info_dict['init_physio'],
                              info_dict['end_physio'] + 1)
-    new_signal = []
-    for s_channel in signal.T:
-        mask = (s_channel!=0.)
-        new_signal.append(interp1d(time[mask], s_channel[mask],
-                                   fill_value="extrapolate")(new_time))
-    new_signal = np.column_stack(new_signal)
+    signal = []
+    for s_channel in full_signal.T:
+        mask = (s_channel != 0.)
+        signal.append(interp1d(time[mask], s_channel[mask],
+                               fill_value="extrapolate")(new_time))
+    signal = np.column_stack(signal)
 
     meta_info = dict()
     meta_info['n_channels'] = n_channels
     meta_info['sample_rate'] = sample_rate
 
-    return new_signal, meta_info
+    return signal, meta_info
 
 
 ###############################################################################
