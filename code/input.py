@@ -4,18 +4,18 @@ import matplotlib.pyplot as mpl
 
 ###############################################################################
 # imports lines from input file                                               #
-# in:  fn - filename                                                          #
+# in:  filename - filename                                                    #
 # out: lines - lines of file                                                  #
 ###############################################################################
 
 
-def get_lines(fn):
+def get_lines(filename):
 
     lines = []
     try:
-        fh = open(fn, 'r')
+        fh = open(filename, 'r')
     except OSError:
-        msg = 'Cannot open input file ' + fn
+        msg = 'Cannot open input file ' + filename
         raise Warning(msg)
     else:
         # Get lines of file
@@ -27,7 +27,7 @@ def get_lines(fn):
 
 ###############################################################################
 # imports data from info file                                                 #
-# in:  fn - filename                                                          #
+# in:  filename - filename                                                    #
 #      cols - list of columns to extract data from                            #
 # out: x - array of data                                                      #
 #      first_time - initial time                                              #
@@ -38,7 +38,8 @@ def get_lines(fn):
 ###############################################################################
 
 
-def load_cmrr_info(fn, cols):
+# Let's keep this function for comparisons
+def load_cmrr_info_old(fn, cols):
 
     lines = get_lines(fn)
     # Get parameters for meta file and lines containing data
@@ -82,9 +83,100 @@ def load_cmrr_info(fn, cols):
     # in a dictionary as meta information?
     return x, first_time, last_time, n_vols, n_slices, repetition_time
 
+
+def load_cmrr_info(filename):
+    """
+    Load information log files from CMRR sequences.
+
+    Parameters
+    ----------
+    filename : str, pathlike
+        Path to Information Log file.
+
+    Returns
+    -------
+    traces : ndarray
+        Time ticks of the scanner.
+    meta_info : dict
+        Dictionary with meta information about the info log file.
+
+    """
+
+    # TODO: Add function to validate input file. For example, it should be
+    # a .log type file.
+
+    lines = get_lines(filename)
+
+    meta_info = dict()
+    # Get parameters for meta file and lines containing data
+    stt = 0
+    stp = 0
+    for i in range(len(lines)):
+        y = lines[i].split()
+        if len(y) == 0:
+            continue
+        elif y[0] == 'UUID':
+            uuid = y[2]
+            meta_info['uuid'] = uuid
+        elif y[0] == 'ScanDate':
+            scan_date = y[2]
+            meta_info['scan_date'] = scan_date
+        elif y[0] == 'LogVersion':
+            log_version = y[2]
+            meta_info['log_version'] = log_version
+        elif y[0] == 'NumVolumes':
+            n_vols = int(y[2])
+            meta_info['n_vols'] = n_vols
+        elif y[0] == 'NumSlices':
+            n_slices = int(y[2])
+            meta_info['n_slices'] = n_slices
+        elif y[0] == 'NumEchoes':
+            n_echoes = int(y[2])
+            meta_info['n_echoes'] = n_echoes
+        elif y[0] == 'FirstTime':
+            first_time = int(y[2])
+            meta_info['init_physio'] = first_time
+        elif y[0] == 'LastTime':
+            last_time = int(y[2])
+            meta_info['end_physio'] = last_time
+
+        # Inherent assumption that all lines starting with a number are data
+        if stt == 0:
+            try:
+                int(y[0])
+                stt = i
+            except ValueError:
+                continue
+        if stp == 0:
+            try:
+                int(y[0])
+                continue
+            except ValueError:
+                stp = i
+
+    # Pull data into numpy array
+    # traces = np.zeros((stp - stt, len(cols)))
+    traces = np.zeros((2, n_vols, n_slices, n_echoes), dtype=int)
+    for i in range(stt, stp):
+        y = lines[i].split()
+        ivol = int(y[0])
+        islice = int(y[1])
+        iecho = int(y[-1])
+        acq_start = int(y[2])
+        acq_end = int(y[3])
+        traces[:, ivol, islice, iecho] = [acq_start, acq_end]
+
+    meta_info['init_scan'] = traces.min()
+    meta_info['end_scan'] = traces.max()
+    # TODO: Do we need this? The repetition is something usually knwon
+    repetition_time = (meta_info['end_scan'] - meta_info['init_scan'])/n_vols
+    meta_info['repetition_time'] = np.round(repetition_time)
+
+    return traces, meta_info
+
 ###############################################################################
 # imports data from file                                                      #
-# in:  fn - filename                                                          #
+# in:  filename - filename                                                    #
 #      first_time - initial time                                              #
 #      last_time - end time                                                   #
 #      interpolate - interpolate missing values (upsamples to ECG freq.)      #
@@ -94,9 +186,10 @@ def load_cmrr_info(fn, cols):
 ###############################################################################
 
 
-def load_cmrr_data(fn, first_time, last_time, interpolate=True):
+# Let's keep this function for comparisons
+def load_cmrr_data_old(filename, first_time, last_time, interpolate=True):
 
-    lines = get_lines(fn)
+    lines = get_lines(filename)
 
     # Get sampling rate and start of data
     stt = 0
@@ -146,11 +239,110 @@ def load_cmrr_data(fn, first_time, last_time, interpolate=True):
 
     return x, n_channels, sample_rate
 
+
+def load_cmrr_data(filename, info_dict, sync_scan=True):
+    """
+
+    Parameters
+    ----------
+    filename : str, pathlike
+         Path to recording log file..
+    info_dict : dict
+        Dictionary with the meta information of the Info log file. It needs
+        to be compute before by using the function load_cmrr_info.
+    sync_scan : bool, optional
+        Whether we want to resample the signal to be synchronized
+        with the scanner times. The default is True.
+
+    Returns
+    -------
+    signal : ndarray
+        The recording signal, where the number of columns corresponds
+        to the number of channels (ECG: 4, PULS: 1, RESP: 1) and the rows to
+        observations.
+    meta_info : dict
+        Meta info of the physiological recording.
+
+    """
+
+    from scipy.interpolate import interp1d
+
+    # TODO: Add checks of filename and info dict
+
+    lines = get_lines(filename)
+
+    # Get sampling rate and start of data
+    stt = 0
+    for i in range(len(lines)):
+        y = lines[i].split()
+        if len(y) == 0:
+            continue
+        if y[0] == 'SampleTime':
+            sample_rate = int(y[2])
+        # Inherent assumption that all lines starting with a number are data
+        if stt == 0:
+            try:
+                int(y[0])
+                stt = i
+            except ValueError:
+                continue
+
+    # Get number of channels (not particularly efficient, but thorough...)
+    if y[1] == 'PULS' or y[1] == 'RESP':
+        n_channels = 1
+    else:
+        n_channels = 0
+        for i in range(stt, len(lines)):
+            y = lines[i].split()
+            j = int(y[1][-1])
+            if j > n_channels:
+                n_channels = j
+
+    # Pull data into numpy array
+    n_samples = info_dict['end_physio'] - info_dict['init_physio'] + 1
+
+    full_signal = np.zeros((n_samples, n_channels))
+    time = np.arange(0, n_samples)
+    if n_channels == 1:
+        # Use separate loop for single channel to avoid repeated ifs for
+        # channel #
+        for i in range(stt, len(lines)):
+            y = lines[i].split()
+            k = int(int(y[0]) - info_dict['init_physio'])
+            full_signal[k, 0] = float(y[2])
+            time[k] = int(y[0])
+    else:
+        for i in range(stt, len(lines)):
+            y = lines[i].split()
+            j = int(int(y[1][-1])-1)
+            k = int(int(y[0]) - info_dict['init_physio'])
+            full_signal[k, j] = float(y[2])
+            time[k] = int(y[0])
+
+    if sync_scan:
+        new_time = np.arange(info_dict['init_scan'],
+                             info_dict['end_scan'] + 1)
+    else:
+        new_time = np.arange(info_dict['init_physio'],
+                             info_dict['end_physio'] + 1)
+    signal = []
+    for s_channel in full_signal.T:
+        mask = (s_channel != 0.)
+        signal.append(interp1d(time[mask], s_channel[mask],
+                               fill_value="extrapolate")(new_time))
+    signal = np.column_stack(signal)
+
+    meta_info = dict()
+    meta_info['n_channels'] = n_channels
+    meta_info['sample_rate'] = sample_rate
+
+    return signal, meta_info
+
+
 ###############################################################################
 # interpolates the missing data points                                        #
 # in/out:  dat - array of data                                                #
 ###############################################################################
-
 
 def interpolate_missing_data(dat):
 
@@ -305,24 +497,26 @@ def proc_input(path,
         path = path + '/'
 
     # get data from INFO file
-    Info, first_time, last_time, \
-        n_vols, n_slices, repetition_time = load_cmmr_info(path + info_file,
-                                                           range(4))
+    Info, first_time, last_time, n_vols, n_slices, repetition_time = \
+        load_cmrr_info_old(path + info_file, range(4))
     # get data from PULS file
-    PULS, n_channels, sample_rate_puls = load_cmrr_data(fn=path + puls_file,
-                                                        first_time=first_time,
-                                                        last_time=last_time,
-                                                        interpolate=True)
+    PULS, n_channels, sample_rate_puls = \
+        load_cmrr_data_old(filename=path + puls_file,
+                           first_time=first_time,
+                           last_time=last_time,
+                           interpolate=True)
     # get data from RESP file
-    RESP, n_channels, sample_rate_resp = load_cmrr_data(fn=path + resp_file,
-                                                        first_time=first_time,
-                                                        last_time=last_time,
-                                                        interpolate=True)
+    RESP, n_channels, sample_rate_resp = \
+        load_cmrr_data(filename=path + resp_file,
+                       first_time=first_time,
+                       last_time=last_time,
+                       interpolate=True)
     # get data from ECG file
-    ECG, n_channels, sample_rate_ecg = load_cmrr_data(fn=path + ecg_file,
-                                                      first_time=first_time,
-                                                      last_time=last_time,
-                                                      interpolate=True)
+    ECG, n_channels, sample_rate_ecg = \
+        load_cmrr_data(filename=path + ecg_file,
+                       first_time=first_time,
+                       last_time=last_time,
+                       interpolate=True)
     # generate JSON dictionary
     gen_JSON(
         sFreq,
