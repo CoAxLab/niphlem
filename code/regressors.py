@@ -65,8 +65,8 @@ class BasePhysio(BaseEstimator):
 
     def compute_regressors(self,
                            signal,
-                           time_physio,
-                           time_scan):
+                           time_scan,
+                           time_physio=None):
         """
         Compute regressors.
 
@@ -77,10 +77,13 @@ class BasePhysio(BaseEstimator):
         ----------
         signal : array -like of shape (n_physio_samples, n_channels)
             Signal, where each column corresponds to a recording.
-        time_physio : array -like of shape (n_physio_samples, )
-            Time ticks (in secs) at the physio recording resolution.
         time_scan :  array -like of shape (n_scan_samples, )
             Time ticks (in secs) at the scanner resolution.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+            The default is None. In this default case, the time of the
+            physiological recording is computed multiplying
+            the number of points with the sampling period.
 
         Returns
         -------
@@ -91,8 +94,17 @@ class BasePhysio(BaseEstimator):
         if signal.ndim == 1:
             signal = signal.shape(-1, 1)
         signal = check_array(signal)
-        time_physio = column_or_1d(time_physio)
+
         time_scan = column_or_1d(time_scan)
+
+        if time_physio:
+            time_physio = column_or_1d(time_physio)
+            if time_physio.shape[0] != signal.shape[0]:
+                raise ValueError("the signal and provided physiological"
+                                 " times contain different number of "
+                                 " points")
+        else:
+            time_physio = np.arange(signal.shape[0])*1/self.physio_rate
 
         if self.transform not in ["mean", "zscore", "abs"]:
             raise ValueError(f"'{self.transform}' transform option passed, "
@@ -245,8 +257,13 @@ class RetroicorPhysio(BasePhysio):
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
 
-        # Compute phases according to peaks
-        phases = compute_phases(time_physio, peaks)
+        # Compute phases according to peaks (changed to an interpolation)
+        # phases = compute_phases(time_physio, peaks)
+        phases_in_peaks = 2*np.pi*np.arange(len(peaks))
+        phases = interp1d(x=time_physio[peaks],
+                          y=phases_in_peaks,
+                          kind="linear",
+                          fill_value="extrapolate")(time_physio)
 
         # Expand phases according to Fourier expansion order
         phases_fourier = [(m*phases).reshape(-1, 1)
@@ -498,6 +515,103 @@ class HVPhysio(BasePhysio):
         return regressors
 
 
+class DownsamplePhysio(BasePhysio):
+    """
+     Physiological regressors by downsampling
+
+     As in Verstynen 2011, raw physiological data is downsample
+     to the scanner resolution.
+
+    Parameters
+    ----------
+    physio_rate : float
+        Sampling rate for the recording in Hz.
+        This is needed for filtering to define the nyquist frequency.
+    scan_rate : float
+        Sampling rate for the scanner (the usual T_R) in Hz.
+    transform : {"mean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "mean".
+    filtering : {"butter", "gaussian", None}, optional
+        Filtering operation to perform. The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is None.
+    columns : List of n_channels elements, "mean" or None, optional
+        It describe how to hande input signal channels. If a list,
+        it will take the dot product. If "mean", the average across
+        the channels. If None, it will consider each channel separately.
+        The default is None.
+    kind : str or int, optional
+        This is just the kind of interpolation to use. The allowed values are
+        those in interp1d function of scipy. Just copying its documentation,
+        the string has to be one of ‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’,
+        ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’,
+        or ‘next’. ‘zero’, ‘slinear’, ‘quadratic’ and ‘cubic’. which refer to
+        a spline interpolation of zeroth, first, second or third order;
+        ‘previous’ and ‘next’ simply return the previous or
+        next value of the point; ‘nearest-up’ and ‘nearest’ differ
+        when interpolating half-integers (e.g. 0.5, 1.5) in that
+        ‘nearest-up’ rounds up and ‘nearest’ rounds down.
+        Our default value is 'cubic'.
+    n_jobs : int, optional
+        Number of jobs to consider in parallel. The default is 1.
+    """
+
+    def __init__(self,
+                 physio_rate,
+                 scan_rate,
+                 transform="mean",
+                 filtering=None,
+                 high_pass=None,
+                 low_pass=None,
+                 columns=None,
+                 kind="cubic",
+                 n_jobs=1):
+        # common arguments for all classess
+        self.physio_rate = physio_rate
+        self.scan_rate = scan_rate
+        self.transform = transform
+        self.filtering = filtering
+        self.high_pass = high_pass
+        self.low_pass = low_pass
+        self.columns = columns
+        self.n_jobs = n_jobs
+
+    def _process_regressors(self,
+                            signal,
+                            time_physio,
+                            time_scan):
+        """
+        Generate regressors by downsampling.
+
+        Just downsample the data to the scanner resolution by using the
+        provided scanner times.
+
+        Parameters
+        ----------
+        signal : array -like of shape (n_physio_samples, n_channels)
+            Signal, where each column corresponds to a recording.
+        time_physio : array -like of shape (n_physio_samples, )
+            Time ticks (in secs) at the physio recording resolution.
+        time_scan :  array -like of shape (n_scan_samples, )
+            Time ticks (in secs) at the scanner resolution.
+
+        Returns
+        -------
+        array-like with the physiological regressors
+
+        """
+
+        downsampled_signal = interp1d(time_physio,
+                                      signal,
+                                      kind=self.kind,
+                                      fill_value='extrapolate')(time_scan)
+        return downsampled_signal
+
+
 def compute_phases(time, max_peaks):
     """
     Compute phases for RETROICOR.
@@ -506,6 +620,8 @@ def compute_phases(time, max_peaks):
     events as provided by compute_max_events function.
     The values between peaks are mapped to being in the range [0, 2 pi]
     (eq. 2 Glover 2000)
+
+    TODO: This function is probably obsolote.
     """
     n_maxs = len(max_peaks)
     phases = np.zeros_like(time, dtype=np.float)
