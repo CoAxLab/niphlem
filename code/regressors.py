@@ -23,8 +23,8 @@ class BasePhysio(BaseEstimator):
     physio_rate : float
         Sampling rate for the recording in Hz.
         This is needed for filtering to define the nyquist frequency.
-    scan_rate : float
-        Sampling rate for the scanner (the usual T_R) in Hz.
+    t_r : float
+        Repetition time for the scanner (the usual T_R) in secs.
     transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
@@ -46,7 +46,7 @@ class BasePhysio(BaseEstimator):
 
     def __init__(self,
                  physio_rate,
-                 scan_rate,
+                 t_r,
                  transform="mean",
                  filtering=None,
                  high_pass=None,
@@ -55,7 +55,7 @@ class BasePhysio(BaseEstimator):
                  n_jobs=1):
         # common arguments for all classess
         self.physio_rate = physio_rate
-        self.scan_rate = scan_rate
+        self.t_r = t_r
         self.transform = transform
         self.filtering = filtering
         self.high_pass = high_pass
@@ -92,7 +92,7 @@ class BasePhysio(BaseEstimator):
         """
         signal = np.asarray(signal)
         if signal.ndim == 1:
-            signal = signal.shape(-1, 1)
+            signal = signal.reshape(-1, 1)
         signal = check_array(signal)
 
         time_scan = column_or_1d(time_scan)
@@ -170,8 +170,8 @@ class RetroicorPhysio(BasePhysio):
     physio_rate : float
         Sampling rate for the recording in Hz.
         This is needed for filtering to define the nyquist frequency.
-    scan_rate : float
-        Sampling rate for the scanner (the usual T_R) in Hz.
+    t_r : float
+        Repetition time for the scanner (the usual T_R) in secs.
     delta: float
         minimum separation (in physio recording units) between
         events in signal to be considered peaks
@@ -203,7 +203,7 @@ class RetroicorPhysio(BasePhysio):
 
     def __init__(self,
                  physio_rate,
-                 scan_rate,
+                 t_r,
                  delta,
                  peak_rise=0.5,
                  order=1,
@@ -219,7 +219,7 @@ class RetroicorPhysio(BasePhysio):
         self.peak_rise = peak_rise
 
         super().__init__(physio_rate=physio_rate,
-                         scan_rate=scan_rate,
+                         t_r=t_r,
                          transform=transform,
                          filtering=filtering,
                          high_pass=high_pass,
@@ -298,8 +298,8 @@ class RVPhysio(BasePhysio):
     physio_rate : float
         Sampling rate for the recording in Hz.
         This is needed for filtering to define the nyquist frequency.
-    scan_rate : float
-        Sampling rate for the scanner (the usual T_R) in Hz.
+    t_r : float
+        Repetition time for the scanner (the usual T_R) in secs.
     transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
@@ -376,7 +376,7 @@ class RVPhysio(BasePhysio):
             rrf -= 0.0023*(t**3.54)*np.exp(-t/4.25)
             return rrf
 
-        t_rrf = np.arange(0, 28, self.scan_rate)
+        t_rrf = np.arange(0, 28, self.t_r)
         rrf = np.apply_along_axis(RRF, axis=0, arr=t_rrf)
         # Convolve rv values with response function
         regressors = np.convolve(rv_values, rrf)
@@ -393,8 +393,8 @@ class HVPhysio(BasePhysio):
     physio_rate : float
         Sampling rate for the recording in Hz.
         This is needed for filtering to define the nyquist frequency.
-    scan_rate : float
-        Sampling rate for the scanner (the usual T_R) in Hz.
+    t_r : float
+        Repetition time for the scanner (the usual T_R) in secs.
     delta: float
         minimum separation (in physio recording units) between
         events in signal to be considered peaks
@@ -422,7 +422,7 @@ class HVPhysio(BasePhysio):
 
     def __init__(self,
                  physio_rate,
-                 scan_rate,
+                 t_r,
                  delta,
                  peak_rise=0.5,
                  transform="mean",
@@ -436,7 +436,7 @@ class HVPhysio(BasePhysio):
         self.peak_rise = peak_rise
 
         super().__init__(physio_rate=physio_rate,
-                         scan_rate=scan_rate,
+                         t_r=t_r,
                          transform=transform,
                          filtering=filtering,
                          high_pass=high_pass,
@@ -507,7 +507,7 @@ class HVPhysio(BasePhysio):
             crf -= 16./(np.sqrt(2*np.pi*9))*np.exp(-(0.5/9)*(t-12.)**2)
             return crf
 
-        t_crf = np.arange(0, 28, self.scan_rate)
+        t_crf = np.arange(0, 28, self.t_r)
         crf = np.apply_along_axis(CRF, axis=0, arr=t_crf)
         # Convolve rv values with response function
         regressors = np.convolve(hv_values, crf)
@@ -527,8 +527,8 @@ class DownsamplePhysio(BasePhysio):
     physio_rate : float
         Sampling rate for the recording in Hz.
         This is needed for filtering to define the nyquist frequency.
-    scan_rate : float
-        Sampling rate for the scanner (the usual T_R) in Hz.
+    t_r : float
+        Repetition time for the scanner (the usual T_R) in secs.
     transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
@@ -562,7 +562,7 @@ class DownsamplePhysio(BasePhysio):
 
     def __init__(self,
                  physio_rate,
-                 scan_rate,
+                 t_r,
                  transform="mean",
                  filtering=None,
                  high_pass=None,
@@ -572,7 +572,7 @@ class DownsamplePhysio(BasePhysio):
                  n_jobs=1):
         # common arguments for all classess
         self.physio_rate = physio_rate
-        self.scan_rate = scan_rate
+        self.t_r = t_r
         self.transform = transform
         self.filtering = filtering
         self.high_pass = high_pass
