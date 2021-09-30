@@ -3,6 +3,7 @@ import json
 import matplotlib.pyplot as mpl
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ###############################################################################
 # applies Butterworth bandpass double filter (to minimize shift)              #
 # in:  data - signal to be filtered                                           #
@@ -12,6 +13,8 @@ import matplotlib.pyplot as mpl
 # out: bandpass filtered sign                                                 #
 ###############################################################################
 =======
+=======
+>>>>>>> 4ba03ac08f3b31cbaf3522bf7c7552cb52ae61de
 ##############################################################################
 # applies Butterworth bandpass double filter (to minimize shift)             #
 # in:  data - signal to be filtered                                          #
@@ -20,12 +23,16 @@ import matplotlib.pyplot as mpl
 #      order - filter order (will be rounded up to even integer)             #
 # out: bandpass filtered signal                                              #
 ##############################################################################
+<<<<<<< HEAD
 >>>>>>> Adapt Andrew's code to PEP8 and add clean_data function
+=======
+>>>>>>> 4ba03ac08f3b31cbaf3522bf7c7552cb52ae61de
 
 
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     # fs, lowcut and highcut are in frequency units (Hz)
     from scipy.signal import (sosfiltfilt, butter)
+<<<<<<< HEAD
 
     nyq = 0.5 * fs
     low = lowcut / nyq
@@ -70,6 +77,28 @@ def gaussian_lowpass_filter(data, fs, cut):
     signal = gaussian_filter1d(data, sigma)
 <<<<<<< HEAD
     return signal-np.mean(signal)
+=======
+
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    sos = butter(np.ceil(order/2),
+                 [low, high],
+                 analog=False,
+                 btype='band',
+                 output='sos')
+
+    return sosfiltfilt(sos, data)
+
+##############################################################################
+# applies low pass filter to signal                                          #
+# in:  data - signal to be filtered                                          #
+#      fs - sampling frequency (Hz)                                          #
+#      cut - cutoff frequency (Hz)                                           #
+# out: low pass filtered signal                                              #
+##############################################################################
+
+>>>>>>> 4ba03ac08f3b31cbaf3522bf7c7552cb52ae61de
 
 ###############################################################################
 # main routine to read in signals and apply appropriate filter                #
@@ -78,6 +107,7 @@ def gaussian_lowpass_filter(data, fs, cut):
 #      showSignals - flag to plot the filtered signals (default False)        #
 ###############################################################################
 
+<<<<<<< HEAD
 
 def filter_signals(meta, sig_file, show_signals=False):
 
@@ -122,6 +152,12 @@ def filter_signals(meta, sig_file, show_signals=False):
         mpl.plot(filtered_signal[:, 1], 'b')
         mpl.show()
 =======
+=======
+    from scipy.ndimage import gaussian_filter1d
+
+    sigma = fs/(2*np.pi*cut)
+    signal = gaussian_filter1d(data, sigma)
+>>>>>>> 4ba03ac08f3b31cbaf3522bf7c7552cb52ae61de
     return signal-np.mean(signal)  # TODO: Ask Andrew why to demean data here
 
 ################################################################################
@@ -225,4 +261,7 @@ def zscore(x, axis=1, nan_omit=True):
 
     zscores = (x - mean(x))/std(x)
     return zscores
+<<<<<<< HEAD
 >>>>>>> Adapt Andrew's code to PEP8 and add clean_data function
+=======
+>>>>>>> 4ba03ac08f3b31cbaf3522bf7c7552cb52ae61de
