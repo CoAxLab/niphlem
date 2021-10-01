@@ -112,6 +112,7 @@ def _transform_filter(data,
     # Guarantee original data is not overwritten
     data = data.copy()
 
+    # TODO: Should we add an option with no transformation at all?
     if transform == "zscore":
         # zscore data
         data = zscore(data)

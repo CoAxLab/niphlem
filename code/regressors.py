@@ -35,11 +35,11 @@ class BasePhysio(BaseEstimator):
     low_pass : float, optional
         Low-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
-    columns : List of n_channels elements, "mean" or None, optional
-        It describe how to hande input signal channels. If a list,
-        it will take the dot product. If "mean", the average across
-        the channels. If None, it will consider each channel separately.
-        The default is None.
+    columns : List or array of n_channels elements, "mean" or None, optional
+        It describes how to handle input signal channels. If a list, it will
+        weight each channel and take the dot product. If "mean",
+        the average across the channels. If None, it will consider each
+        channel separately. The default is None.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -97,40 +97,50 @@ class BasePhysio(BaseEstimator):
 
         time_scan = column_or_1d(time_scan)
 
-        if time_physio:
+        if time_physio is not None:
             time_physio = column_or_1d(time_physio)
             if time_physio.shape[0] != signal.shape[0]:
-                raise ValueError("the signal and provided physiological"
-                                 " times contain different number of "
-                                 " points")
+                raise ValueError(f"Signal has {signal.shape[0]} time points, "
+                                 " whilst physiological times has"
+                                 f" {time_physio.shape[0]}."
+                                 )
         else:
             time_physio = np.arange(signal.shape[0])*1/self.physio_rate
 
         if self.transform not in ["mean", "zscore", "abs"]:
             raise ValueError(f"'{self.transform}' transform option passed, "
                              "but only 'mean' (default), 'zscore' or 'abs' "
-                             "are allowed")
+                             "are allowed."
+                             )
         if self.filtering not in [None, "butter", "gaussian"]:
             raise ValueError(f"'{self.filtering}' filtering option passed, "
                              "but only None (default), 'butter' or 'gaussian' "
-                             "are allowed")
+                             "are allowed."
+                             )
         if self.filtering == "butter":
             if (self.high_pass is None) or (self.low_pass is None):
                 raise ValueError("Butterworth bandapss selected, but "
-                                 "either high_pass or low_pass is missing")
+                                 "either high_pass or low_pass is missing."
+                                 )
         elif self.filtering == "gaussian":
             if self.low_pass is None:
                 raise ValueError("gaussian lowpass selected, but "
-                                 "low_pass argument is missing")
+                                 "low_pass argument is missing."
+                                 )
 
         # Decide how to handle data and loop through
         if self.columns:
             if self.columns == "mean":
-                signal = signal.dot(self.columns)
+                signal = np.mean(signal, axis=1)
             else:
+                columns = np.asarray(self.columns, dtype=float)
+                if len(columns) != signal.shape[1]:
+                    raise ValueError(f"supplied columns has {len(columns)},"
+                                     f" but signal has {signal.shape[1]}"
+                                     " channels."
+                                     )
                 signal = signal.dot(self.columns)
-
-        if signal.ndim == 1:
+            # reshape again to 2D
             signal = signal.reshape(-1, 1)
 
         parallel = Parallel(n_jobs=self.n_jobs)
@@ -192,11 +202,11 @@ class RetroicorPhysio(BasePhysio):
     low_pass : float, optional
         Low-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
-    columns : List of n_channels elements, "mean" or None, optional
-        It describe how to hande input signal channels. If a list,
-        it will take the dot product. If "mean", the average across
-        the channels. If None, it will consider each channel separately.
-        The default is None.
+    columns : List or array of n_channels elements, "mean" or None, optional
+        It describes how to handle input signal channels. If a list, it will
+        weight each channel and take the dot product. If "mean",
+        the average across the channels. If None, it will consider each
+        channel separately. The default is None.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -310,11 +320,11 @@ class RVPhysio(BasePhysio):
     low_pass : float, optional
         Low-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
-    columns : List of n_channels elements, "mean" or None, optional
-        It describe how to hande input signal channels. If a list,
-        it will take the dot product. If "mean", the average across
-        the channels. If None, it will consider each channel separately.
-        The default is None.
+    columns : List or array of n_channels elements, "mean" or None, optional
+        It describes how to handle input signal channels. If a list, it will
+        weight each channel and take the dot product. If "mean",
+        the average across the channels. If None, it will consider each
+        channel separately. The default is None.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -411,11 +421,11 @@ class HVPhysio(BasePhysio):
     low_pass : float, optional
         Low-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
-    columns : List of n_channels elements, "mean" or None, optional
-        It describe how to hande input signal channels. If a list,
-        it will take the dot product. If "mean", the average across
-        the channels. If None, it will consider each channel separately.
-        The default is None.
+    columns : List or array of n_channels elements, "mean" or None, optional
+        It describes how to handle input signal channels. If a list, it will
+        weight each channel and take the dot product. If "mean",
+        the average across the channels. If None, it will consider each
+        channel separately. The default is None.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -539,11 +549,11 @@ class DownsamplePhysio(BasePhysio):
     low_pass : float, optional
         Low-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
-    columns : List of n_channels elements, "mean" or None, optional
-        It describe how to hande input signal channels. If a list,
-        it will take the dot product. If "mean", the average across
-        the channels. If None, it will consider each channel separately.
-        The default is None.
+    columns : List or array of n_channels elements, "mean" or None, optional
+        It describes how to handle input signal channels. If a list, it will
+        weight each channel and take the dot product. If "mean",
+        the average across the channels. If None, it will consider each
+        channel separately. The default is None.
     kind : str or int, optional
         This is just the kind of interpolation to use. The allowed values are
         those in interp1d function of scipy. Just copying its documentation,
