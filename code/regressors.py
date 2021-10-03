@@ -90,6 +90,43 @@ class BasePhysio(BaseEstimator):
         array-like with the physiological regressors
 
         """
+
+        signal, time_scan, time_physio = self._validate_inputs(signal,
+                                                               time_scan,
+                                                               time_physio)
+
+        parallel = Parallel(n_jobs=self.n_jobs)
+
+        signal_prep = parallel(
+            delayed(_transform_filter)(data=s,
+                                       transform=self.transform,
+                                       filtering=self.filtering,
+                                       high_pass=self.high_pass,
+                                       low_pass=self.low_pass,
+                                       sampling_rate=self.physio_rate)
+            for s in signal.T)
+        signal_prep = np.column_stack(signal_prep)
+
+        func = self._process_regressors
+        regressors = parallel(delayed(func)(s,
+                                            time_physio,
+                                            time_scan)
+                              for s in signal_prep.T)
+        regressors = np.column_stack(regressors)
+        return regressors
+
+    def _process_regressors(self,
+                            signal,
+                            time_physio,
+                            time_scan):
+        # bare method to be overwitten by derived classes
+        raise NotImplementedError
+
+    def _validate_inputs(self,
+                         signal,
+                         time_scan,
+                         time_physio):
+
         signal = np.asarray(signal)
         if signal.ndim == 1:
             signal = signal.reshape(-1, 1)
@@ -143,32 +180,7 @@ class BasePhysio(BaseEstimator):
             # reshape again to 2D
             signal = signal.reshape(-1, 1)
 
-        parallel = Parallel(n_jobs=self.n_jobs)
-
-        signal_prep = parallel(
-            delayed(_transform_filter)(data=s,
-                                       transform=self.transform,
-                                       filtering=self.filtering,
-                                       high_pass=self.high_pass,
-                                       low_pass=self.low_pass,
-                                       sampling_rate=self.physio_rate)
-            for s in signal.T)
-        signal_prep = np.column_stack(signal_prep)
-
-        func = self._process_regressors
-        regressors = parallel(delayed(func)(s,
-                                            time_physio,
-                                            time_scan)
-                              for s in signal_prep.T)
-        regressors = np.column_stack(regressors)
-        return regressors
-
-    def _process_regressors(self,
-                            signal,
-                            time_physio,
-                            time_scan):
-        # bare method to be overwitten by derived classes
-        raise NotImplementedError
+        return signal, time_scan, time_physio
 
 
 class RetroicorPhysio(BasePhysio):
@@ -218,7 +230,7 @@ class RetroicorPhysio(BasePhysio):
                  peak_rise=0.5,
                  order=1,
                  transform="mean",
-                 filtering="butter",
+                 filtering=None,
                  high_pass=None,
                  low_pass=None,
                  columns=None,
@@ -261,8 +273,6 @@ class RetroicorPhysio(BasePhysio):
         array-like with the physiological regressors
 
         """
-        # TODO: Add checks specific to this task, like the Fourier order
-        # expansion to be # greater > 0
 
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
@@ -277,7 +287,7 @@ class RetroicorPhysio(BasePhysio):
 
         # Expand phases according to Fourier expansion order
         phases_fourier = [(m*phases).reshape(-1, 1)
-                          for m in range(1, self.order+1)]
+                          for m in range(1, int(self.order)+1)]
         phases_fourier = np.column_stack(phases_fourier)
 
         # Downsample phases
@@ -297,6 +307,24 @@ class RetroicorPhysio(BasePhysio):
         regressors = [np.column_stack((a, b))
                       for a, b in zip(sin_phases.T, cos_phases.T)]
         return np.column_stack(regressors)
+
+    def _validate_inputs(self,
+                         signal,
+                         time_scan,
+                         time_physio):
+
+        signal, time_scan, time_physio = super()._validate_inputs(signal,
+                                                                  time_scan,
+                                                                  time_physio)
+
+        # cast to integer
+        order = int(self.order)
+
+        if order < 1:
+            raise ValueError("Fourier expansion should be "
+                             " a positive integer")
+
+        return signal, time_scan, time_physio
 
 
 class RVPhysio(BasePhysio):
@@ -356,7 +384,6 @@ class RVPhysio(BasePhysio):
         array-like with the physiological regressors
 
         """
-        # TODO: Add checks specific to this task
 
         N = len(time_scan)
         rv_values = np.zeros(N)
@@ -436,7 +463,7 @@ class HVPhysio(BasePhysio):
                  delta,
                  peak_rise=0.5,
                  transform="mean",
-                 filtering="butter",
+                 filtering=None,
                  high_pass=None,
                  low_pass=None,
                  columns=None,
