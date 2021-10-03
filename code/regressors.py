@@ -615,6 +615,7 @@ class DownsamplePhysio(BasePhysio):
         self.high_pass = high_pass
         self.low_pass = low_pass
         self.columns = columns
+        self.kind = kind
         self.n_jobs = n_jobs
 
     def _process_regressors(self,
