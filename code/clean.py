@@ -65,7 +65,7 @@ def gaussian_lowpass_filter(data, fs, cut):
     sigma = fs/(2*np.pi*cut)
     signal = gaussian_filter1d(data, sigma)
 
-    return signal-np.mean(signal)
+    return signal
 
 
 
