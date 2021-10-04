@@ -204,11 +204,12 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
             time[k] = int(y[0])
 
     if sync_scan:
-        new_time = np.arange(info_dict['init_physio'],
-                             info_dict['end_physio'] + 1)
-    else:
         new_time = np.arange(info_dict['init_scan'],
                              info_dict['end_scan'] + 1)
+    else:
+        new_time = np.arange(info_dict['init_physio'],
+                             info_dict['end_physio'] + 1)
+
     signal = []
     for s_channel in full_signal.T:
         mask = (s_channel != 0.)
