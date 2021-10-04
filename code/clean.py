@@ -89,9 +89,9 @@ def filter_signals(meta, sig_file, show_signals=False):
 
     # extract filtering information from JSON file
     meta = json.load(open(meta))
-    sf = meta['samplingRate'][0]['freq']
-    card_range = meta['frequencyRanges'][0]['Cardiac']
-    resp_range = meta['frequencyRanges'][0]['Respiratory']
+    sf = meta['frequency_info']['sampling_rate']
+    card_range = meta['frequency_info']['cardiac_range']
+    resp_range = meta['frequency_info']['respiratory_range']
 
     # filter
     filtered_signal = np.zeros_like(signal)
@@ -105,7 +105,7 @@ def filter_signals(meta, sig_file, show_signals=False):
                                                     resp_range[1],
                                                     sf)
     # note: factor of 5 is empirical
-    for i in range(1, nch+1):
+    for i in range(nch):
         filtered_signal[:, i] = gaussian_lowpass_filter(signal[:, i],
                                                         sf,
                                                         card_range[1])
@@ -126,6 +126,6 @@ def filter_signals(meta, sig_file, show_signals=False):
 
 ###############################################################################
 
-#meta = 'meta.txt'
+#meta = 'meta.json'
 #sig_file = 'signal.npy'
 #filter_signals(meta, sig_file, show_signals=True)

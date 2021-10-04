@@ -257,9 +257,9 @@ def proc_input(path,
     """
 
     cardiac_range = [0.75, 3.5]  # Hz
-    resp_range = [0.01, 0.5]     # Hz
+    respiratory_range = [0.01, 0.5]     # Hz
     # TODO: Take this as an input or extract somehow
-    sFreq = 400                 # Hz
+    sampling_frequency = 400    # Hz
 
     # ensure path ends in /
     if path[-1] != '/':
@@ -267,6 +267,10 @@ def proc_input(path,
 
     # get data from INFO file
     traces, meta_info = load_cmrr_info(filename=path + info_file)
+    meta_info['frequency_info'] = {}
+    meta_info['frequency_info']['sampling_rate'] = sampling_frequency
+    meta_info['frequency_info']['cardiac_range'] = cardiac_range
+    meta_info['frequency_info']['respiratory_range'] = respiratory_range
 
     # get data from PULS file
     PULS, meta_info = \
