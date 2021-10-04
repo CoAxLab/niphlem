@@ -91,6 +91,7 @@ class BasePhysio(BaseEstimator):
 
         """
 
+        # Validate input parameters and arguments
         signal, time_scan, time_physio = self._validate_inputs(signal,
                                                                time_scan,
                                                                time_physio)
