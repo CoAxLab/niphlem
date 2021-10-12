@@ -339,6 +339,9 @@ class RVPhysio(BasePhysio):
         This is needed for filtering to define the nyquist frequency.
     t_r : float
         Repetition time for the scanner (the usual T_R) in secs.
+    time_window : float
+        Time window (in secs) around the T_R from which computing variations
+        (standard deviation of signal). The default is 6 secs.
     transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
@@ -357,6 +360,28 @@ class RVPhysio(BasePhysio):
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
+
+    def __init__(self,
+                 physio_rate,
+                 t_r,
+                 time_window=6.0,
+                 transform="mean",
+                 filtering=None,
+                 high_pass=None,
+                 low_pass=None,
+                 columns=None,
+                 n_jobs=1):
+
+        self.time_window = time_window
+
+        super().__init__(physio_rate=physio_rate,
+                         t_r=t_r,
+                         transform=transform,
+                         filtering=filtering,
+                         high_pass=high_pass,
+                         low_pass=low_pass,
+                         columns=columns,
+                         n_jobs=n_jobs)
 
     def _process_regressors(self,
                             signal,
@@ -390,16 +415,15 @@ class RVPhysio(BasePhysio):
         rv_values = np.zeros(N)
 
         for ii in range(N):
+
             # TODO: See border effects and maybe a way to optimize this
-            if ii == 0:
-                t_i = 0
-                t_f = time_scan[ii+1]
-            elif ii == N-1:
-                t_i = time_scan[ii-1]
-                t_f = time_scan[ii]
-            else:
-                t_i = time_scan[ii-1]
-                t_f = time_scan[ii+1]
+            t_i = time_scan[ii] - self.time_window/2.
+            t_f = time_scan[ii] + self.time_window/2.
+
+            if t_i < time_physio[0]:
+                t_i = time_physio[0]
+            if t_f > time_physio[-1]:
+                t_f = time_physio[-1]
 
             # Take points of recording between these times
             mask_times = (time_physio >= t_i) & (time_physio <= t_f)
@@ -439,6 +463,9 @@ class HVPhysio(BasePhysio):
     peak_rise: float
         relative height with respect to the 20th tallest events in signal
         to consider events as peak.
+    time_window : float
+        Time window (in secs) around the T_R from which computing variations
+        (time differences between signal events ). The default is 6 secs.
     transform : {"mean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "mean".
     filtering : {"butter", "gaussian", None}, optional
@@ -463,6 +490,7 @@ class HVPhysio(BasePhysio):
                  t_r,
                  delta,
                  peak_rise=0.5,
+                 time_window=6.0,
                  transform="mean",
                  filtering=None,
                  high_pass=None,
@@ -472,6 +500,7 @@ class HVPhysio(BasePhysio):
 
         self.delta = delta
         self.peak_rise = peak_rise
+        self.time_window = time_window
 
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
@@ -523,18 +552,19 @@ class HVPhysio(BasePhysio):
         hv_values = np.zeros(N)
         for ii in range(N):
             # TODO: See border effects and maybe a way to optimize this
-            if ii == 0:
-                t_i = 0
-                t_f = time_scan[ii+1]
-            elif ii == N-1:
-                t_i = time_scan[ii-1]
-                t_f = time_scan[ii]
-            else:
-                t_i = time_scan[ii-1]
-                t_f = time_scan[ii+1]
+            t_i = time_scan[ii] - self.time_window/2
+            t_f = time_scan[ii] + self.time_window/2
 
-            mask_times = np.where((time_peaks >= t_i) & (time_peaks <= t_f))[0]
-            hv_values[ii] = 60./np.mean(np.diff(time_peaks[mask_times]))
+            if t_i < time_physio[0]:
+                t_i = time_physio[0]
+            if t_f > time_physio[-1]:
+                t_f = time_physio[-1]
+
+            mask_times = (time_peaks >= t_i) & (time_peaks <= t_f)
+            if sum(mask_times) < 2:
+                hv_values[ii] = 0
+            else:
+                hv_values[ii] = 60./np.mean(np.diff(time_peaks[mask_times]))
 
         # return zscores of these values
         hv_values = zscore(hv_values)
