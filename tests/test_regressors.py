@@ -1,11 +1,7 @@
 import numpy as np
-import sys
 import pytest
 
-# Remove this and the import of sys once we do all of this a package.
-sys.path.append("./code")
-
-from regressors import RetroicorPhysio
+from niphlem import RetroicorPhysio
 
 
 class TestPhysio(RetroicorPhysio):
