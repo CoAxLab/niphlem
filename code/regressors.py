@@ -183,6 +183,10 @@ class BasePhysio(BaseEstimator):
 
         return signal, time_scan, time_physio
 
+    def generate_report():
+        # TODO
+        raise NotImplementedError
+
 
 class RetroicorPhysio(BasePhysio):
     """
