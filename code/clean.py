@@ -2,17 +2,30 @@ import numpy as np
 import json
 import matplotlib.pyplot as mpl
 
-###############################################################################
-# applies Butterworth bandpass double filter (to minimize shift)              #
-# in:  data - signal to be filtered                                           #
-#      lowcut, highcut - cutoff frequencies (Hz)                              #
-#      fs - sampling frequency (Hz)                                           #
-#      order - filter order (will be rounded up to even integer)              #
-# out: bandpass filtered sign                                                 #
-###############################################################################
 
 
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+    """
+    Applies Butterworth bandpass double filter (to minimize shift).
+
+    Parameters
+    ---------
+    data : vector
+        signal to be filtered
+    lowcut : real
+        lowpass cutoff frequency (Hz)
+    highcut : real
+        highpass cutoff frequency (Hz)
+    fs : real
+        sampling frequency (Hz)
+    order : int
+        filter order (will be rounded up to even integer)
+
+    Returns
+    -------
+    bandpass filtered signal
+    """
+
     # fs, lowcut and highcut are in frequency units (Hz)
     from scipy.signal import (sosfiltfilt, butter)
 
@@ -27,32 +40,48 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
     return sosfiltfilt(sos, data)
 
-###############################################################################
-# applies low pass filter to signal                                           #
-# in:  data - signal to be filtered                                           #
-#      fs - sampling frequency (Hz)                                           #
-#      cut - cutoff frequency (Hz)                                            #
-# out: low pass filtered signal                                               #
-###############################################################################
 
 
 def gaussian_lowpass_filter(data, fs, cut):
+    """
+    Applies Gaussian lowpass filter.
+
+    Parameters
+    ---------
+    data : array
+        signal to be filtered
+    fs : real
+        sampling frequency (Hz)
+    cut : real
+        cutoff frequency (Hz)
+
+    Returns
+    -------
+    lowpass filtered signal
+    """
 
     from scipy.ndimage import gaussian_filter1d
 
     sigma = fs/(2*np.pi*cut)
     signal = gaussian_filter1d(data, sigma)
-    return signal-np.mean(signal) # TODO: Ask Andrew why we need to do this
 
-###############################################################################
-# main routine to read in signals and apply appropriate filter                #
-# in:  meta - json file containing frequencies for filtering                  #
-#      sigFile - npy file containing processed signals                        #
-#      showSignals - flag to plot the filtered signals (default False)        #
-###############################################################################
+    return signal
+
 
 
 def filter_signals(meta, sig_file, show_signals=False):
+    """
+    Applies filters to data and write to new npy file
+
+    Parameters
+    ---------
+    meta : str, pathlike
+        name of json file containing meta data
+    sig_file : str, pathlike
+        name of npy file containing signal array
+    show_signals: bool, optional
+        flag to plot signals, default False
+    """
 
     # load signal, columns: time, channels * nch, pulse, resp
     signal = np.load(sig_file)
@@ -60,9 +89,9 @@ def filter_signals(meta, sig_file, show_signals=False):
 
     # extract filtering information from JSON file
     meta = json.load(open(meta))
-    sf = meta['samplingRate'][0]['freq']
-    card_range = meta['frequencyRanges'][0]['Cardiac']
-    resp_range = meta['frequencyRanges'][0]['Respiratory']
+    sf = meta['frequency_info']['sampling_rate']
+    card_range = meta['frequency_info']['cardiac_range']
+    resp_range = meta['frequency_info']['respiratory_range']
 
     # filter
     filtered_signal = np.zeros_like(signal)
@@ -76,7 +105,7 @@ def filter_signals(meta, sig_file, show_signals=False):
                                                     resp_range[1],
                                                     sf)
     # note: factor of 5 is empirical
-    for i in range(1, nch+1):
+    for i in range(nch):
         filtered_signal[:, i] = gaussian_lowpass_filter(signal[:, i],
                                                         sf,
                                                         card_range[1])
@@ -150,3 +179,4 @@ def zscore(x, axis=1, nan_omit=True):
 
     zscores = (x - mean(x))/std(x)
     return zscores
+  
