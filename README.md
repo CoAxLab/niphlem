@@ -16,6 +16,8 @@ Briefly, niphlem implements three types of models:
 
 ## Install
 
+```pip install niphlem```
+
 ## References:
 
 - Verstynen TD. Physiological Log Extraction for Modeling (PhLEM) Toolbox. https://sites.google.com/site/phlemtoolbox/
