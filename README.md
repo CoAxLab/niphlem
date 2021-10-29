@@ -1,22 +1,22 @@
-# Building a preprocessing tool for physiological confounds in fMRI
+# niphlem
 
-This project aims at building a preprocessing tool for extracting confounders from physiological (ECG, Respiratory and Pulse) signals. 
+niphlem stands for Physiological Log Extraction for Modeling in Neuroimaging and is the cool (i.e. python) brother of PhLEM (https://sites.google.com/site/phlemtoolbox/) which was originary written in Matlab. 
 
-These cleaned and filtered confounders are then to be modeled as covariate vectors and included in a design matrix for GLM analyses of fMRI data.
+This toolbox extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.
 
+niphlem can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).
 
-Goals to achieve in this project during brainhack:
+Briefly, niphlem implements three types of models:
 
-- Read physiological signal from the input data files.
-- Temporally filter the signals to remove artifacts (e.g., movement, gradient noise).
-- Provide a summary output (including visualizations) of physiological signals for inspection.
-- Provide quality metrics of signal to noise.
-- Output filtered signals into [BIDS compliant format](https://bids-specification.readthedocs.io/en/latest/04-modality-specific-files/06-physiological-and-other-continuous-recordings.html).
+- *RETROICOR*:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues. 
+- *Variation Models*:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).
+- *Downsampled Model*: Performs a simple filtering and downsampling of a raw signal as was done for the pulse-oximetry signal in Verstynen and Deshpande (2011).
 
+## Dependencies
 
-**This tool will be part of a bigger toolbox that is under development (pyPhlem). Therefore, all contributors will be accordingly acknolewged.**
+## Install
 
-References:
+## References:
 
 - Verstynen TD. Physiological Log Extraction for Modeling (PhLEM) Toolbox. https://sites.google.com/site/phlemtoolbox/
 - Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
