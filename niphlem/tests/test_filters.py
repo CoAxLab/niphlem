@@ -1,8 +1,5 @@
 import numpy as np
-
-import sys
-sys.path.append("./code")
-from clean import _transform_filter
+from niphlem.clean import _transform_filter
 
 
 def test_transform():

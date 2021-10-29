@@ -1,8 +1,6 @@
 import numpy as np
 
-import sys
-sys.path.append("./code")
-from events import compute_max_events
+from niphlem.events import compute_max_events
 
 
 def test_peak_detection():

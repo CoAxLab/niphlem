@@ -1,18 +1,17 @@
-import sys
-# add path to code folder in first location
-sys.path.insert(1, '../code')
-import input_data as unit
 import numpy as np
 import os
 import json
+from pathlib import Path
+
+import niphlem.input_data as unit
+
 
 def test_get_lines():
     """
     Test that get_lines function returns correct first, middle, and last lines
     of a sample file
     """
-
-    fn = '../data/sample1/Physio_sample1_Info.log'
+    fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_Info.log'
     lines = unit.get_lines(fn)
     # Test first, random middle, and last line
     assert lines[0] == 'UUID        = 6ec4c7ab-b798-4eec-989c-9458617d425c'

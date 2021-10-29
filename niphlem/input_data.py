@@ -3,7 +3,6 @@ import json
 import matplotlib.pyplot as mpl
 
 
-
 def get_lines(filename):
     """
     Read in lines from file, stripping new line markers
@@ -32,7 +31,6 @@ def get_lines(filename):
         fh.close()
 
     return lines
-
 
 
 def load_cmrr_info(filename):
@@ -119,7 +117,6 @@ def load_cmrr_info(filename):
     meta_info['repetition_time'] = np.round(repetition_time)
 
     return traces, meta_info
-
 
 
 def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
@@ -222,7 +219,6 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
     info_dict[sig_type]['sample_rate'] = sample_rate
 
     return signal, info_dict
-
 
 
 def proc_input(path,
