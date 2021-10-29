@@ -126,6 +126,57 @@ def filter_signals(meta, sig_file, show_signals=False):
 
 ###############################################################################
 
-#meta = 'meta.json'
-#sig_file = 'signal.npy'
-#filter_signals(meta, sig_file, show_signals=True)
+# meta = 'meta.txt'
+# sig_file = 'signal.npy'
+# filter_signals(meta, sig_file, show_signals=True)
+
+
+def _transform_filter(data,
+                      transform,
+                      filtering,
+                      high_pass,
+                      low_pass,
+                      sampling_rate):
+
+    # Guarantee original data is not overwritten
+    data = data.copy()
+
+    # TODO: Should we add an option with no transformation at all?
+    if transform == "zscore":
+        # zscore data
+        data = zscore(data)
+    elif transform == "abs":
+        # Absolute value transformation on the data and zero mean the series
+        data = abs(data)
+        data = data - np.mean(data)
+    else:
+        # Only demean
+        data = data - np.mean(data)
+
+    if filtering == "butter":
+        # TODO: Add more flexible butter filter, not only bandpass?
+        # high_pass == frequency above to clean, then here is the lower range,
+        # low_pass == frequency below to clean, then here is the higher range.
+        data = butter_bandpass_filter(data,
+                                      lowcut=high_pass,
+                                      highcut=low_pass,
+                                      fs=sampling_rate)
+    elif filtering == "gaussian":
+        data = gaussian_lowpass_filter(data,
+                                       fs=sampling_rate,
+                                       cut=low_pass)
+    return data
+
+
+def zscore(x, axis=1, nan_omit=True):
+    """Standardize data."""
+    if nan_omit:
+        mean = np.nanmean
+        std = np.nanstd
+    else:
+        mean = np.mean
+        std = np.std
+
+    zscores = (x - mean(x))/std(x)
+    return zscores
+  

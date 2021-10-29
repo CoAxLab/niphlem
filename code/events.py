@@ -74,4 +74,4 @@ def compute_max_events(signal, peak_rise, delta):
     kppks_time = np.where(dpks_time > delta)[0] + 1
     new_pks = np.insert(pks_time[kppks_time], 0, values=pks_time[0])
 
-    return new_pks
+    return new_pks.astype(int)

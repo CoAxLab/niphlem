@@ -7,10 +7,10 @@ def inc(x):
 
 def test_inc():
     # This will give an error
-    assert inc(3) == 5
+    # assert inc(3) == 5
 
     # This will not
     # (to see this: comment assertion line above,
     # uncomment line below and re-run pytest)
 
-    # assert inc(4) == 5
+    assert inc(4) == 5
