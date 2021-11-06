@@ -18,18 +18,44 @@ def test_get_lines():
     assert lines[10000] == '   312      19         21985776         21985799     0'
     assert lines[23627] == 'LastTime    = 22113530'
 
-#def test_load_cmrr_info_old():
-#
-#  fn = '../data/sample1/Physio_sample1_Info.log'
-#  Info, t0, tN, nVol, nSlice, TR = unit.load_cmrr_info_old(fn, range(4))
-#  assert np.shape(Info) == (23616, 4)
-#  assert (Info[0,0], Info[1000,1], Info[10000,2], Info[-1,3]) == (0.0, 6.0, 21985886.0, 22113518.0)
-#  assert t0 == 21889410
-#  assert tN == 22113530
-#  assert nVol == 738
-#  assert nSlice == 32
-#  assert TR == 300
-#
+def test_load_cmrr_info():
+    """
+    Test that load_cmrr_info returns correct meta info and and first, middle,
+    and last time ticks of a sample file
+    """
+    fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_Info.log'
+    traces, meta_info = unit.load_cmrr_info(fn)
+    # test meta_info
+    assert meta_info['uuid'] == '6ec4c7ab-b798-4eec-989c-9458617d425c'
+    assert meta_info['scan_date'] == '20190813_151159'
+    assert meta_info['log_version'] == 'EJA_1'
+    assert meta_info['n_vols'] == 738
+    assert meta_info['n_slices'] == 32
+    assert meta_info['n_echoes'] == 1
+    assert meta_info['init_physio'] == 21889410
+    assert meta_info['end_physio'] == 22113530
+    assert meta_info['init_scan'] == 21892140
+    assert meta_info['end_scan'] == 22113518
+    assert meta_info['repetition_time'] == 300.0
+    # test traces
+    assert np.shape(traces) == (2, 738, 32, 1)
+    assert traces[0, 0, 0, 0] == 21892140
+    assert traces[1, 300, 10, 0] == 21982381
+    assert traces[0, 737, 31, 0] == 22113422
+
+def test_load_cmrr_data():
+    """
+    Test that load_cmrr_data returns correct meta info and and first, middle,
+    and last time ticks of a sample file
+    """
+
+    # acquire meta_info
+    fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_Info.log'
+    traces, meta_info = unit.load_cmrr_info(fn)
+    fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_ECG.log'
+    signal, info_dict = unit.load_cmrr_data(fn, 'ECG', meta_info, True)
+    signal, info_dict = unit.load_cmrr_data(fn, 'ECG', meta_info, False)
+
 #def test_getData():
 #
 #  fn = '../data/sample1/Physio_sample1_ECG.log'
@@ -84,8 +110,8 @@ def test_get_lines():
 ################################################################################
 
 test_get_lines()
-#test_load_cmrr_info_old()
-#test_load_cmrr_info()
+test_load_cmrr_info()
+test_load_cmrr_data()
 #test_getData()
 #test_interpMissingData()
 #test_genJSON()
