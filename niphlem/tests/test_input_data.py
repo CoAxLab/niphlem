@@ -52,67 +52,65 @@ def test_load_cmrr_data():
     # acquire meta_info
     fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_Info.log'
     traces, meta_info = unit.load_cmrr_info(fn)
+
     fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_ECG.log'
+    # test dictionary
     signal, info_dict = unit.load_cmrr_data(fn, 'ECG', meta_info, True)
+    assert info_dict['ECG']['n_channels'] == 4
+    assert info_dict['ECG']['sample_rate'] == 1
+    # test signal with scan sync
+    assert np.shape(signal) == (221379, 4)
+    assert (signal[0, 0], signal[1000, 1], signal[100000, 2], signal[221378, 3]) == (1306.0, 1756.0, 2111.0, 2068.0)
+
+    # test signal without scan sync
     signal, info_dict = unit.load_cmrr_data(fn, 'ECG', meta_info, False)
+    assert np.shape(signal) == (224121, 4)
+    assert (signal[0, 0], signal[1000, 1], signal[100000, 2], signal[224120, 3]) == (2970.0, 2249.0, 2230.0, 2046.0)
 
-#def test_getData():
-#
-#  fn = '../data/sample1/Physio_sample1_ECG.log'
-#  dat, nch, sr = unit.getData(fn, 21889410, 22113530, False)
-#  assert nch == 4
-#  assert sr == 1
-#  assert dat.shape == (224121, 5)
-#  assert (dat[0, 0], dat[10000, 2], dat[224120, 4]) == (0.0, 2002.0, 2046.0)
-#
-#def test_interpMissingData():
-#
-#  dat = np.zeros((10, 2))
-#  dat[:, 0] = range(10)
-#  dat[:, 1] = [1, 3, 0, 7, 6, 0, 4, 0, 4, 2]
-#  dat = unit.interpMissingData(dat)
-#  assert dat[2, 1] == 5
-#  assert dat[5, 1] == 5
-#  assert dat[7, 1] == 4
-#
-#def test_genJSON():
-#
-#  unit.genJSON(500, 1, 2, 10, 100, 30, 1000, 4, [0.75, 3.5], [0.01, 0.5])
-#  assert os.path.isfile('meta.txt')
-#  meta = json.load(open('meta.txt'))
-#  assert meta['samplingRate'][0]['freq'] == 500
-#  assert meta['samplingRate'][1]['rate'] == 1
-#  assert meta['samplingRate'][2]['rate'] == 2
-#  assert meta['samplingRate'][3]['rate'] == 10
-#  assert meta['MRacquisition'][0]['Volumes'] == 100
-#  assert meta['MRacquisition'][0]['Slices'] == 30
-#  assert meta['MRacquisition'][0]['TR'] == 1000
-#  assert meta['ECGground'][0]['Channel'] == 4
-#  assert meta['frequencyRanges'][0]['Cardiac'] == [0.75, 3.5]
-#  assert meta['frequencyRanges'][0]['Respiratory'] == [0.01, 0.5]
-#  os.remove('meta.txt')
-#
-#def test_procInput():
-#
-#  path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
-#  infoFile = 'Physio_sample2_Info.log'
-#  pulsFile = 'Physio_sample2_PULS.log'
-#  respFile = 'Physio_sample2_RESP.log'
-#  ecgFile = 'Physio_sample2_ECG.log'
-#  unit.procInput(path, infoFile, pulsFile, respFile, ecgFile, showSignals=False)
-#  assert os.path.isfile('meta.txt')
-#  assert os.path.isfile('signal.npy')
-#  os.remove('meta.txt')
-#  os.remove('signal.npy')
+def test_proc_input():
+    """
+    Test that proc_input generates the desired files, adds the correct
+    frequency information, and assembles the signals
+    """
 
-################################################################################
-# Run tests                                                                    #
-################################################################################
+    path = Path(__file__).parent.as_posix() + '/datasets/sample1/'
+    info_file = 'Physio_sample1_Info.log'
+    puls_file = 'Physio_sample1_PULS.log'
+    resp_file = 'Physio_sample1_RESP.log'
+    ecg_file = 'Physio_sample1_ECG.log'
+    meta_file = 'test_meta.json'
+    sig_file = 'test_signal.npy'
+    unit.proc_input(path,
+                    info_file,
+                    puls_file,
+                    resp_file,
+                    ecg_file,
+                    meta_filename=meta_file,
+                    sig_filename=sig_file,
+                    show_signals=False)
+
+    # test presence of generated files
+    assert os.path.isfile(meta_file)
+    assert os.path.isfile(sig_file)
+    # test attributes added to meat file by proc_input
+    meta = json.load(open(meta_file))
+    assert meta['frequency_info']['sampling_rate'] == 400
+    assert meta['frequency_info']['cardiac_range'] == [0.75, 3.5]
+    assert meta['frequency_info']['respiratory_range'] == [0.01, 0.5]
+    # test signal
+    signal = np.load(sig_file)
+    assert np.shape(signal) == (221379, 6)
+    assert (signal[0, 0], signal[10, 1], signal[100, 2], signal[1000, 3], signal[10000, 4], signal[221378, 5]) == (1306.0, 1724.0, 1956.0, 2056.0, 2304.5, 1025.625)
+    # clean up
+    os.remove(meta_file)
+    os.remove(sig_file)
+
+
+"""
+Run tests
+"""
 
 test_get_lines()
 test_load_cmrr_info()
 test_load_cmrr_data()
-#test_getData()
-#test_interpMissingData()
-#test_genJSON()
-#test_procInput()
+test_proc_input()
