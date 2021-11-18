@@ -124,12 +124,6 @@ def filter_signals(meta, sig_file, show_signals=False):
         mpl.plot(filtered_signal[:, 1], 'b')
         mpl.show()
 
-###############################################################################
-
-# meta = 'meta.txt'
-# sig_file = 'signal.npy'
-# filter_signals(meta, sig_file, show_signals=True)
-
 
 def _transform_filter(data,
                       transform,
@@ -137,6 +131,29 @@ def _transform_filter(data,
                       high_pass,
                       low_pass,
                       sampling_rate):
+    """
+    Applies transforms and filters to data
+
+    Parameters
+    ---------
+    data : array
+        data to be transformed/filtered
+    transform : str
+        transform option (zscore, abs)
+    filtering : str
+        filtering option (butter, guassian)
+    high_pass : real, positive
+        high pass filter frequency
+    low_pass : real, positive
+        low pass filter frequency
+    sampling_rate : real, positive
+        sampling rate, needed for filtering
+
+    Returns
+    -------
+    data : array
+        copied, transformed, and filtered, data
+    """
 
     # Guarantee original data is not overwritten
     data = data.copy()
@@ -179,4 +196,11 @@ def zscore(x, axis=1, nan_omit=True):
 
     zscores = (x - mean(x))/std(x)
     return zscores
-  
+
+
+###############################################################################
+
+# meta = 'meta.txt'
+# sig_file = 'signal.npy'
+# filter_signals(meta, sig_file, show_signals=True)
+
