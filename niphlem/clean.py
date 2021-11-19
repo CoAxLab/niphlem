@@ -73,9 +73,11 @@ def _transform_filter(data,
                       ground_ch=0,
                       transform="demean",
                       filtering="none",
+                      average_signal=False,
                       high_pass=0,
                       low_pass=0,
-                      sampling_rate=0):
+                      sampling_rate=0,
+                      save_name=''):
     """
     Ground, transform, and filter signal as specified
 
@@ -89,12 +91,16 @@ def _transform_filter(data,
         transform option <none, demean, abs, zscore>
     filtering : str
         filtering option <none, butter, guassian>
+    average_signal : bool
+        flag to average signal across channels
     high_pass : real
         high pass frequency for filtering (Hz)
     low_pass : real
         low pass frequency for filtering (Hz)
     sampling_rate : real
         signal sampling frequency (Hz)
+    save_name : str
+        filename to save cleaned signal to, empty does not save
 
     Returns
     -------
@@ -120,10 +126,12 @@ def _transform_filter(data,
     ground_ch = ground_ch - 1
 
     for ich in range(nch):
-        # Ground channels
+
         if ground_ch >= 0:
+            # ground channels
             if nch != ground_ch:
                 data[:, ich] = data[:, ich] - data[:, ground_ch]
+
         if transform == "zscore":
             # zscore data
             data[:, ich] = zscore(data[:, ich])
@@ -147,6 +155,13 @@ def _transform_filter(data,
             data[:, ich] = gaussian_lowpass_filter(data[:, ich],
                                                    fs=sampling_rate,
                                                    cut=low_pass)
+    if nch > 1 and average_signal:
+        # average signals across channels
+        data = np.average(data, axis=1)
+
+    if save_name != '':
+        np.savetxt(save_name, data, delimiter=',')
+
     return data
 
 
