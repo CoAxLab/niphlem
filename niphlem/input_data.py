@@ -223,15 +223,17 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
 
 def proc_input(path,
                info_file,
-               puls_file,
-               resp_file,
-               ecg_file,
+               puls_file='none',
+               resp_file='none',
+               ecg_file='none',
+               sampling_frequency=0,
                meta_filename='meta.json',
-               sig_filename='signal',
+               cardiac_range=[0.75, 3.5],
+               respiratory_range=[0.01, 0.5],
                show_signals=False):
     """
     Extract relevant data from info, PULS, RESP, and ECG files; creates meta
-        file with info and .npy file with signal array
+        file with info and returns unsampled signals
 
     Parameters
     ----------
@@ -245,22 +247,33 @@ def proc_input(path,
         RESP file name.
     ecg_file : str, pathlike
         ECG file name.
+    sampling_frequency : real
+        Sample frequency (Hz)
     meta_filename : str, pathlike, optional
         Filename to store meta info, default 'meta.json'
-    sig_filename : str, pathlike, optional
-        Filename to store signal array, default 'signal'
+    cardiac_range : array
+        Length 2 vector of lower and upper bounds for cardiac frequency (Hz)
+    respiratory_range : array
+        Length 2 vector of lower and upper bounds for respiratory frequency (Hz)
     show_signals : bool, optional
         Flag to show plots of signals, default False.
-    """
 
-    cardiac_range = [0.75, 3.5]  # Hz
-    respiratory_range = [0.01, 0.5]     # Hz
-    # TODO: Take this as an input or extract somehow
-    sampling_frequency = 400    # Hz
+    Returns
+    -------
+    PULS : array
+        Array of PULS data
+    RESP : array
+        Array of RESP data
+    ECG : array
+        Array of ECG data
+     """
+    # TODO: update unit testing
 
     # ensure path ends in /
     if path[-1] != '/':
         path = path + '/'
+    # TODO: error checking for frequency
+    #       check at least one datafile type is present
 
     # get data from INFO file
     traces, meta_info = load_cmrr_info(filename=path + info_file)
@@ -270,54 +283,49 @@ def proc_input(path,
     meta_info['frequency_info']['respiratory_range'] = respiratory_range
 
     # get data from PULS file
-    PULS, meta_info = \
-        load_cmrr_data(filename=path + puls_file,
-                       sig_type='puls',
-                       info_dict=meta_info,
-                       sync_scan=True)
+    if puls_file != 'none':
+        PULS, meta_info = \
+            load_cmrr_data(filename=path + puls_file,
+                           sig_type='puls',
+                           info_dict=meta_info,
+                           sync_scan=True)
+    else:
+        PULS = []
     # get data from RESP file
-    RESP, meta_info = \
-        load_cmrr_data(filename=path + resp_file,
-                       sig_type='resp',
-                       info_dict=meta_info,
-                       sync_scan=True)
-    # get data from ECG file
-    ECG, meta_info = \
-        load_cmrr_data(filename=path + ecg_file,
-                       sig_type='ecg',
-                       info_dict=meta_info,
-                       sync_scan=True)
-
-    # store aligned signals in a single matrix, save to signal.npy
-    n_channels = meta_info['ecg']['n_channels']
-    signal = np.zeros((len(ECG), n_channels + 2))
-    signal[:, 0:n_channels] = ECG
-    signal[:, [n_channels]] = PULS
-    signal[:, [n_channels + 1]] = RESP
-    np.save(sig_filename, signal)
+    if resp_file != 'none':
+        RESP, meta_info = \
+            load_cmrr_data(filename=path + resp_file,
+                           sig_type='resp',
+                           info_dict=meta_info,
+                           sync_scan=True)
+    else:
+        RESP = []
+     # get data from ECG file
+    if ecg_file != 'none':
+        ECG, meta_info = \
+            load_cmrr_data(filename=path + ecg_file,
+                           sig_type='ecg',
+                           info_dict=meta_info,
+                           sync_scan=True)
+    else:
+        ECG = []
 
     with open(meta_filename, 'w') as outfile:
         json.dump(meta_info, outfile)
 
     # plot signals if desired
     if show_signals:
-        mpl.plot(PULS)
-        mpl.show()
-        mpl.plot(RESP)
-        mpl.show()
-        mpl.plot(ECG[:, 0], 'b')
-        mpl.plot(ECG[:, 1], 'r')
-        mpl.plot(ECG[:, 2], 'g')
-        mpl.plot(ECG[:, 3], 'k')
-        mpl.show()
+        if puls_file != 'none':
+            mpl.plot(PULS)
+            mpl.show()
+        if resp_file != 'none':
+            mpl.plot(RESP)
+            mpl.show()
+        if ecg_file != 'none':
+            for ich in range(meta_info['ecg']['n_channels']):
+                mpl.plot(ECG[:, ich])
+                mpl.show()
+
+    return PULS, RESP, ECG
 
 
-
-###############################################################################
-
-#path = '/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/'
-#info_file = 'Physio_sample2_Info.log'
-#puls_file = 'Physio_sample2_PULS.log'
-#resp_file = 'Physio_sample2_RESP.log'
-#ecg_file = 'Physio_sample2_ECG.log'
-#proc_input(path, info_file, puls_file, resp_file, ecg_file, show_signals=True)
