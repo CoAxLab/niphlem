@@ -1,17 +1,15 @@
 # niphlem
 
-niphlem stands for Physiological Log Extraction for Modeling in Neuroimaging and is the cool (i.e. python) brother of PhLEM (https://sites.google.com/site/phlemtoolbox/) which was originary written in Matlab. 
+*niphlem* toolbox extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.
 
-This toolbox extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.
-
-niphlem can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).
+*niphlem* can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).
 
 Briefly, niphlem implements three two of models:
 
 - *RETROICOR*:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues. 
 - *Variation Models*:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).
 
-niphlem can also extract cardiac and respiratory signals from the pulse-oximitry data stream itself, as described in Verstynen and Deshpande (2011).
+*niphlem* can also extract cardiac and respiratory signals from the pulse-oximitry data stream itself, as described in Verstynen and Deshpande (2011).
 
 ## Dependencies
 
