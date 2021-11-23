@@ -53,7 +53,29 @@ def peakdet(v, delta=0.5, x=None):
     return (maxtab, mintab)
 
 
-def compute_max_events(signal, peak_rise=0.75, delta=200):
+def compute_max_events(signal,
+                       peak_rise=0.75,
+                       delta=200,
+                       save_name=''):
+    """
+    Determines locations of pulse peaks
+
+    Parameters
+    ---------
+    signal : array
+        signal to calculate peaks from
+    peak_rise : real
+        fractional thershold, 0 < peak_rise <= 1
+    delta : real
+        maximum peak spacing, 0 < delta
+    save_name : str
+        filename to save peak locations to, no save if empty
+
+    Returns
+    ------
+        peaks : array
+            peak locations
+    """
 
     # Compute peaks from a first pass
     maxtab, mintab = peakdet(signal, delta=1e-14)
@@ -71,9 +93,14 @@ def compute_max_events(signal, peak_rise=0.75, delta=200):
     pks_time = maxtab[:, 0]
     dpks_time = np.diff(pks_time)
     # find separated peaks by delta
+    # TODO: does delta have units?
     kppks_time = np.where(dpks_time > delta)[0] + 1
     new_pks = np.insert(pks_time[kppks_time], 0, values=pks_time[0])
     peaks = new_pks.astype(int)
+
+    # save peaks
+    if save_name != '':
+        np.savetxt(save_name, peaks, delimiter=',')
 
     return peaks
 
@@ -146,6 +173,6 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
 
     # save peaks
     if save_name != '':
-        np.savetxt(save_name, corrected_peak_diffs2, delimiter=',')
+        np.savetxt(save_name, corrected_peaks2, delimiter=',')
 
     return corrected_peak_diffs2, max_indices, min_indices

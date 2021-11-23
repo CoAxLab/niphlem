@@ -71,13 +71,14 @@ def gaussian_lowpass_filter(data, fs, cut):
 
 def _transform_filter(data,
                       ground_ch=0,
-                      transform="demean",
+                      transform="mean",
                       filtering="none",
                       average_signal=False,
                       high_pass=0,
                       low_pass=0,
                       sampling_rate=0,
-                      save_name=''):
+                      unfiltered_save_name="",
+                      filtered_save_name=""):
     """
     Ground, transform, and filter signal as specified
 
@@ -88,7 +89,7 @@ def _transform_filter(data,
     ground_ch : int
         ground channel index, one-based index (i.e. not pythonic)
     transform : str
-        transform option <none, demean, abs, zscore>
+        transform option <none, mean, abs, zscore>
     filtering : str
         filtering option <none, butter, guassian>
     average_signal : bool
@@ -99,7 +100,9 @@ def _transform_filter(data,
         low pass frequency for filtering (Hz)
     sampling_rate : real
         signal sampling frequency (Hz)
-    save_name : str
+    unfiltered_save_name : str
+        filename to save unfiltered signal to, empty does not save
+    filtered_save_name : str
         filename to save cleaned signal to, empty does not save
 
     Returns
@@ -111,15 +114,21 @@ def _transform_filter(data,
     # Value checking
     if filtering == "butter" or filtering == "gaussian":
         if low_pass <= 0:
-            raise Exception("Low pass frequency must be provided to filter")
+            raise Exception("Low pass frequency must be provided to filter!")
         if sampling_rate <= 0:
-            raise Exception("Sampling rate must be provided to filter")
+            raise Exception("Sampling rate must be provided to filter!")
+    else:
+        if filtered_save_name != "":
+            raise Warning("Cannot save filtered signal, no valid filter provided!")
     if filtering == "butter" and high_pass <= 0:
-            raise Exception("High pass frequency must be providedd to filter")
+            raise Exception("High pass frequency must be providedd to filter!")
     # TODO: ensure data is 2D array?
 
     # Guarantee original data is not overwritten
     data = data.copy()
+    # Make additional copy for unfiltered data if needed
+    if filtering != "" and unfiltered_save_name != "":
+        data_unfiltered = data.copy()
     nch = data.shape[1]
 
     # convert to python indexing
@@ -139,10 +148,12 @@ def _transform_filter(data,
             # Absolute value transformation on the data and zero mean the series
             data[:, ich] = abs(data[:, ich])
             data[:, ich] = data[:, ich] - np.mean(data[:, ich])
-        elif transform == "demean":
+        elif transform == "mean":
             # Only demean
             data[:, ich] = data[:, ich] - np.mean(data[:, ich])
 
+        if filtering != "" and unfiltered_save_name != "":
+            data_unfiltered[:, ich] = data[:, ich]
         if filtering == "butter":
             # TODO: Add more flexible butter filter, not only bandpass?
             # high_pass == frequency above to clean, then here is the lower range,
@@ -158,9 +169,13 @@ def _transform_filter(data,
     if nch > 1 and average_signal:
         # average signals across channels
         data = np.average(data, axis=1)
+        if filtering != "" and unfiltered_save_name != "":
+            data_unfiltered = np.average(data_unfiltered, axis=1)
 
-    if save_name != '':
-        np.savetxt(save_name, data, delimiter=',')
+    if unfiltered_save_name != "":
+        np.savetxt(unfiltered_save_name, data_unfiltered, delimiter=",")
+    if filtered_save_name != "":
+        np.savetxt(filtered_save_name, data, delimiter=",")
 
     return data
 

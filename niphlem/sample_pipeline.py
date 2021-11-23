@@ -15,15 +15,16 @@ import events as ne
 path = os.path.dirname(os.path.realpath(__file__)) + '/tests/datasets/sample1/'
 info_file = 'Physio_sample1_Info.log'
 ecg_file = 'Physio_sample1_ECG.log'
-sampling_frequency = 400
-signal_file = 'sample_signal.csv'
+sampling_frequency = 400               # Hz
+unfiltered_signal_file = 'sample_signal_unfiltered.csv'
+filtered_signal_file = 'sample_signal_filtered.csv'
 peak_file = 'sample_peaks.csv'
 
 # optional user defined parameters
 meta_filename = 'sample_meta.json'
-cardiac_range = [0.6, 5.0]
-peak_rise = 0.75
-delta = 200
+cardiac_range = [0.6, 5.0]             # Hz
+peak_rise = 0.75                       # fraction
+delta = 200                            # TODO: units?
 alpha = 0.05
 
 # basic data processing from input file (empty slots for PULS and RESP data)
@@ -32,6 +33,7 @@ _, _, ECG = ni.proc_input(path=path,
                           ecg_file=ecg_file,
                           sampling_frequency=sampling_frequency,
                           meta_filename=meta_filename)
+# ground, demean
 ECG_filt = nc._transform_filter(data=ECG,
                           ground_ch=1,
                           transform='demean',
@@ -40,7 +42,8 @@ ECG_filt = nc._transform_filter(data=ECG,
                           high_pass=cardiac_range[0],
                           low_pass=cardiac_range[1],
                           sampling_rate=sampling_frequency,
-                          save_name=signal_file)
+                          unfiltered_save_name=unfiltered_signal_file,
+                          filtered_save_name=filtered_signal_file)
 peaks = ne.compute_max_events(signal=ECG_filt,
                           peak_rise=peak_rise,
                           delta=delta)
