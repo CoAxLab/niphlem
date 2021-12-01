@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API &mdash; niphlem 0.0.1-beta documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Citing niphlem" href="citing.html" />
+    <link rel="prev" title="Tutorial 1: Regressors from ecg" href="tutorials_links/tutorial1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> niphlem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#retroicor-model">Retroicor Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variation-model">Variation Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downsample-model">Downsample Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="citing.html">Citing niphlem</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">niphlem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>API</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline"></a></h1>
+<section id="retroicor-model">
+<h2>Retroicor Model<a class="headerlink" href="#retroicor-model" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RetroicorPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Physiological regressors using Retroicor.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>physio_rate<span class="classifier">float</span></dt><dd><p>Sampling rate for the recording in Hz.
+This is needed for filtering to define the nyquist frequency.</p>
+</dd>
+<dt>t_r<span class="classifier">float</span></dt><dd><p>Repetition time for the scanner (the usual T_R) in secs.</p>
+</dd>
+<dt>delta: float</dt><dd><p>minimum separation (in physio recording units) between
+events in signal to be considered peaks</p>
+</dd>
+<dt>peak_rise: float</dt><dd><p>relative height with respect to the 20th tallest events in signal
+to consider events as peak.</p>
+</dd>
+<dt>order: int or array-like (# TODO) of shape (n_orders,)</dt><dd><p>Fourier expansion for phases. If int, the fourier expansion is
+performed to that order, starting from 1. If an array is provided,
+each element will multiply the phases.</p>
+</dd>
+<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+</dd>
+<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+</dd>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
+weight each channel and take the dot product. If “mean”,
+the average across the channels. If None, it will consider each
+channel separately. The default is None.</p>
+</dd>
+<dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio.compute_regressors">
+<span class="sig-name descname"><span class="pre">compute_regressors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_physio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio.compute_regressors" title="Permalink to this definition"></a></dt>
+<dd><p>Compute regressors.</p>
+<blockquote>
+<div><p>It basically takes care of all the preprocessing before
+concentrating on the specific type of physiological regressors</p>
+</div></blockquote>
+<dl class="simple">
+<dt>signal<span class="classifier">array -like of shape (n_physio_samples, n_channels)</span></dt><dd><p>Signal, where each column corresponds to a recording.</p>
+</dd>
+<dt>time_scan<span class="classifier">array -like of shape (n_scan_samples, )</span></dt><dd><p>Time ticks (in secs) at the scanner resolution.</p>
+</dd>
+<dt>time_physio<span class="classifier">array -like of shape (n_physio_samples, )</span></dt><dd><p>Time ticks (in secs) at the physio recording resolution.
+The default is None. In this default case, the time of the
+physiological recording is computed multiplying
+the number of points with the sampling period.</p>
+</dd>
+</dl>
+<p>array-like with the physiological regressors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio.get_params" title="Permalink to this definition"></a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<dl class="simple">
+<dt>deep<span class="classifier">bool, default=True</span></dt><dd><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">**</span></a>params<span class="classifier">dict</span></dt><dd><p>Estimator parameters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>self<span class="classifier">estimator instance</span></dt><dd><p>Estimator instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="variation-model">
+<h2>Variation Model<a class="headerlink" href="#variation-model" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="niphlem.models.RVPhysio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Physiological regressors for variations in breathing rate/volume.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>physio_rate<span class="classifier">float</span></dt><dd><p>Sampling rate for the recording in Hz.
+This is needed for filtering to define the nyquist frequency.</p>
+</dd>
+<dt>t_r<span class="classifier">float</span></dt><dd><p>Repetition time for the scanner (the usual T_R) in secs.</p>
+</dd>
+<dt>time_window<span class="classifier">float</span></dt><dd><p>Time window (in secs) around the T_R from which computing variations
+(standard deviation of signal). The default is 6 secs.</p>
+</dd>
+<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+</dd>
+<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+</dd>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
+weight each channel and take the dot product. If “mean”,
+the average across the channels. If None, it will consider each
+channel separately. The default is None.</p>
+</dd>
+<dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RVPhysio.compute_regressors">
+<span class="sig-name descname"><span class="pre">compute_regressors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_physio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio.compute_regressors" title="Permalink to this definition"></a></dt>
+<dd><p>Compute regressors.</p>
+<blockquote>
+<div><p>It basically takes care of all the preprocessing before
+concentrating on the specific type of physiological regressors</p>
+</div></blockquote>
+<dl class="simple">
+<dt>signal<span class="classifier">array -like of shape (n_physio_samples, n_channels)</span></dt><dd><p>Signal, where each column corresponds to a recording.</p>
+</dd>
+<dt>time_scan<span class="classifier">array -like of shape (n_scan_samples, )</span></dt><dd><p>Time ticks (in secs) at the scanner resolution.</p>
+</dd>
+<dt>time_physio<span class="classifier">array -like of shape (n_physio_samples, )</span></dt><dd><p>Time ticks (in secs) at the physio recording resolution.
+The default is None. In this default case, the time of the
+physiological recording is computed multiplying
+the number of points with the sampling period.</p>
+</dd>
+</dl>
+<p>array-like with the physiological regressors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RVPhysio.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio.get_params" title="Permalink to this definition"></a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<dl class="simple">
+<dt>deep<span class="classifier">bool, default=True</span></dt><dd><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.RVPhysio.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="simple">
+<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>params<span class="classifier">dict</span></dt><dd><p>Estimator parameters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>self<span class="classifier">estimator instance</span></dt><dd><p>Estimator instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="niphlem.models.HVPhysio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">HVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Physiological regressors for variations in heart rate.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>physio_rate<span class="classifier">float</span></dt><dd><p>Sampling rate for the recording in Hz.
+This is needed for filtering to define the nyquist frequency.</p>
+</dd>
+<dt>t_r<span class="classifier">float</span></dt><dd><p>Repetition time for the scanner (the usual T_R) in secs.</p>
+</dd>
+<dt>delta: float</dt><dd><p>minimum separation (in physio recording units) between
+events in signal to be considered peaks</p>
+</dd>
+<dt>peak_rise: float</dt><dd><p>relative height with respect to the 20th tallest events in signal
+to consider events as peak.</p>
+</dd>
+<dt>time_window<span class="classifier">float</span></dt><dd><p>Time window (in secs) around the T_R from which computing variations
+(time differences between signal events ). The default is 6 secs.</p>
+</dd>
+<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+</dd>
+<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+</dd>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
+weight each channel and take the dot product. If “mean”,
+the average across the channels. If None, it will consider each
+channel separately. The default is None.</p>
+</dd>
+<dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.HVPhysio.compute_regressors">
+<span class="sig-name descname"><span class="pre">compute_regressors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_physio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio.compute_regressors" title="Permalink to this definition"></a></dt>
+<dd><p>Compute regressors.</p>
+<blockquote>
+<div><p>It basically takes care of all the preprocessing before
+concentrating on the specific type of physiological regressors</p>
+</div></blockquote>
+<dl class="simple">
+<dt>signal<span class="classifier">array -like of shape (n_physio_samples, n_channels)</span></dt><dd><p>Signal, where each column corresponds to a recording.</p>
+</dd>
+<dt>time_scan<span class="classifier">array -like of shape (n_scan_samples, )</span></dt><dd><p>Time ticks (in secs) at the scanner resolution.</p>
+</dd>
+<dt>time_physio<span class="classifier">array -like of shape (n_physio_samples, )</span></dt><dd><p>Time ticks (in secs) at the physio recording resolution.
+The default is None. In this default case, the time of the
+physiological recording is computed multiplying
+the number of points with the sampling period.</p>
+</dd>
+</dl>
+<p>array-like with the physiological regressors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.HVPhysio.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio.get_params" title="Permalink to this definition"></a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<dl class="simple">
+<dt>deep<span class="classifier">bool, default=True</span></dt><dd><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.HVPhysio.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="simple">
+<dt><a href="#id5"><span class="problematic" id="id6">**</span></a>params<span class="classifier">dict</span></dt><dd><p>Estimator parameters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>self<span class="classifier">estimator instance</span></dt><dd><p>Estimator instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="downsample-model">
+<h2>Downsample Model<a class="headerlink" href="#downsample-model" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">DownsamplePhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Physiological regressors by downsampling</p>
+<p>As in Verstynen 2011, raw physiological data is downsample
+to the scanner resolution.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>physio_rate<span class="classifier">float</span></dt><dd><p>Sampling rate for the recording in Hz.
+This is needed for filtering to define the nyquist frequency.</p>
+</dd>
+<dt>t_r<span class="classifier">float</span></dt><dd><p>Repetition time for the scanner (the usual T_R) in secs.</p>
+</dd>
+<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+</dd>
+<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+</dd>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
+is not None. The default is None.</p>
+</dd>
+<dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
+weight each channel and take the dot product. If “mean”,
+the average across the channels. If None, it will consider each
+channel separately. The default is None.</p>
+</dd>
+<dt>kind<span class="classifier">str or int, optional</span></dt><dd><p>This is just the kind of interpolation to use. The allowed values are
+those in interp1d function of scipy. Just copying its documentation,
+the string has to be one of ‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’,
+‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’,
+or ‘next’. ‘zero’, ‘slinear’, ‘quadratic’ and ‘cubic’. which refer to
+a spline interpolation of zeroth, first, second or third order;
+‘previous’ and ‘next’ simply return the previous or
+next value of the point; ‘nearest-up’ and ‘nearest’ differ
+when interpolating half-integers (e.g. 0.5, 1.5) in that
+‘nearest-up’ rounds up and ‘nearest’ rounds down.
+Our default value is ‘cubic’.</p>
+</dd>
+<dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio.compute_regressors">
+<span class="sig-name descname"><span class="pre">compute_regressors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_physio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio.compute_regressors" title="Permalink to this definition"></a></dt>
+<dd><p>Compute regressors.</p>
+<blockquote>
+<div><p>It basically takes care of all the preprocessing before
+concentrating on the specific type of physiological regressors</p>
+</div></blockquote>
+<dl class="simple">
+<dt>signal<span class="classifier">array -like of shape (n_physio_samples, n_channels)</span></dt><dd><p>Signal, where each column corresponds to a recording.</p>
+</dd>
+<dt>time_scan<span class="classifier">array -like of shape (n_scan_samples, )</span></dt><dd><p>Time ticks (in secs) at the scanner resolution.</p>
+</dd>
+<dt>time_physio<span class="classifier">array -like of shape (n_physio_samples, )</span></dt><dd><p>Time ticks (in secs) at the physio recording resolution.
+The default is None. In this default case, the time of the
+physiological recording is computed multiplying
+the number of points with the sampling period.</p>
+</dd>
+</dl>
+<p>array-like with the physiological regressors</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio.get_params" title="Permalink to this definition"></a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<dl class="simple">
+<dt>deep<span class="classifier">bool, default=True</span></dt><dd><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>params<span class="classifier">dict</span></dt><dd><p>Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="simple">
+<dt><a href="#id7"><span class="problematic" id="id8">**</span></a>params<span class="classifier">dict</span></dt><dd><p>Estimator parameters.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>self<span class="classifier">estimator instance</span></dt><dd><p>Estimator instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials_links/tutorial1.html" class="btn btn-neutral float-left" title="Tutorial 1: Regressors from ecg" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="citing.html" class="btn btn-neutral float-right" title="Citing niphlem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, coaxlab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+_sources/
+
+.Rhistory
+
+_downloads
+
+.buildinfo
+
+auto_examples/
