@@ -285,7 +285,6 @@ class RetroicorPhysio(BasePhysio):
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
 
         # Compute phases according to peaks (changed to an interpolation)
-        # phases = compute_phases(time_physio, peaks)
         phases_in_peaks = 2*np.pi*np.arange(len(peaks))
         phases = interp1d(x=time_physio[peaks],
                           y=phases_in_peaks,
@@ -688,34 +687,3 @@ class DownsamplePhysio(BasePhysio):
                                       kind=self.kind,
                                       fill_value='extrapolate')(time_scan)
         return downsampled_signal
-
-
-def compute_phases(time, max_peaks):
-    """
-    Compute phases for RETROICOR.
-
-    This function compute the phase between successive peaks
-    events as provided by compute_max_events function.
-    The values between peaks are mapped to being in the range [0, 2 pi]
-    (eq. 2 Glover 2000)
-
-    TODO: This function is probably obsolote.
-    """
-    n_maxs = len(max_peaks)
-    phases = np.zeros_like(time, dtype=np.float)
-    N = len(time)
-
-    for ii in range(n_maxs):
-        # Look at the tails
-        if ii == n_maxs-1:
-            i_o, i_f = int(max_peaks[ii]), int(max_peaks[0])
-            t_o, t_f = time[i_o], time[::-1][0] + time[i_f]
-
-            phases[i_o:] = 2*np.pi*(time[i_o:N] - t_o)/(t_f-t_o)
-            phases[:i_f] = 2*np.pi*(time[::-1][0] + time[:i_f] - t_o)/(t_f-t_o)
-        else:
-            i_o, i_f = int(max_peaks[ii]), int(max_peaks[ii+1])
-            t_o, t_f = time[i_o], time[i_f]
-            phases[i_o:i_f] = 2*np.pi*(time[i_o:i_f] - t_o)/(t_f-t_o)
-
-    return phases

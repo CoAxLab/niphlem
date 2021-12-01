@@ -3,7 +3,6 @@ import json
 import matplotlib.pyplot as mpl
 
 
-
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     """
     Applies Butterworth bandpass double filter (to minimize shift).
@@ -41,7 +40,6 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return sosfiltfilt(sos, data)
 
 
-
 def gaussian_lowpass_filter(data, fs, cut):
     """
     Applies Gaussian lowpass filter.
@@ -66,7 +64,6 @@ def gaussian_lowpass_filter(data, fs, cut):
     signal = gaussian_filter1d(data, sigma)
 
     return signal
-
 
 
 def filter_signals(meta, sig_file, show_signals=False):
