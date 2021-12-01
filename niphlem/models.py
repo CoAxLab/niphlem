@@ -45,6 +45,7 @@ class BasePhysio(BaseEstimator):
     """
 
     def __init__(self,
+                 *,
                  physio_rate,
                  t_r,
                  transform="mean",
@@ -229,6 +230,7 @@ class RetroicorPhysio(BasePhysio):
     """
 
     def __init__(self,
+                 *,
                  physio_rate,
                  t_r,
                  delta,
@@ -366,6 +368,7 @@ class RVPhysio(BasePhysio):
     """
 
     def __init__(self,
+                 *,
                  physio_rate,
                  t_r,
                  time_window=6.0,
@@ -490,6 +493,7 @@ class HVPhysio(BasePhysio):
     """
 
     def __init__(self,
+                 *,
                  physio_rate,
                  t_r,
                  delta,
@@ -633,6 +637,7 @@ class DownsamplePhysio(BasePhysio):
     """
 
     def __init__(self,
+                 *,
                  physio_rate,
                  t_r,
                  transform="mean",

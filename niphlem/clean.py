@@ -132,6 +132,7 @@ def filter_signals(meta, sig_file, show_signals=False):
 
 
 def _transform_filter(data,
+                      *,
                       transform,
                       filtering,
                       high_pass,
