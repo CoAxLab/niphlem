@@ -20,29 +20,29 @@ def test_transform():
 
     transform = None
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       filtering=filtering,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
 
     transform = "abs"
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       filtering=filtering,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
 
     transform = "zscore"
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       filtering=filtering,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
     assert np.allclose(np.std(data_transform), 1.0)
 
@@ -64,11 +64,11 @@ def test_filter():
     high_pass = 6
 
     signal_transform = _transform_filter(signal,
-                                         transform,
-                                         filtering,
-                                         high_pass,
-                                         low_pass,
-                                         sampling_rate)
+                                         transform=transform,
+                                         filtering=filtering,
+                                         high_pass=high_pass,
+                                         low_pass=low_pass,
+                                         sampling_rate=sampling_rate)
     freqs, Pxx = periodogram(signal_transform, fs=sampling_rate)
     #  Uncomment to see the plot and how the filtered worked
     # plt.plot(freqs, Pxx)
@@ -87,11 +87,11 @@ def test_filter():
     high_pass = None
 
     signal_transform = _transform_filter(signal,
-                                         transform,
-                                         filtering,
-                                         high_pass,
-                                         low_pass,
-                                         sampling_rate)
+                                         transform=transform,
+                                         filtering=filtering,
+                                         high_pass=high_pass,
+                                         low_pass=low_pass,
+                                         sampling_rate=sampling_rate)
 
     freqs, Pxx = periodogram(signal_transform, fs=sampling_rate)
 
