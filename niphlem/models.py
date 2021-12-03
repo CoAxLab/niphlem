@@ -161,6 +161,12 @@ class BasePhysio(BaseEstimator):
                 raise ValueError(f" '{self.low_pass}' was provided "
                                  "as lowpass frequency, but it should "
                                  "be a number")
+        if self.high_pass and self.low_pass:
+            if float(self.high_pass) > float(self.low_pass):
+                raise ValueError("high pass frequency should be lower "
+                                 "than the low pass frequency for a "
+                                 "bandpass filtering"
+                                 )
         # Decide how to handle data and loop through
         if self.columns:
             if self.columns == "mean":
