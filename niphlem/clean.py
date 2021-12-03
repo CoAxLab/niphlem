@@ -15,9 +15,9 @@ def butter_filter(data, *, fs, low_pass=None, high_pass=None, order=5):
     fs : real
         sampling frequency (Hz)
     low_pass : real
-        frequency below filtering data (Hz)
+        frequency below passing data (Hz)
     high_pass : real
-        frequency above filtering data (Hz)
+        frequency above passing data (Hz)
     order : int
         filter order (will be rounded up to even integer)
 
