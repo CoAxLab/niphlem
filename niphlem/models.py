@@ -25,10 +25,8 @@ class BasePhysio(BaseEstimator):
         This is needed for filtering to define the nyquist frequency.
     t_r : float
         Repetition time for the scanner (the usual T_R) in secs.
-    transform : {"mean", "zscore", "abs"}, optional
-        Transform data before filtering. The default is "mean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
+    transform : {"demean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "demean".
     high_pass : float, optional
         High-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
@@ -48,7 +46,7 @@ class BasePhysio(BaseEstimator):
                  *,
                  physio_rate,
                  t_r,
-                 transform="mean",
+                 transform="demean",
                  filtering=None,
                  high_pass=None,
                  low_pass=None,
@@ -58,7 +56,6 @@ class BasePhysio(BaseEstimator):
         self.physio_rate = physio_rate
         self.t_r = t_r
         self.transform = transform
-        self.filtering = filtering
         self.high_pass = high_pass
         self.low_pass = low_pass
         self.columns = columns
@@ -102,7 +99,6 @@ class BasePhysio(BaseEstimator):
         signal_prep = parallel(
             delayed(_transform_filter)(data=s,
                                        transform=self.transform,
-                                       filtering=self.filtering,
                                        high_pass=self.high_pass,
                                        low_pass=self.low_pass,
                                        sampling_rate=self.physio_rate)
@@ -146,27 +142,31 @@ class BasePhysio(BaseEstimator):
         else:
             time_physio = np.arange(signal.shape[0])*1/self.physio_rate
 
-        if self.transform not in ["mean", "zscore", "abs"]:
+        if self.transform not in ["demean", "zscore", "abs"]:
             raise ValueError(f"'{self.transform}' transform option passed, "
                              "but only 'mean' (default), 'zscore' or 'abs' "
                              "are allowed."
                              )
-        if self.filtering not in [None, "butter", "gaussian"]:
-            raise ValueError(f"'{self.filtering}' filtering option passed, "
-                             "but only None (default), 'butter' or 'gaussian' "
-                             "are allowed."
-                             )
-        if self.filtering == "butter":
-            if (self.high_pass is None) or (self.low_pass is None):
-                raise ValueError("Butterworth bandapss selected, but "
-                                 "either high_pass or low_pass is missing."
+        if self.high_pass:
+            try:
+                float(self.high_pass)
+            except ValueError:
+                raise ValueError(f" '{self.high_pass}' was provided "
+                                 "as highpass frequency, but it should "
+                                 "be a number")
+        if self.low_pass:
+            try:
+                float(self.low_pass)
+            except ValueError:
+                raise ValueError(f" '{self.low_pass}' was provided "
+                                 "as lowpass frequency, but it should "
+                                 "be a number")
+        if self.high_pass and self.low_pass:
+            if float(self.high_pass) > float(self.low_pass):
+                raise ValueError("high pass frequency should be lower "
+                                 "than the low pass frequency for a "
+                                 "bandpass filtering"
                                  )
-        elif self.filtering == "gaussian":
-            if self.low_pass is None:
-                raise ValueError("gaussian lowpass selected, but "
-                                 "low_pass argument is missing."
-                                 )
-
         # Decide how to handle data and loop through
         if self.columns:
             if self.columns == "mean":
@@ -210,8 +210,8 @@ class RetroicorPhysio(BasePhysio):
         Fourier expansion for phases. If int, the fourier expansion is
         performed to that order, starting from 1. If an array is provided,
         each element will multiply the phases.
-    transform : {"mean", "zscore", "abs"}, optional
-        Transform data before filtering. The default is "mean".
+    transform : {"demean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "demean".
     filtering : {"butter", "gaussian", None}, optional
         Filtering operation to perform. The default is None.
     high_pass : float, optional
@@ -236,7 +236,7 @@ class RetroicorPhysio(BasePhysio):
                  delta,
                  peak_rise=0.5,
                  order=1,
-                 transform="mean",
+                 transform="demean",
                  filtering=None,
                  high_pass=None,
                  low_pass=None,
@@ -347,10 +347,8 @@ class RVPhysio(BasePhysio):
     time_window : float
         Time window (in secs) around the T_R from which computing variations
         (standard deviation of signal). The default is 6 secs.
-    transform : {"mean", "zscore", "abs"}, optional
-        Transform data before filtering. The default is "mean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
+    transform : {"demean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "demean".
     high_pass : float, optional
         High-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
@@ -371,8 +369,7 @@ class RVPhysio(BasePhysio):
                  physio_rate,
                  t_r,
                  time_window=6.0,
-                 transform="mean",
-                 filtering=None,
+                 transform="demean",
                  high_pass=None,
                  low_pass=None,
                  columns=None,
@@ -383,7 +380,6 @@ class RVPhysio(BasePhysio):
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
                          transform=transform,
-                         filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
                          columns=columns,
@@ -472,10 +468,8 @@ class HVPhysio(BasePhysio):
     time_window : float
         Time window (in secs) around the T_R from which computing variations
         (time differences between signal events ). The default is 6 secs.
-    transform : {"mean", "zscore", "abs"}, optional
-        Transform data before filtering. The default is "mean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
+    transform : {"demean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "demean".
     high_pass : float, optional
         High-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
@@ -498,8 +492,7 @@ class HVPhysio(BasePhysio):
                  delta,
                  peak_rise=0.5,
                  time_window=6.0,
-                 transform="mean",
-                 filtering=None,
+                 transform="demean",
                  high_pass=None,
                  low_pass=None,
                  columns=None,
@@ -512,7 +505,6 @@ class HVPhysio(BasePhysio):
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
                          transform=transform,
-                         filtering=filtering,
                          high_pass=high_pass,
                          low_pass=low_pass,
                          columns=columns,
@@ -604,10 +596,8 @@ class DownsamplePhysio(BasePhysio):
         This is needed for filtering to define the nyquist frequency.
     t_r : float
         Repetition time for the scanner (the usual T_R) in secs.
-    transform : {"mean", "zscore", "abs"}, optional
-        Transform data before filtering. The default is "mean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
+    transform : {"demean", "zscore", "abs"}, optional
+        Transform data before filtering. The default is "demean".
     high_pass : float, optional
         High-pass filtering frequency (in Hz). Only if filtering option
         is not None. The default is None.
@@ -639,8 +629,7 @@ class DownsamplePhysio(BasePhysio):
                  *,
                  physio_rate,
                  t_r,
-                 transform="mean",
-                 filtering=None,
+                 transform="demean",
                  high_pass=None,
                  low_pass=None,
                  columns=None,
@@ -650,7 +639,6 @@ class DownsamplePhysio(BasePhysio):
         self.physio_rate = physio_rate
         self.t_r = t_r
         self.transform = transform
-        self.filtering = filtering
         self.high_pass = high_pass
         self.low_pass = low_pass
         self.columns = columns
