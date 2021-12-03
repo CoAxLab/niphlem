@@ -60,6 +60,7 @@ def butter_filter(data, *, fs, low_pass=None, high_pass=None, order=5):
     return sosfiltfilt(sos, data)
 
 
+# TODO: Ask Andrew about the use of this function
 def filter_signals(meta, sig_file, show_signals=False):
     """
     Applies filters to data and write to new npy file
@@ -88,18 +89,18 @@ def filter_signals(meta, sig_file, show_signals=False):
     filtered_signal = np.zeros_like(signal)
     filtered_signal[:, 0] = signal[:, 0]
     filtered_signal[:, -2] = butter_filter(signal[:, -2],
-                                           card_range[0],
-                                           card_range[1],
-                                           sf)
+                                           high_pass=card_range[0],
+                                           low_pass=card_range[1],
+                                           fs=sf)
     filtered_signal[:, -1] = butter_filter(signal[:, -1],
-                                           resp_range[0],
-                                           resp_range[1],
-                                           sf)
+                                           high_pass=resp_range[0],
+                                           low_pass=resp_range[1],
+                                           fs=sf)
     # note: factor of 5 is empirical
     for i in range(nch):
-        filtered_signal[:, i] = gaussian_lowpass_filter(signal[:, i],
-                                                        sf,
-                                                        card_range[1])
+        filtered_signal[:, i] = butter_filter(signal[:, i],
+                                              fs=sf,
+                                              low_pass=card_range[1])
     # save filtered signal to filtered_signal.npy
     np.save('filtered_signal', filtered_signal)
 
