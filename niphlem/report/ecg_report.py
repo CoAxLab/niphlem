@@ -183,7 +183,7 @@ def plot_filtered_signal(ax, mean_signal, mean_signal_filt):
     # plots comparison between unfiltered and filtered signal (one panel)
     ax.plot(mean_signal, label="unfiltered signal")
     ax.plot(mean_signal_filt, label="filtered signal")
-    ax.set_xlim([5000, 7000])
+    # ax.set_xlim([5000, 7000])
     ax.legend()
     return ax
 
@@ -209,7 +209,7 @@ def plot_peaks(ax, mean_signal_filt, peaks):
                mean_signal_filt[peaks.astype(int)],
                c="red", marker="x",
                s=100)
-    ax.set_xlim([5000, 7000])
+    # ax.set_xlim([5000, 7000])
 
     return ax
 
@@ -260,16 +260,22 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
 
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
-    # Plot signal for 5 seconds signal
+    # Limits for signal plots of 5 secs
+    x_i = 0
+    x_f = fs*5
+    if mean_signal.shape[0] > x_f:
+        # In the unlikely case where mean signal duration is less than 5 secs
+        x_f = mean_signal.shape[0]
     ax1 = axs[0, 0]
     ax1 = plot_filtered_signal(ax1, mean_signal, mean_signal_filt)
     ax1.set_title("A", size=15)
+    ax1.set_xlim([x_i, x_f])
 
     ax2 = axs[0, 1]
     ax2 = plot_power_spectrum(ax2, mean_signal, mean_signal_filt, fs)
     ax2.set_title("B", size=15)
 
-    # Compute peaks and plot a portion of data (5 secs)
+    # Compute peaks
     peaks = compute_max_events(mean_signal_filt,
                                peak_rise=peak_rise,
                                delta=delta)
@@ -280,6 +286,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     ax3 = axs[1, 0]
     ax3 = plot_peaks(ax3, mean_signal_filt, peaks)
     ax3.set_title("C", size=15)
+    ax3.set_xlim([x_i, x_f])
 
     # Compute signal around peaks
     ax4 = axs[1, 1]
@@ -312,12 +319,21 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(12, 8))
 
-    # Heart rate using the difference time between peaks
-    heart_rate = np.mean(fs/diff_peaks)*60
+    # As before, limits for signal plots of 5 secs
+
+    x_i = 0
+    x_f = fs*5
+    if mean_signal_filt.shape[0] > x_f:
+        # In the unlikely case where mean signal duration is less than 5 secs
+        x_f = mean_signal_filt.shape[0]
 
     ax1 = axs[0, 0]
     ax1 = plot_peaks(ax1, mean_signal_filt, peaks)
     ax1.set_title("A", size=15)
+    ax1.set_xlim([x_i, x_f])
+
+    # Heart rate using the difference time between peaks
+    heart_rate = np.mean(fs/diff_peaks)*60
 
     # Compute signal around peaks
     ax2 = axs[0, 1]
@@ -334,7 +350,7 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
                   "median = %.2f,stdev = %.2f" % (mean_RR,
                                                   median_RR,
                                                   stdev_RR),
-                  size=13)
+                  size=15)
 
     # Compute and plot instantaneous HR
     ax4 = axs[1, 1]
@@ -369,7 +385,7 @@ def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
     ax3.set_title("C: RR mean = %.2f, "
                   "median = %.2f, "
                   "stdev = %.2f" % (mean_RR, median_RR, stddev_RR),
-                  size=13)
+                  size=15)
 
     ax4 = axs[1, 1]
     ax4 = plot_rr_hist(ax4, corrected_diff_peaks2)
@@ -378,7 +394,7 @@ def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
                   "stdev = %.2f" % (c_mean_RR,
                                     c_median_RR,
                                     c_stdev_RR),
-                  size=13)
+                  size=15)
 
     # Plot instantaneous HR
     ax5 = axs[2, 0]
