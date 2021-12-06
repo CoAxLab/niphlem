@@ -147,28 +147,28 @@ class BasePhysio(BaseEstimator):
                              "but only 'mean' (default), 'zscore' or 'abs' "
                              "are allowed."
                              )
-        if self.high_pass:
+        if self.high_pass is not None:
             try:
                 float(self.high_pass)
             except ValueError:
                 raise ValueError(f" '{self.high_pass}' was provided "
                                  "as highpass frequency, but it should "
                                  "be a number")
-        if self.low_pass:
+        if self.low_pass is not None:
             try:
                 float(self.low_pass)
             except ValueError:
                 raise ValueError(f" '{self.low_pass}' was provided "
                                  "as lowpass frequency, but it should "
                                  "be a number")
-        if self.high_pass and self.low_pass:
+        if self.high_pass is not None and self.low_pass is not None:
             if float(self.high_pass) > float(self.low_pass):
                 raise ValueError("high pass frequency should be lower "
                                  "than the low pass frequency for a "
                                  "bandpass filtering"
                                  )
         # Decide how to handle data and loop through
-        if self.columns:
+        if self.columns is not None:
             if self.columns == "mean":
                 signal = np.mean(signal, axis=1)
             else:
