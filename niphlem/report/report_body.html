@@ -1,0 +1,121 @@
+    <style>
+        div.report {
+            font-family: sans-serif;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        div.ecg_statistics {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 5px;
+            padding-left: 15px;
+            padding-right: 15px;
+            text-align: center;
+        }
+
+        tr, td {
+            border-bottom: 0px;
+            border-top: 0px;
+        }
+
+        tr:nth-child(even) {
+            background-color: lightgray;
+        }
+
+        tr:hover {
+            background-color: yellow;
+        }
+
+        details:hover {
+            cursor: pointer;
+        }
+        details > summary {
+            margin-left: auto;
+            margin-right: auto;
+            width: 25%;
+            background-color: lightgray;
+            outline-color: lightgray;
+        }
+
+        address {
+            color: lightgray;
+        }
+        address > a:visited {
+            color: lightgray;
+        }
+    </style>
+
+<div class="report">
+
+    <h1>${page_heading}</h1>  
+
+    niphlem version 0.0.1
+
+    <h3>Filtering:</h3>
+    ECG sampling rate: ${fs} <br>
+    lower bandpass frequency: ${low_cut} <br>
+    higher bandpass frequency: ${high_cut} <br>
+    minimum peak separation: ${delta} <br>
+    relative peak height: ${peak_rise}
+
+    <h3>Plot A) unfiltered and filtered signals, B) power spectrum, C) timeseries snapshot with marked peaks, D) average QRS signal, E) RR interval histogram and F) instantaneous heart rate</h3>
+    <img src="data:image/svg+xml,${fig1_html}"/> 
+
+    <h3>Heart rate statistics (bpm):</h3>
+    <div class="ecg_statistics">
+    ${hr_html}  
+    </div>
+
+    <br><br>
+
+    <h3>RR interval statistics (ms):</h3>
+    <div class="ecg_statistics">
+    ${rr_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Correct anomalies/artifacts in instantaneous heart rate</h3>
+
+    RR interval outliers detected via one-sided Grubb's test (RR intervals that are too large and result in an abnormally slow instantaneous heart rate): ${max_indices}
+
+    <br><br>
+    
+    RR interval outliers detected via one-sided Grubb's test (RR intervals that are too small and result in an abnormally fast instantaneous heart rate): ${min_indices}
+
+    <br><br>
+
+    <h3>Plot A) timeseries snapshot with corrected peaks marked, B) corrected average QRS signal, C) corrected RR interval histogram and D) corrected instantaneous heart rate</h3>
+    <img src="data:image/svg+xml,${fig2_html}"/> 
+
+    <h3>Corrected heart rate statistics (bpm):</h3>
+    <div class="ecg_statistics">
+    ${corrected_hr_html} 
+    </div>
+
+    <h3>Corrected RR interval statistics (ms):</h3>
+    <div class="ecg_statistics">
+    ${corrected_rr_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Compare pre and post corrected graphs</h3>
+
+    Side-by-side comparison of average QRS (A, B), RR interval histogram (C, D) and instantaneous heart rate (E, F) before (left) and after (right) anomaly/artifact correction
+
+    <img src="data:image/svg+xml,${fig3_html}"/> 
+<address>
+    Built using <a href="https://coaxlab.github.io/niphlem">niphlem</a>.
+</address>
+</div>
