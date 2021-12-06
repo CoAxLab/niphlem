@@ -156,10 +156,10 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
 
     corrected_peaks2 = corrected_peaks.copy()
     np.put(corrected_peaks2, peaks_to_replace.astype(int), new_peaks2)
-    corrected_peak_diffs2 = abs(np.diff(corrected_peaks2))
+#    corrected_peak_diffs2 = abs(np.diff(corrected_peaks2))
 
     # save peaks
     if save_name != '':
         np.savetxt(save_name, corrected_peaks2, delimiter=',')
 
-    return corrected_peaks2, corrected_peak_diffs2, max_indices, min_indices
+    return corrected_peaks2, max_indices, min_indices

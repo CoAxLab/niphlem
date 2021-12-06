@@ -1,4 +1,11 @@
-# A lot of these have been borrowed from Nilearn
+"""
+This file contains the code to generate the ECG report.
+
+Many of the functionalites used here have been borrowed from Nilearn
+(https://nilearn.github.io/)
+
+"""
+
 import io
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +14,8 @@ import pandas as pd
 import scipy.stats as st
 import string
 import urllib.parse
+from pathlib import Path
+
 from html import escape
 from os.path import join as opj
 from scipy.signal import welch
@@ -15,6 +24,149 @@ from niphlem.clean import butter_filter
 from niphlem.events import compute_max_events, correct_anomalies
 
 from .html_report import HTMLReport
+
+
+def make_ecg_report(ecg_signal,
+                    *,
+                    fs,
+                    delta,
+                    peak_rise=0.75,
+                    ground=None,
+                    high_pass=0.6,
+                    low_pass=5.0,
+                    outpath=None,
+                    ):
+    """
+    Parameters
+    ----------
+    ecg_signal : array-like of shape (n_physio_samples, n_channels)
+        ECG Signal, where each column corresponds to a recording.
+    fs : float
+        Sampling frequency of ECG recording.
+    delta: float
+        minimum separation (in physio recording units) between
+        events in signal to be considered peaks
+    peak_rise: float
+        relative height with respect to the 20th tallest events in signal
+        to consider events as peak. The default is 0.75.
+    ground : integer, optional
+        Column in the input signal to be considered as a ground channel.
+        This signal will be then substracted from the other channels.
+        The default is None.
+    high_pass : float, optional
+        High-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is 0.6.
+    low_pass : float, optional
+        Low-pass filtering frequency (in Hz). Only if filtering option
+        is not None. The default is 5.0.
+    outpath : string, optional
+        If provided, Path where report the HTML report,
+        averaged filtered signal and corrected peaks will be saved.
+        The default is None.
+
+    Returns
+    -------
+    report : html file
+        HTML report.
+    mean_signal_filt : array-like of shape (n_physio_samples, )
+        averaged filtered signa.
+    corrected_peaks : array-like
+        corrected peaks locations.
+    """
+    # TODO: Add extra checks to input arguments
+    # TODO: Change np.mean to np.nanmean?
+    n_obs, n_ch = ecg_signal.shape
+    signals = ecg_signal.copy()
+
+    # Substract ground from signal
+    if ground:
+        ground_ix = int(ground)
+        signals -= signals[:, [ground_ix]]
+        signals = signals[:, np.arange(n_ch) != ground_ix]
+
+    if outpath:
+        try:
+            outpath = Path(outpath)
+        except TypeError:
+            raise ValueError("outpath should be a string")
+
+        outpath.mkdir(exist_ok=True, parents=True)
+        outpath = outpath.absolute().as_posix()
+
+    # demean signal
+    signals -= np.mean(signals, axis=0)
+    # Filter signal
+    signals_filt = np.apply_along_axis(butter_filter,
+                                       axis=0,
+                                       arr=signals,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       fs=fs
+                                       )
+
+    # Compute average signal across channels for both raw and filter data
+    mean_signal = np.mean(signals, axis=1)
+    mean_signal_filt = np.mean(signals_filt, axis=1)
+
+    if outpath:
+        filepath = opj(outpath, "mean_filtered_signal.txt")
+        np.savetxt(filepath, mean_signal_filt)
+
+    fig1, peaks, diff_peaks, heart_rate, mean_RR, median_RR, \
+        stdev_RR, snr_RR = plot_filtered_data(mean_signal,
+                                              mean_signal_filt,
+                                              fs,
+                                              peak_rise,
+                                              delta)
+
+    hr_df = generate_hr_df(fs, diff_peaks, heart_rate)
+    rr_df = generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR)
+
+    corrected_peaks, max_indices, min_indices = correct_anomalies(peaks,
+                                                                  alpha=0.05,
+                                                                  save_name=''
+                                                                  )
+    # Compute differences between corrected peaks
+    corrected_peak_diffs = abs(np.diff(corrected_peaks))
+
+    if outpath:
+        filepath = opj(outpath, "corrected_peaks.txt")
+        np.savetxt(filepath, corrected_peaks)
+
+    fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
+        c_inst_hr = plot_corrected_data(mean_signal_filt,
+                                        corrected_peaks,
+                                        corrected_peak_diffs,
+                                        delta, fs)
+
+    corrected_hr_df = generate_hr_df(fs,
+                                     corrected_peak_diffs,
+                                     c_heart_rate)
+    corrected_rr_df = generate_rr_df(c_mean_RR, c_median_RR, c_stdev_RR,
+                                     c_snr_RR)
+
+    fig3 = plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
+                           mean_RR, median_RR, stdev_RR,
+                           corrected_peaks, corrected_peak_diffs,
+                           c_heart_rate, c_mean_RR, c_median_RR,
+                           c_stdev_RR, delta, fs)
+
+    # generate html report
+    report = _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
+                                max_indices, min_indices,
+                                corrected_hr_df, corrected_rr_df,
+                                fs,
+                                high_pass,
+                                low_pass,
+                                delta,
+                                peak_rise)
+
+    if outpath:
+        print(f"QC report for ECG signal saved in: {filepath}")
+        filepath = opj(outpath, "ecg_qc.html")
+        report.save_as_html(filepath)
+
+    return report, mean_signal_filt, corrected_peaks
 
 
 def compute_stats(x):
@@ -197,7 +349,7 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
 def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
                     mean_RR, median_RR, stddev_RR,
-                    corrected_peaks2, corrected_diff_peaks2,
+                    corrected_peaks, corrected_diff_peaks2,
                     corrected_heart_rate, c_mean_RR, c_median_RR,
                     c_stdev_RR, delta, fs):
 
@@ -208,7 +360,7 @@ def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
     ax1.set_title("A: HR = %.2f bpm" % heart_rate, size=15)
 
     ax2 = axs[0, 1]
-    ax2 = plot_average_QRS(ax2, corrected_peaks2, delta, mean_signal_filt)
+    ax2 = plot_average_QRS(ax2, corrected_peaks, delta, mean_signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % corrected_heart_rate, size=15)
 
     # Plot histogram of RR interval
@@ -428,201 +580,3 @@ def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
                              head_values=report_values_head)
 
     return report_text
-
-
-def make_ecg_report(ecg_signal,
-                    *,
-                    fs,
-                    delta,
-                    peak_rise=0.75,
-                    ground=None,
-                    high_pass=0.6,
-                    low_pass=5.0,
-                    outpath=None,
-                    ):
-
-    n_obs, n_ch = ecg_signal.shape
-
-    signals = ecg_signal.copy()
-
-    if ground:
-        ground_ix = int(ground)
-        signals -= signals[:, [ground_ix]]
-        signals = signals[:, np.arange(n_ch) != ground_ix]
-
-    signals -= np.mean(signals, axis=0)
-
-    signals_filt = np.apply_along_axis(butter_filter,
-                                       axis=0,
-                                       arr=signals,
-                                       high_pass=high_pass,
-                                       low_pass=low_pass,
-                                       fs=fs
-                                       )
-
-    mean_signal = np.mean(signals, axis=1)
-    mean_signal_filt = np.mean(signals_filt, axis=1)
-
-    if outpath:
-        filepath = opj(outpath, "mean_filtered_signal.txt")
-        np.savetxt(filepath, mean_signal_filt)
-
-    fig1, peaks, diff_peaks, heart_rate, \
-        mean_RR, median_RR, stdev_RR, snr_RR = \
-            plot_filtered_data(mean_signal,
-                               mean_signal_filt,
-                               fs,
-                               peak_rise,
-                               delta)
-
-    hr_df = generate_hr_df(fs, diff_peaks, heart_rate)
-    rr_df = generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR)
-
-    # correction (existing fn),
-    # TODO edit github fn to also return corrected_peaks2
-    corrected_peaks2, corrected_peak_diffs2, \
-        max_indices, min_indices = correct_anomalies(peaks,
-                                                     alpha=0.05,
-                                                     save_name=''
-                                                     )
-
-    if outpath:
-        filepath = opj(outpath, "corrected_peaks.txt")
-        np.savetxt(filepath, corrected_peaks2)
-
-    fig2, c_heart_rate,\
-        c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
-            c_inst_hr = plot_corrected_data(mean_signal_filt,
-                                            corrected_peaks2,
-                                            corrected_peak_diffs2,
-                                            delta, fs)
-
-    corrected_hr_df = generate_hr_df(fs,
-                                     corrected_peak_diffs2,
-                                     c_heart_rate)
-    corrected_rr_df = generate_rr_df(c_mean_RR, c_median_RR, c_stdev_RR,
-                                     c_snr_RR)
-
-    fig3 = plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                           mean_RR, median_RR, stdev_RR,
-                           corrected_peaks2, corrected_peak_diffs2,
-                           c_heart_rate, c_mean_RR, c_median_RR,
-                           c_stdev_RR, delta, fs)
-
-    # generate html report
-    report = _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
-                                max_indices, min_indices,
-                                corrected_hr_df, corrected_rr_df,
-                                fs,
-                                high_pass,
-                                low_pass,
-                                delta,
-                                peak_rise)
-
-    if outpath:
-        print(f"QC report for ECG signal saved in: {filepath}")
-        filepath = opj(outpath, "ecg_qc.html")
-        report.save_as_html(filepath)  # fix this path?
-
-    return report, mean_signal_filt, corrected_peaks2
-
-
-# class ECGReport():
-
-    def __init__(self,
-                 fs,
-                 delta,
-                 ground=None,
-                 high_pass=0.6,
-                 low_pass=5.0,
-                 peak_rise=0.75
-                 ):
-
-        self.fs = fs
-        self.high_pass = high_pass
-        self.low_pass = low_pass
-        self.delta = delta
-        self.peak_rise = peak_rise
-        self.ground = ground
-
-    def generate_report(self,
-                        ecg_signal,
-                        path="."):
-
-        n_obs, n_ch = ecg_signal.shape
-
-        signals = ecg_signal.copy()
-
-        if self.ground:
-            ground_ix = int(self.ground)
-            signals -= signals[:, [ground_ix]]
-            signals = signals[:, np.arange(n_ch) != ground_ix]
-
-        signals -= np.mean(signals, axis=0)
-
-        signals_filt = np.apply_along_axis(butter_filter,
-                                           axis=0,
-                                           arr=signals,
-                                           high_pass=self.high_pass,
-                                           low_pass=self.low_pass,
-                                           fs=self.fs
-                                           )
-
-        mean_signal = np.mean(signals, axis=1)
-        mean_signal_filt = np.mean(signals_filt, axis=1)
-
-        filepath = opj(path, "mean_filtered_signal.txt")
-        np.savetxt(filepath, mean_signal_filt)
-
-        fig1, peaks, diff_peaks, heart_rate, \
-            mean_RR, median_RR, stdev_RR, snr_RR = \
-                plot_filtered_data(mean_signal,
-                                   mean_signal_filt,
-                                   self.fs,
-                                   self.peak_rise,
-                                   self.delta)
-
-        hr_df = generate_hr_df(self.fs, diff_peaks, heart_rate)
-        rr_df = generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR)
-
-        # correction (existing fn),
-        # TODO edit github fn to also return corrected_peaks2
-        filepath = opj(path, "corrected_peaks.txt")
-        corrected_peaks2, corrected_peak_diffs2, \
-            max_indices, min_indices = correct_anomalies(peaks,
-                                                         alpha=0.05,
-                                                         save_name=filepath
-                                                         )
-
-        fig2, c_heart_rate,\
-            c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
-                c_inst_hr = plot_corrected_data(mean_signal_filt,
-                                                corrected_peaks2,
-                                                corrected_peak_diffs2,
-                                                self.delta, self.fs)
-
-        corrected_hr_df = generate_hr_df(self.fs,
-                                         corrected_peak_diffs2,
-                                         c_heart_rate)
-        corrected_rr_df = generate_rr_df(c_mean_RR, c_median_RR, c_stdev_RR,
-                                         c_snr_RR)
-
-        fig3 = plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                               mean_RR, median_RR, stdev_RR,
-                               corrected_peaks2, corrected_peak_diffs2,
-                               c_heart_rate, c_mean_RR, c_median_RR,
-                               c_stdev_RR, self.delta, self.fs)
-
-        # generate html report
-        report = generate_ECG_QC_report(fig1, fig2, fig3, hr_df, rr_df,
-                                        max_indices, min_indices,
-                                        corrected_hr_df, corrected_rr_df,
-                                        self.fs,
-                                        self.high_pass,
-                                        self.low_pass,
-                                        self.delta,
-                                        self.peak_rise)
-        filepath = opj(path, "ecg_qc.html")
-        report.save_as_html(filepath)  # fix this path?
-
-        print(f"QC report for ECG signal saved in: {filepath}")
