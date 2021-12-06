@@ -37,12 +37,12 @@ def butter_filter(data, *, fs, low_pass=None, high_pass=None, order=5):
     fs = float(fs)
     nyq = 0.5 * fs
 
-    if high_pass and low_pass:
+    if high_pass is not None and low_pass is not None:
         lowcut = float(high_pass)/nyq
         highcut = float(low_pass)/nyq
         Wn = [lowcut, highcut]
         btype = 'band'
-    elif high_pass:
+    elif high_pass is not None:
         lowcut = float(high_pass)/nyq
         Wn = lowcut
         btype = 'highpass'
