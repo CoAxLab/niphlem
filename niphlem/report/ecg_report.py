@@ -79,12 +79,12 @@ def make_ecg_report(ecg_signal,
     signals = ecg_signal.copy()
 
     # Substract ground from signal
-    if ground:
+    if ground is not None:
         ground_ix = int(ground)
         signals -= signals[:, [ground_ix]]
         signals = signals[:, np.arange(n_ch) != ground_ix]
 
-    if outpath:
+    if outpath is not None:
         try:
             outpath = Path(outpath)
         except TypeError:
@@ -108,7 +108,7 @@ def make_ecg_report(ecg_signal,
     mean_signal = np.mean(signals, axis=1)
     mean_signal_filt = np.mean(signals_filt, axis=1)
 
-    if outpath:
+    if outpath is not None:
         filepath = opj(outpath, "mean_filtered_signal.txt")
         np.savetxt(filepath, mean_signal_filt)
 
@@ -129,7 +129,7 @@ def make_ecg_report(ecg_signal,
     # Compute differences between corrected peaks
     corrected_peak_diffs = abs(np.diff(corrected_peaks))
 
-    if outpath:
+    if outpath is not None:
         filepath = opj(outpath, "corrected_peaks.txt")
         np.savetxt(filepath, corrected_peaks)
 
@@ -161,7 +161,7 @@ def make_ecg_report(ecg_signal,
                                 delta,
                                 peak_rise)
 
-    if outpath:
+    if outpath is not None:
         print(f"QC report for ECG signal saved in: {filepath}")
         filepath = opj(outpath, "ecg_qc.html")
         report.save_as_html(filepath)
@@ -263,7 +263,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     # Limits for signal plots of 5 secs
     x_i = 0
     x_f = fs*5
-    if mean_signal.shape[0] > x_f:
+    if mean_signal.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
         x_f = mean_signal.shape[0]
     ax1 = axs[0, 0]
@@ -323,7 +323,7 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     x_i = 0
     x_f = fs*5
-    if mean_signal_filt.shape[0] > x_f:
+    if mean_signal_filt.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
         x_f = mean_signal_filt.shape[0]
 
