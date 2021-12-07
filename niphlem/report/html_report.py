@@ -1,8 +1,9 @@
-import os
 import weakref
 from html import escape
+import warnings
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
+
 
 class HTMLDocument(object):
     """
@@ -78,55 +79,13 @@ class HTMLDocument(object):
         with open(file_name, 'wb') as f:
             f.write(self.get_standalone().encode('utf-8'))
 
-    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
-        """
-        Save the plot to a temporary HTML file and open it in a browser.
-        Parameters
-        ----------
-        file_name : str, optional
-            .html file to use as temporary file
-        temp_file_lifetime : float, optional (default=30.)
-            Time, in seconds, after which the temporary file is removed.
-            If None, it is never removed.
-        """
-        if file_name is None:
-            fd, file_name = tempfile.mkstemp('.html', 'nilearn_plot_')
-            os.close(fd)
-            named_file = False
-        else:
-            named_file = True
-        self.save_as_html(file_name)
-        self._temp_file = file_name
-        file_size = os.path.getsize(file_name) / 1e6
-        if temp_file_lifetime is None:
-            if not named_file:
-                warnings.warn(
-                    ("Saved HTML in temporary file: {}\n"
-                     "file size is {:.1f}M, delete it when you're done, "
-                     "for example by calling this.remove_temp_file").format(
-                         file_name, file_size))
-        else:
-            _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
-        webbrowser.open('file://{}'.format(file_name))
-
-    def remove_temp_file(self):
-        """
-        Remove the temporary file created by `open_in_browser`, if necessary.
-        """
-        if self._temp_file is None:
-            return
-        if not os.path.isfile(self._temp_file):
-            return
-        os.remove(self._temp_file)
-        print('removed {}'.format(self._temp_file))
-        self._temp_file = None
-
 
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
     Methods such as save_as_html(), open_in_browser()
     are inherited from HTMLDocument
     """
+
     def __init__(self, head_tpl, body, head_values={}):
         """The head_tpl is meant for display as a full page, eg writing on
         disk. The body is used for embedding in an existing page.
