@@ -28,11 +28,9 @@ class BasePhysio(BaseEstimator):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
@@ -212,19 +210,18 @@ class RetroicorPhysio(BasePhysio):
         each element will multiply the phases.
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
         the average across the channels. If None, it will consider each
         channel separately. The default is None.
+    peak_correct : bool, optional
+	Whether to apply an automatic Grubbs' test for peak outlier
+        correction. The default is True.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -356,11 +353,9 @@ class RVPhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
@@ -477,16 +472,17 @@ class HVPhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz).  The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
         the average across the channels. If None, it will consider each
         channel separately. The default is None.
+    peak_correct : bool, optional
+	Whether to apply an automatic Grubbs' test for peak outlier
+        correction. The default is True.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -612,11 +608,9 @@ class DownsamplePhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
