@@ -204,7 +204,7 @@ class RetroicorPhysio(BasePhysio):
     peak_rise: float
         relative height with respect to the 20th tallest events in signal
         to consider events as peak.
-    order: int or array-like (# TODO) of shape (n_orders,)
+    order: int or array-like of shape (n_orders,)
         Fourier expansion for phases. If int, the fourier expansion is
         performed to that order, starting from 1. If an array is provided,
         each element will multiply the phases.
@@ -283,7 +283,7 @@ class RetroicorPhysio(BasePhysio):
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
 
-        # Correct peaks (TODO: Pass this as argument?)
+        # Correct peaks
         if self.peak_correct:
             peaks, _, _ = correct_anomalies(peaks)
 
@@ -546,7 +546,7 @@ class HVPhysio(BasePhysio):
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
 
-        # Correct peaks (TODO: Pass this as argument?)
+        # Correct peaks
         if self.peak_correct:
             peaks, _, _ = correct_anomalies(peaks)
 
