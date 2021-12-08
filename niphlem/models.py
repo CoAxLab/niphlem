@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import (check_array, column_or_1d)
 
-from .events import compute_max_events
+from .events import compute_max_events, correct_anomalies
 from .clean import _transform_filter, zscore
 
 
@@ -241,11 +241,13 @@ class RetroicorPhysio(BasePhysio):
                  high_pass=None,
                  low_pass=None,
                  columns=None,
+                 peak_correct=True,
                  n_jobs=1):
 
         self.order = order
         self.delta = delta
         self.peak_rise = peak_rise
+        self.peak_correct = peak_correct
 
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
@@ -283,6 +285,10 @@ class RetroicorPhysio(BasePhysio):
 
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
+
+        # Correct peaks (TODO: Pass this as argument?)
+        if self.peak_correct:
+            peaks, _, _ = correct_anomalies(peaks)
 
         # Compute phases according to peaks (changed to an interpolation)
         phases_in_peaks = 2*np.pi*np.arange(len(peaks))
@@ -496,11 +502,13 @@ class HVPhysio(BasePhysio):
                  high_pass=None,
                  low_pass=None,
                  columns=None,
+                 peak_correct=True,
                  n_jobs=1):
 
         self.delta = delta
         self.peak_rise = peak_rise
         self.time_window = time_window
+        self.peak_correct = peak_correct
 
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
@@ -538,9 +546,14 @@ class HVPhysio(BasePhysio):
 
         """
 
+        # TODO: Add checks specific to this task
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
-        # TODO: Add checks specific to this task
+
+        # Correct peaks (TODO: Pass this as argument?)
+        if self.peak_correct:
+            peaks, _, _ = correct_anomalies(peaks)
+
         peaks = peaks.astype(int)
 
         # Compute times of maximum event peaks
