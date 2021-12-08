@@ -79,19 +79,26 @@ def compute_max_events(signal, peak_rise, delta):
 
 def correct_anomalies(peaks, alpha=0.05, save_name=''):
     """
-    Outlier detection (Grubb's test) and removal
+    Outlier peak detection (Grubb's test) and removal.
+
     Parameters
     ----------
-    peak_diffs : array
-        vector of peak-to-peak distances
+    peaks : array
+        vector of peak locations
     alpha : real
         significance level for Grubb's test
     save_name : str
         filename to save peaks as to, empty does not save
+
     Results
     -------
-    peaks : array
-        vector of peak locations
+    corrected_peaks2 : array
+        vector of corrected peak locations
+    max_indices : array
+	indices of original peaks marked as too slow
+    min_indices : array
+	indices of original peaks marked as too fast
+
     """
 
     from outliers import smirnov_grubbs as grubbs

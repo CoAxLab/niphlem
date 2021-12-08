@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import (check_array, column_or_1d)
 
-from .events import compute_max_events
+from .events import compute_max_events, correct_anomalies
 from .clean import _transform_filter, zscore
 
 
@@ -28,11 +28,9 @@ class BasePhysio(BaseEstimator):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
@@ -206,25 +204,24 @@ class RetroicorPhysio(BasePhysio):
     peak_rise: float
         relative height with respect to the 20th tallest events in signal
         to consider events as peak.
-    order: int or array-like (# TODO) of shape (n_orders,)
+    order: int or array-like of shape (n_orders,)
         Fourier expansion for phases. If int, the fourier expansion is
         performed to that order, starting from 1. If an array is provided,
         each element will multiply the phases.
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
-    filtering : {"butter", "gaussian", None}, optional
-        Filtering operation to perform. The default is None.
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
         the average across the channels. If None, it will consider each
         channel separately. The default is None.
+    peak_correct : bool, optional
+	Whether to apply an automatic Grubbs' test for peak outlier
+        correction. The default is True.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -241,11 +238,13 @@ class RetroicorPhysio(BasePhysio):
                  high_pass=None,
                  low_pass=None,
                  columns=None,
+                 peak_correct=True,
                  n_jobs=1):
 
         self.order = order
         self.delta = delta
         self.peak_rise = peak_rise
+        self.peak_correct = peak_correct
 
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
@@ -283,6 +282,10 @@ class RetroicorPhysio(BasePhysio):
 
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
+
+        # Correct peaks
+        if self.peak_correct:
+            peaks, _, _ = correct_anomalies(peaks)
 
         # Compute phases according to peaks (changed to an interpolation)
         phases_in_peaks = 2*np.pi*np.arange(len(peaks))
@@ -350,11 +353,9 @@ class RVPhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
@@ -471,16 +472,17 @@ class HVPhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz).  The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
         the average across the channels. If None, it will consider each
         channel separately. The default is None.
+    peak_correct : bool, optional
+	Whether to apply an automatic Grubbs' test for peak outlier
+        correction. The default is True.
     n_jobs : int, optional
         Number of jobs to consider in parallel. The default is 1.
     """
@@ -496,11 +498,13 @@ class HVPhysio(BasePhysio):
                  high_pass=None,
                  low_pass=None,
                  columns=None,
+                 peak_correct=True,
                  n_jobs=1):
 
         self.delta = delta
         self.peak_rise = peak_rise
         self.time_window = time_window
+        self.peak_correct = peak_correct
 
         super().__init__(physio_rate=physio_rate,
                          t_r=t_r,
@@ -538,9 +542,14 @@ class HVPhysio(BasePhysio):
 
         """
 
+        # TODO: Add checks specific to this task
         # Compute peaks in signal
         peaks = compute_max_events(signal, self.peak_rise, self.delta)
-        # TODO: Add checks specific to this task
+
+        # Correct peaks
+        if self.peak_correct:
+            peaks, _, _ = correct_anomalies(peaks)
+
         peaks = peaks.astype(int)
 
         # Compute times of maximum event peaks
@@ -599,11 +608,9 @@ class DownsamplePhysio(BasePhysio):
     transform : {"demean", "zscore", "abs"}, optional
         Transform data before filtering. The default is "demean".
     high_pass : float, optional
-        High-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        High-pass filtering frequency (in Hz). The default is None.
     low_pass : float, optional
-        Low-pass filtering frequency (in Hz). Only if filtering option
-        is not None. The default is None.
+        Low-pass filtering frequency (in Hz). The default is None.
     columns : List or array of n_channels elements, "mean" or None, optional
         It describes how to handle input signal channels. If a list, it will
         weight each channel and take the dot product. If "mean",
