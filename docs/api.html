@@ -7,11 +7,11 @@
   <title>API &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
-      <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
-      <link rel="stylesheet" href="_static/gallery-binder.css" type="text/css" />
-      <link rel="stylesheet" href="_static/gallery-dataframe.css" type="text/css" />
-      <link rel="stylesheet" href="_static/gallery-rendered-html.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sg_gallery-rendered-html.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Citing niphlem" href="citing.html" />
-    <link rel="prev" title="Tutorial 1: Regressors from ecg" href="tutorials_links/tutorial1.html" /> 
+    <link rel="prev" title="Tutorial 2: Regressors from pulse oximeter data" href="tutorials_links/tutorial2.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -108,7 +108,7 @@
 <h2>Retroicor Model<a class="headerlink" href="#retroicor-model" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RetroicorPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RetroicorPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio" title="Permalink to this definition"></a></dt>
 <dd><blockquote>
 <div><p>Physiological regressors using Retroicor.</p>
 </div></blockquote>
@@ -124,24 +124,23 @@ events in signal to be considered peaks</p>
 <dt>peak_rise: float</dt><dd><p>relative height with respect to the 20th tallest events in signal
 to consider events as peak.</p>
 </dd>
-<dt>order: int or array-like (# TODO) of shape (n_orders,)</dt><dd><p>Fourier expansion for phases. If int, the fourier expansion is
+<dt>order: int or array-like of shape (n_orders,)</dt><dd><p>Fourier expansion for phases. If int, the fourier expansion is
 performed to that order, starting from 1. If an array is provided,
 each element will multiply the phases.</p>
 </dd>
-<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+<dt>transform<span class="classifier">{“demean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “demean”.</p>
 </dd>
-<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
-<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
-</dd>
-<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
 <dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
 weight each channel and take the dot product. If “mean”,
 the average across the channels. If None, it will consider each
 channel separately. The default is None.</p>
+</dd>
+<dt>peak_correct<span class="classifier">bool, optional</span></dt><dd><p>Whether to apply an automatic Grubbs’ test for peak outlier
+correction. The default is True.</p>
 </dd>
 <dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
 </dd>
@@ -208,7 +207,7 @@ possible to update each component of a nested object.</p>
 <h2>Variation Model<a class="headerlink" href="#variation-model" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.RVPhysio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">RVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio" title="Permalink to this definition"></a></dt>
 <dd><blockquote>
 <div><p>Physiological regressors for variations in breathing rate/volume.</p>
 </div></blockquote>
@@ -221,15 +220,11 @@ This is needed for filtering to define the nyquist frequency.</p>
 <dt>time_window<span class="classifier">float</span></dt><dd><p>Time window (in secs) around the T_R from which computing variations
 (standard deviation of signal). The default is 6 secs.</p>
 </dd>
-<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+<dt>transform<span class="classifier">{“demean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “demean”.</p>
 </dd>
-<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
-<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
-</dd>
-<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
 <dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
 weight each channel and take the dot product. If “mean”,
@@ -298,7 +293,7 @@ possible to update each component of a nested object.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.HVPhysio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">HVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">HVPhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_correct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio" title="Permalink to this definition"></a></dt>
 <dd><blockquote>
 <div><p>Physiological regressors for variations in heart rate.</p>
 </div></blockquote>
@@ -317,20 +312,19 @@ to consider events as peak.</p>
 <dt>time_window<span class="classifier">float</span></dt><dd><p>Time window (in secs) around the T_R from which computing variations
 (time differences between signal events ). The default is 6 secs.</p>
 </dd>
-<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+<dt>transform<span class="classifier">{“demean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “demean”.</p>
 </dd>
-<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
-<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
-</dd>
-<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz).  The default is None.</p>
 </dd>
 <dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
 weight each channel and take the dot product. If “mean”,
 the average across the channels. If None, it will consider each
 channel separately. The default is None.</p>
+</dd>
+<dt>peak_correct<span class="classifier">bool, optional</span></dt><dd><p>Whether to apply an automatic Grubbs’ test for peak outlier
+correction. The default is True.</p>
 </dd>
 <dt>n_jobs<span class="classifier">int, optional</span></dt><dd><p>Number of jobs to consider in parallel. The default is 1.</p>
 </dd>
@@ -397,7 +391,7 @@ possible to update each component of a nested object.</p>
 <h2>Downsample Model<a class="headerlink" href="#downsample-model" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">DownsamplePhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">niphlem.models.</span></span><span class="sig-name descname"><span class="pre">DownsamplePhysio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physio_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio" title="Permalink to this definition"></a></dt>
 <dd><blockquote>
 <div><p>Physiological regressors by downsampling</p>
 <p>As in Verstynen 2011, raw physiological data is downsample
@@ -409,15 +403,11 @@ This is needed for filtering to define the nyquist frequency.</p>
 </dd>
 <dt>t_r<span class="classifier">float</span></dt><dd><p>Repetition time for the scanner (the usual T_R) in secs.</p>
 </dd>
-<dt>transform<span class="classifier">{“mean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “mean”.</p>
+<dt>transform<span class="classifier">{“demean”, “zscore”, “abs”}, optional</span></dt><dd><p>Transform data before filtering. The default is “demean”.</p>
 </dd>
-<dt>filtering<span class="classifier">{“butter”, “gaussian”, None}, optional</span></dt><dd><p>Filtering operation to perform. The default is None.</p>
+<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
-<dt>high_pass<span class="classifier">float, optional</span></dt><dd><p>High-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
-</dd>
-<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). Only if filtering option
-is not None. The default is None.</p>
+<dt>low_pass<span class="classifier">float, optional</span></dt><dd><p>Low-pass filtering frequency (in Hz). The default is None.</p>
 </dd>
 <dt>columns<span class="classifier">List or array of n_channels elements, “mean” or None, optional</span></dt><dd><p>It describes how to handle input signal channels. If a list, it will
 weight each channel and take the dot product. If “mean”,
@@ -503,7 +493,7 @@ possible to update each component of a nested object.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorials_links/tutorial1.html" class="btn btn-neutral float-left" title="Tutorial 1: Regressors from ecg" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials_links/tutorial2.html" class="btn btn-neutral float-left" title="Tutorial 2: Regressors from pulse oximeter data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="citing.html" class="btn btn-neutral float-right" title="Citing niphlem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
