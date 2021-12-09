@@ -95,9 +95,9 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
     corrected_peaks2 : array
         vector of corrected peak locations
     max_indices : array
-	indices of original peaks marked as too slow
+        indices of original peaks marked as too slow
     min_indices : array
-	indices of original peaks marked as too fast
+        indices of original peaks marked as too fast
 
     """
 
@@ -116,9 +116,14 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
         new_peak = peaks[i] + new_diff
         new_peaks[index] = new_peak
 
-    corrected_peaks = np.insert(peaks,
-                                (too_slow+1).reshape(-1),
-                                new_peaks.reshape(-1))
+    if np.any(too_slow):
+        corrected_peaks = np.insert(peaks,
+                                    (too_slow+1).reshape(-1),
+                                    new_peaks.reshape(-1))
+    else:
+        # No slow peaks detected, so returning the original array
+        corrected_peaks = peaks.copy()
+
     corrected_peak_diffs = abs(np.diff(corrected_peaks))
     mean_RR = np.mean(corrected_peak_diffs)
 
@@ -163,7 +168,6 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
 
     corrected_peaks2 = corrected_peaks.copy()
     np.put(corrected_peaks2, peaks_to_replace.astype(int), new_peaks2)
-#    corrected_peak_diffs2 = abs(np.diff(corrected_peaks2))
 
     # save peaks
     if save_name != '':
