@@ -111,7 +111,6 @@ def make_ecg_report(ecg_signal,
     if outpath is not None:
         filepath = opj(outpath, "mean_filtered_signal.txt")
         np.savetxt(filepath, mean_signal_filt)
-        print(f"Filtered average ECG signal saved in: {filepath}")
 
     fig1, peaks, diff_peaks, heart_rate, mean_RR, median_RR, \
         stdev_RR, snr_RR = plot_filtered_data(mean_signal,
@@ -133,7 +132,6 @@ def make_ecg_report(ecg_signal,
     if outpath is not None:
         filepath = opj(outpath, "corrected_peaks.txt")
         np.savetxt(filepath, corrected_peaks)
-        print(f"Corrected detected peaks saved in: {filepath}")
 
     fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
         c_inst_hr = plot_corrected_data(mean_signal_filt,
