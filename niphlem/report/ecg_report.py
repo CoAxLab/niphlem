@@ -37,6 +37,8 @@ def make_ecg_report(ecg_signal,
                     outpath=None,
                     ):
     """
+    Generate QC report for ECG data.
+
     Parameters
     ----------
     ecg_signal : array-like of shape (n_physio_samples, n_channels)
