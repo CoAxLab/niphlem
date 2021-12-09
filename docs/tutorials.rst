@@ -3,5 +3,5 @@ Tutorials
 ===============
 
 .. nbgallery::
-    tutorials_links/tutorial1
-    tutorials_links/tutorial2
+    tutorials/tutorial1
+    tutorials/tutorial2
