@@ -5,10 +5,8 @@ from niphlem.clean import _transform_filter
 def test_transform():
 
     rng = np.random.RandomState(1234)
-#    n_features = 20000
     n_samples = 200
 
-    filtering = None
     low_pass = None
     high_pass = None
     sampling_rate = None
@@ -20,29 +18,26 @@ def test_transform():
 
     transform = None
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
 
     transform = "abs"
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
 
     transform = "zscore"
     data_transform = _transform_filter(data,
-                                       transform,
-                                       filtering,
-                                       high_pass,
-                                       low_pass,
-                                       sampling_rate)
+                                       transform=transform,
+                                       high_pass=high_pass,
+                                       low_pass=low_pass,
+                                       sampling_rate=sampling_rate)
     assert abs(np.mean(data_transform)) < eps
     assert np.allclose(np.std(data_transform), 1.0)
 
@@ -58,17 +53,14 @@ def test_filter():
     signal = np.sin(2*np.pi*5*times) +\
         np.sin(2*np.pi*10*times) + np.sin(2*np.pi*15*times)
 
-    transform = None
-    filtering = "butter"
+    # band pass filter betweenn 6 and 12
     low_pass = 12
     high_pass = 6
 
     signal_transform = _transform_filter(signal,
-                                         transform,
-                                         filtering,
-                                         high_pass,
-                                         low_pass,
-                                         sampling_rate)
+                                         high_pass=high_pass,
+                                         low_pass=low_pass,
+                                         sampling_rate=sampling_rate)
     freqs, Pxx = periodogram(signal_transform, fs=sampling_rate)
     #  Uncomment to see the plot and how the filtered worked
     # plt.plot(freqs, Pxx)
@@ -81,22 +73,38 @@ def test_filter():
                               (freqs <= high_pass / 2)])
     assert Pxx_filtered < 1e-3*Pxx_passed
 
-    transform = None
-    filtering = "gaussian"
+    # low pass filter below 12 Hz
     low_pass = 12
     high_pass = None
 
     signal_transform = _transform_filter(signal,
-                                         transform,
-                                         filtering,
-                                         high_pass,
-                                         low_pass,
-                                         sampling_rate)
+                                         high_pass=high_pass,
+                                         low_pass=low_pass,
+                                         sampling_rate=sampling_rate)
 
     freqs, Pxx = periodogram(signal_transform, fs=sampling_rate)
 
     #  Uncomment to see the plot and how the filtered worked
     # plt.plot(freqs, Pxx)
-    assert(Pxx[freqs == 15] < Pxx[freqs == 10])
-    assert(Pxx[freqs == 15] < Pxx[freqs == 5])
-    assert(Pxx[freqs == 10] < Pxx[freqs == 5])
+
+    Pxx_passed = np.sum(Pxx[freqs < low_pass * 2.])
+    Pxx_filtered = np.sum(Pxx[freqs >= low_pass * 2.])
+    assert Pxx_filtered < 1e-3*Pxx_passed
+
+    # high pass filter above 6 Hz
+    low_pass = None
+    high_pass = 6
+
+    signal_transform = _transform_filter(signal,
+                                         high_pass=high_pass,
+                                         low_pass=low_pass,
+                                         sampling_rate=sampling_rate)
+
+    freqs, Pxx = periodogram(signal_transform, fs=sampling_rate)
+
+    #  Uncomment to see the plot and how the filtered worked
+    # plt.plot(freqs, Pxx)
+
+    Pxx_passed = np.sum(Pxx[freqs > high_pass / 2.])
+    Pxx_filtered = np.sum(Pxx[freqs <= high_pass / 2])
+    assert Pxx_filtered < 1e-3*Pxx_passed

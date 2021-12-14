@@ -33,6 +33,36 @@ def test_initial_checks():
     assert exc_info.type is ValueError
     print(f"we have passed the test: {exc_info.value.args[0]}")
 
+    # This should give an error because a not numeric low_pass freq is used
+    test_physio = TestPhysio(physio_rate=400, t_r=2.0, delta=200,
+                             low_pass="a string")
+    with pytest.raises(ValueError) as exc_info:
+        test_physio.compute_regressors(signal,
+                                       time_scan,
+                                       time_physio=time_scan)
+    assert exc_info.type is ValueError
+    print(f"we have passed the test: {exc_info.value.args[0]}")
+
+    # This should give an error because a not numeric high_pass freq is used
+    test_physio = TestPhysio(physio_rate=400, t_r=2.0, delta=200,
+                             high_pass="a string")
+    with pytest.raises(ValueError) as exc_info:
+        test_physio.compute_regressors(signal,
+                                       time_scan,
+                                       time_physio=time_scan)
+    assert exc_info.type is ValueError
+    print(f"we have passed the test: {exc_info.value.args[0]}")
+
+    # Error because high_pass freq is greater than low_pass frequency
+    test_physio = TestPhysio(physio_rate=400, t_r=2.0, delta=200,
+                             high_pass=2, low_pass=1)
+    with pytest.raises(ValueError) as exc_info:
+        test_physio.compute_regressors(signal,
+                                       time_scan,
+                                       time_physio=time_scan)
+    assert exc_info.type is ValueError
+    print(f"we have passed the test: {exc_info.value.args[0]}")
+
     # This should give an error because we are passing a not numeric column
     test_physio = TestPhysio(physio_rate=400, t_r=2.0, delta=200,
                              columns=[1, 2, "dog"])

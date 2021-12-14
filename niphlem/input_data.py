@@ -121,6 +121,7 @@ def load_cmrr_info(filename):
 
 def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
     """
+    Load data log files from CMRR sequences.
 
     Parameters
     ----------
@@ -311,6 +312,13 @@ def proc_input(path,
         mpl.plot(ECG[:, 3], 'k')
         mpl.show()
 
+
+def load_bids_physio():
+    """
+    Load physiological data in BIDS format
+    """
+    # TODO
+    return NotImplementedError
 
 
 ###############################################################################
