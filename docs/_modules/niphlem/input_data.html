@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>niphlem.input_data &mdash; niphlem 0.0.1-beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> niphlem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citing.html">Citing niphlem</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">niphlem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>niphlem.input_data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for niphlem.input_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">mpl</span>
+
+
+<span class="k">def</span> <span class="nf">get_lines</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read in lines from file, stripping new line markers</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str, pathlike</span>
+<span class="sd">        Path to file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lines : list</span>
+<span class="sd">        List containing each line.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Cannot open input file &#39;</span> <span class="o">+</span> <span class="n">filename</span>
+        <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Get lines of file</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">lines</span>
+
+
+<div class="viewcode-block" id="load_cmrr_info"><a class="viewcode-back" href="../../api.html#niphlem.input_data.load_cmrr_info">[docs]</a><span class="k">def</span> <span class="nf">load_cmrr_info</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load information log files from CMRR sequences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str, pathlike</span>
+<span class="sd">        Path to Information Log file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    traces : ndarray</span>
+<span class="sd">        Time ticks of the scanner.</span>
+<span class="sd">    meta_info : dict</span>
+<span class="sd">        Dictionary with meta information about the info log file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: Add function to validate input file. For example, it should be</span>
+    <span class="c1"># a .log type file.</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">get_lines</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">meta_info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="c1"># Get parameters for meta file and lines containing data</span>
+    <span class="n">stt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">stp</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;UUID&#39;</span><span class="p">:</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ScanDate&#39;</span><span class="p">:</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;scan_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LogVersion&#39;</span><span class="p">:</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;log_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumVolumes&#39;</span><span class="p">:</span>
+            <span class="n">n_vols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;n_vols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_vols</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumSlices&#39;</span><span class="p">:</span>
+            <span class="n">n_slices</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;n_slices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_slices</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumEchoes&#39;</span><span class="p">:</span>
+            <span class="n">n_echoes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;n_echoes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_echoes</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;FirstTime&#39;</span><span class="p">:</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;init_physio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LastTime&#39;</span><span class="p">:</span>
+            <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;end_physio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="c1"># Inherent assumption that all lines starting with a number are data</span>
+        <span class="k">if</span> <span class="n">stt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">stt</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">stp</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">stp</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="c1"># Pull data into numpy array</span>
+    <span class="c1"># traces = np.zeros((stp - stt, len(cols)))</span>
+    <span class="n">traces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_vols</span><span class="p">,</span> <span class="n">n_slices</span><span class="p">,</span> <span class="n">n_echoes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stt</span><span class="p">,</span> <span class="n">stp</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">ivol</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">islice</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">iecho</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">acq_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">acq_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">traces</span><span class="p">[:,</span> <span class="n">ivol</span><span class="p">,</span> <span class="n">islice</span><span class="p">,</span> <span class="n">iecho</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">acq_start</span><span class="p">,</span> <span class="n">acq_end</span><span class="p">]</span>
+
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;init_scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">traces</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;end_scan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">traces</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="c1"># TODO: Do we need this? The repetition is something usually knwon</span>
+    <span class="n">repetition_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;end_scan&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;init_scan&#39;</span><span class="p">])</span><span class="o">/</span><span class="n">n_vols</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;repetition_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">repetition_time</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">traces</span><span class="p">,</span> <span class="n">meta_info</span></div>
+
+
+<div class="viewcode-block" id="load_cmrr_data"><a class="viewcode-back" href="../../api.html#niphlem.input_data.load_cmrr_data">[docs]</a><span class="k">def</span> <span class="nf">load_cmrr_data</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">sig_type</span><span class="p">,</span> <span class="n">info_dict</span><span class="p">,</span> <span class="n">sync_scan</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load data log files from CMRR sequences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str, pathlike</span>
+<span class="sd">        Path to recording log file..</span>
+<span class="sd">    sig_type : str</span>
+<span class="sd">        Type of signal for use in dictionary</span>
+<span class="sd">    info_dict : dict</span>
+<span class="sd">        Dictionary with the meta information of the Info log file. It needs</span>
+<span class="sd">        to be compute before by using the function load_cmrr_info.</span>
+<span class="sd">    sync_scan : bool, optional</span>
+<span class="sd">        Whether we want to resample the signal to be synchronized</span>
+<span class="sd">        with the scanner times. The default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    signal : ndarray</span>
+<span class="sd">        The recording signal, where the number of columns corresponds</span>
+<span class="sd">        to the number of channels (ECG: 4, PULS: 1, RESP: 1) and the rows to</span>
+<span class="sd">        observations.</span>
+<span class="sd">    info_dict : dict</span>
+<span class="sd">        Updated meta info of the physiological recording.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+
+    <span class="c1"># TODO: Add checks of filename and info dict</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">get_lines</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="c1"># Get sampling rate and start of data</span>
+    <span class="n">stt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SampleTime&#39;</span><span class="p">:</span>
+            <span class="n">sample_rate</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="c1"># Inherent assumption that all lines starting with a number are data</span>
+        <span class="k">if</span> <span class="n">stt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">stt</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+    <span class="c1"># Get number of channels (not particularly efficient, but thorough...)</span>
+    <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;PULS&#39;</span> <span class="ow">or</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RESP&#39;</span><span class="p">:</span>
+        <span class="n">n_channels</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_channels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">n_channels</span><span class="p">:</span>
+                <span class="n">n_channels</span> <span class="o">=</span> <span class="n">j</span>
+
+    <span class="c1"># Pull data into numpy array</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;end_physio&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;init_physio&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">full_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">))</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Use separate loop for single channel to avoid repeated ifs for</span>
+        <span class="c1"># channel #</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;init_physio&#39;</span><span class="p">])</span>
+            <span class="n">full_signal</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">time</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;init_physio&#39;</span><span class="p">])</span>
+            <span class="n">full_signal</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">time</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">sync_scan</span><span class="p">:</span>
+        <span class="n">new_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;init_scan&#39;</span><span class="p">],</span>
+                             <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;end_scan&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;init_physio&#39;</span><span class="p">],</span>
+                             <span class="n">info_dict</span><span class="p">[</span><span class="s1">&#39;end_physio&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">signal</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s_channel</span> <span class="ow">in</span> <span class="n">full_signal</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">s_channel</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interp1d</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">s_channel</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
+                               <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)(</span><span class="n">new_time</span><span class="p">))</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+    <span class="n">info_dict</span><span class="p">[</span><span class="n">sig_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">info_dict</span><span class="p">[</span><span class="n">sig_type</span><span class="p">][</span><span class="s1">&#39;n_channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_channels</span>
+    <span class="n">info_dict</span><span class="p">[</span><span class="n">sig_type</span><span class="p">][</span><span class="s1">&#39;sample_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_rate</span>
+
+    <span class="k">return</span> <span class="n">signal</span><span class="p">,</span> <span class="n">info_dict</span></div>
+
+
+<span class="k">def</span> <span class="nf">proc_input</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+               <span class="n">info_file</span><span class="p">,</span>
+               <span class="n">puls_file</span><span class="p">,</span>
+               <span class="n">resp_file</span><span class="p">,</span>
+               <span class="n">ecg_file</span><span class="p">,</span>
+               <span class="n">meta_filename</span><span class="o">=</span><span class="s1">&#39;meta.json&#39;</span><span class="p">,</span>
+               <span class="n">sig_filename</span><span class="o">=</span><span class="s1">&#39;signal&#39;</span><span class="p">,</span>
+               <span class="n">show_signals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract relevant data from info, PULS, RESP, and ECG files; creates meta</span>
+<span class="sd">        file with info and .npy file with signal array</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str, pathlike</span>
+<span class="sd">        Path to directories containing files.</span>
+<span class="sd">    info_file : str, pathlike</span>
+<span class="sd">        Info file name.</span>
+<span class="sd">    puls_file : str, pathlike</span>
+<span class="sd">        PULS file name.</span>
+<span class="sd">    resp_file : str, pathlike</span>
+<span class="sd">        RESP file name.</span>
+<span class="sd">    ecg_file : str, pathlike</span>
+<span class="sd">        ECG file name.</span>
+<span class="sd">    meta_filename : str, pathlike, optional</span>
+<span class="sd">        Filename to store meta info, default &#39;meta.json&#39;</span>
+<span class="sd">    sig_filename : str, pathlike, optional</span>
+<span class="sd">        Filename to store signal array, default &#39;signal&#39;</span>
+<span class="sd">    show_signals : bool, optional</span>
+<span class="sd">        Flag to show plots of signals, default False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cardiac_range</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.75</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">]</span>  <span class="c1"># Hz</span>
+    <span class="n">respiratory_range</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>     <span class="c1"># Hz</span>
+    <span class="c1"># TODO: Take this as an input or extract somehow</span>
+    <span class="n">sampling_frequency</span> <span class="o">=</span> <span class="mi">400</span>    <span class="c1"># Hz</span>
+
+    <span class="c1"># ensure path ends in /</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span>
+
+    <span class="c1"># get data from INFO file</span>
+    <span class="n">traces</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> <span class="n">load_cmrr_info</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">path</span> <span class="o">+</span> <span class="n">info_file</span><span class="p">)</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;frequency_info&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;frequency_info&#39;</span><span class="p">][</span><span class="s1">&#39;sampling_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampling_frequency</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;frequency_info&#39;</span><span class="p">][</span><span class="s1">&#39;cardiac_range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cardiac_range</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;frequency_info&#39;</span><span class="p">][</span><span class="s1">&#39;respiratory_range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">respiratory_range</span>
+
+    <span class="c1"># get data from PULS file</span>
+    <span class="n">PULS</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> \
+        <span class="n">load_cmrr_data</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">path</span> <span class="o">+</span> <span class="n">puls_file</span><span class="p">,</span>
+                       <span class="n">sig_type</span><span class="o">=</span><span class="s1">&#39;puls&#39;</span><span class="p">,</span>
+                       <span class="n">info_dict</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span>
+                       <span class="n">sync_scan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># get data from RESP file</span>
+    <span class="n">RESP</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> \
+        <span class="n">load_cmrr_data</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">path</span> <span class="o">+</span> <span class="n">resp_file</span><span class="p">,</span>
+                       <span class="n">sig_type</span><span class="o">=</span><span class="s1">&#39;resp&#39;</span><span class="p">,</span>
+                       <span class="n">info_dict</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span>
+                       <span class="n">sync_scan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># get data from ECG file</span>
+    <span class="n">ECG</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> \
+        <span class="n">load_cmrr_data</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">path</span> <span class="o">+</span> <span class="n">ecg_file</span><span class="p">,</span>
+                       <span class="n">sig_type</span><span class="o">=</span><span class="s1">&#39;ecg&#39;</span><span class="p">,</span>
+                       <span class="n">info_dict</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span>
+                       <span class="n">sync_scan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># store aligned signals in a single matrix, save to signal.npy</span>
+    <span class="n">n_channels</span> <span class="o">=</span> <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;ecg&#39;</span><span class="p">][</span><span class="s1">&#39;n_channels&#39;</span><span class="p">]</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">ECG</span><span class="p">),</span> <span class="n">n_channels</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">signal</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">n_channels</span><span class="p">]</span> <span class="o">=</span> <span class="n">ECG</span>
+    <span class="n">signal</span><span class="p">[:,</span> <span class="p">[</span><span class="n">n_channels</span><span class="p">]]</span> <span class="o">=</span> <span class="n">PULS</span>
+    <span class="n">signal</span><span class="p">[:,</span> <span class="p">[</span><span class="n">n_channels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">RESP</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sig_filename</span><span class="p">,</span> <span class="n">signal</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">meta_info</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="c1"># plot signals if desired</span>
+    <span class="k">if</span> <span class="n">show_signals</span><span class="p">:</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">PULS</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">RESP</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ECG</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ECG</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ECG</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;g&#39;</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ECG</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">mpl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">load_bids_physio</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load physiological data in BIDS format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO</span>
+    <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="c1">###############################################################################</span>
+
+<span class="c1">#path = &#39;/Users/andrew/Fellowship/projects/brainhack-physio-project/data/sample2/&#39;</span>
+<span class="c1">#info_file = &#39;Physio_sample2_Info.log&#39;</span>
+<span class="c1">#puls_file = &#39;Physio_sample2_PULS.log&#39;</span>
+<span class="c1">#resp_file = &#39;Physio_sample2_RESP.log&#39;</span>
+<span class="c1">#ecg_file = &#39;Physio_sample2_ECG.log&#39;</span>
+<span class="c1">#proc_input(path, info_file, puls_file, resp_file, ecg_file, show_signals=True)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, coaxlab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
