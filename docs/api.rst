@@ -42,3 +42,9 @@ Downsample
 .. autoclass:: niphlem.models.DownsamplePhysio
    :members:
    :inherited-members:
+
+
+Report
+----------------
+
+.. autofunction:: niphlem.report.make_ecg_report

@@ -99,9 +99,9 @@
 </style>
 <section id="niphlem-physiological-log-extraction-for-modeling-in-neuroimaging">
 <h1><em>niphlem</em>: Physiological Log Extraction for Modeling in Neuroimaging<a class="headerlink" href="#niphlem-physiological-log-extraction-for-modeling-in-neuroimaging" title="Permalink to this headline"></a></h1>
-<p><em>niphlem</em> is a toolbox extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.</p>
+<p><em>niphlem</em> is a toolbox that extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.</p>
 <p><em>niphlem</em> can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).</p>
-<p>Briefly, <em>niphlem</em> implements three types of models:</p>
+<p>Briefly, niphlem implements two physiological models for regressors generation:</p>
 <ul class="simple">
 <li><p><strong>RETROICOR</strong>:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues.</p></li>
 <li><p><strong>Variation Models</strong>:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).</p></li>
@@ -130,6 +130,7 @@
 <li class="toctree-l2"><a class="reference internal" href="user_guide.html#physiological-signal">2-Physiological Signal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user_guide.html#retroicor-models">3-Retroicor Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="user_guide.html#variation-models">4-Variation Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#reports">5-Reports</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
@@ -141,6 +142,7 @@
 <li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api.html#input-data">Input data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#models">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#report">Report</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="citing.html">Citing niphlem</a></li>

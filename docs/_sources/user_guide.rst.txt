@@ -37,6 +37,10 @@ Right now *niphlem* is only able to use physiological data in the form of Log fi
 
 Under construction...
 
+2.2- Loading physiological data in BIDS format
+------------------------------------------------------------
+
+Soon!
 
 3-Retroicor Models
 ====================
@@ -44,6 +48,11 @@ Under construction...
 Under construction...
 
 4-Variation Models
+====================
+
+Under construction...
+
+5-Reports
 ====================
 
 Under construction...
