@@ -117,23 +117,23 @@
 <h2>1-Intro to Niphlem<a class="headerlink" href="#intro-to-niphlem" title="Permalink to this headline"></a></h2>
 <section id="what-is-niphlem">
 <h3>1.1- What is Niphlem?<a class="headerlink" href="#what-is-niphlem" title="Permalink to this headline"></a></h3>
-<p>Niphlem is a toolbox originated to preprocess phsyiological signal collected during MRI scannings. It is able to estimate from these recording covariates that can be later used in  general linear model (GLM) analyses of fMRI data.</p>
-<p>It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the <a class="reference external" href="http://scipy-lectures.org/">scipy lecture notes</a>.
-Alternatively, Matlab users may be more interested in using PhLEM, which is what niphlem is based on. Check <a class="reference external" href="https://sites.google.com/site/phlemtoolbox/">PhLEM Toolbox</a> for more details on this toolbox.</p>
+<p><em>Niphlem</em> is a toolbox originated to preprocess phsyiological signal collected during MRI scannings. It is able to estimate from these recording covariates that can be later used in  general linear model (GLM) analyses of fMRI data.</p>
+<p>It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the <a class="reference external" href="http://scipy-lectures.org/">scipy lecture notes</a>.</p>
+<p>Alternatively, Matlab users may be more interested in using PhLEM, which is what <em>niphlem</em> is based on. Check <a class="reference external" href="https://sites.google.com/site/phlemtoolbox/">PhLEM Toolbox</a> for more details on this toolbox.</p>
 </section>
 <section id="installing-niphlem">
 <h3>1.2- Installing niphlem<a class="headerlink" href="#installing-niphlem" title="Permalink to this headline"></a></h3>
-<p>niphlem can be easily installed through pypi as follows:</p>
+<p><em>niphlem</em> can be easily installed through pypi as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">niphlem</span>
 </pre></div>
 </div>
-<p>The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas,scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing niphlem.</p>
+<p>The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas,scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing <em>niphlem</em>.</p>
 </section>
 </section>
 <section id="physiological-signal">
 <h2>2-Physiological Signal<a class="headerlink" href="#physiological-signal" title="Permalink to this headline"></a></h2>
-<p>Niphlem handles three types of physiological signals: electrogradiogram (ECG), respiration and pulse oximeter (pulse-ox).</p>
-<p>Right now niphlem is only able to use physiological data in the form of Log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit <a class="reference external" href="https://www.cmrr.umn.edu/multiband">https://www.cmrr.umn.edu/multiband</a> for more details). In the future, more formats of input physiological data will be incorporated (e.g. BIDS format).</p>
+<p><em>Niphlem</em> handles three types of physiological signals: electrogradiogram (ECG), respiration and pulse oximeter (pulse-ox).</p>
+<p>Right now <em>niphlem</em> is only able to use physiological data in the form of Log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit <a class="reference external" href="https://www.cmrr.umn.edu/multiband">https://www.cmrr.umn.edu/multiband</a> for more details). In the future, more formats of input physiological data will be incorporated (e.g. BIDS format).</p>
 <section id="loading-physiological-data-from-cmrr-mb-sequences">
 <h3>2.1- Loading physiological data from CMRR MB sequences<a class="headerlink" href="#loading-physiological-data-from-cmrr-mb-sequences" title="Permalink to this headline"></a></h3>
 <p>Under constraction…</p>
