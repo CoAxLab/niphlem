@@ -150,6 +150,7 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
     from scipy.interpolate import interp1d
 
     # TODO: Add checks of filename and info dict
+    info_dict = info_dict.copy()
 
     lines = get_lines(filename)
 
