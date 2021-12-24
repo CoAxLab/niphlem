@@ -211,7 +211,8 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
 
     signal = []
     for s_channel in full_signal.T:
-        mask = (s_channel != 0.)
+        # Use a mask to interpolate possible zero/nan artifacts
+        mask = (s_channel != 0.) & ~np.isnan(s_channel)
         signal.append(interp1d(time[mask], s_channel[mask],
                                fill_value="extrapolate")(new_time))
     signal = np.column_stack(signal)
@@ -384,7 +385,8 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
 
     signal = []
     for s_channel in data.T:
-        mask = (s_channel != 0.)  # This just removes possible zeros artifacts
+        # Use a mask to interpolate possible zero/nan artifacts
+        mask = (s_channel != 0.) & ~np.isnan(s_channel)
         signal.append(interp1d(time[mask], s_channel[mask],
                                fill_value="extrapolate")(new_time))
     signal = np.column_stack(signal)
