@@ -356,6 +356,9 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     # Load data file
     data = np.loadtxt(data_file)
 
+    if data.ndim == 1:
+        data = data.reshape(-1, 1)
+
     if resample_freq is None:
         resample_freq = meta_info['SamplingFrequency']
     else:
@@ -364,20 +367,20 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     # Define init and end time recording
     n_obs = data.shape[0]
     init_physio = meta_info['StartTime']
-    end_physio = n_obs/meta_info['SamplingFrequency'] - init_physio
+    end_physio = init_physio + n_obs/meta_info['SamplingFrequency']
+
+    # Define time ticks then
+    time = np.linspace(init_physio, end_physio, num=n_obs)
 
     # Number of times, depending on whether we are resampling or not
-    num = int(n_obs*(meta_info['SamplingFrequency']/resample_freq))
-    # Define time ticks then
-    time = np.linspace(init_physio, end_physio, num=num)
+    n_resample = int(n_obs*(resample_freq/meta_info['SamplingFrequency']))
+    new_time = np.linspace(init_physio, end_physio, num=n_resample)
 
     if sync_scan:
-        new_num = sum(time >= 0)
+        new_num = sum(new_time >= 0)
         # Resample to init time 0, keeping the same number of obs after 0
         new_time = np.linspace(0, end_physio, num=new_num)
         meta_info['StartTime'] = 0.0
-    else:
-        new_time = time
 
     signal = []
     for s_channel in data.T:
