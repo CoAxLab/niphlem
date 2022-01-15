@@ -329,17 +329,17 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     resample_freq : float, optional
         Frequency to resample the data. The default is None.
     sync_scan : bool, optional
-        Whether we want to resample the signal to be synchronized
+        Whether we want the signal to be synchronized
         with the scanner times. The default is True.
 
     Returns
     -------
     signal : ndarray
-        The recording signal, where the each columns corresponds
-        to a particular recording, which can be identfied in the meta_info
+        The signal, where each columns corresponds to a particular
+        recording, whose names can wh be identfied in the meta_info
         dictionary returned, and the rows to observations.
     meta_info : dict
-        meta information that contains the sampling frequency,
+        Meta information that at least contains the sampling frequency,
         the start time of the signals, and the name of each signal column.
     """
 
