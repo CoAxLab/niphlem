@@ -366,7 +366,7 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     if set(req_fields).issubset(set(meta_info.keys())) is False:
         missing_fields = set(req_fields).difference(set(meta_info.keys()))
         raise ValueError("The following required fields appear to be missing "
-                         "in the BIDS JSON file:" + ', '.join(missing_fields)
+                         "in the BIDS JSON file: " + ', '.join(missing_fields)
                          )
     # Load data file
     data = np.loadtxt(data_file)
