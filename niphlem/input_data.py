@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import matplotlib.pyplot as mpl
+import warnings
 
 
 def get_lines(filename):
@@ -354,11 +355,25 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     with open(json_file) as fp:
         meta_info = json.load(fp)
 
+    # Validate fields in JSON file according to BIDS
+    req_fields = ['Columns', 'SamplingFrequency', 'StartTime']
+    if set(req_fields).issubset(set(meta_info.keys())) is False:
+        missing_fields = set(req_fields).difference(set(meta_info.keys()))
+        raise ValueError("The following required fields appear to be missing "
+                         "in the BIDS JSON file:" + ', '.join(missing_fields)
+                         )
     # Load data file
     data = np.loadtxt(data_file)
 
     if data.ndim == 1:
         data = data.reshape(-1, 1)
+
+    # Check that the number of columns in data is the same as the number of
+    # names in "Columns" of the json file. If not, a warning will be prompted.
+    if data.shape[1] != len(meta_info['Columns']):
+        warnings.warn("The number of columns in the data file does not "
+                      " match the number of names in the metafield 'Columns'"
+                      )
 
     if resample_freq is None:
         resample_freq = meta_info['SamplingFrequency']
@@ -371,16 +386,19 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     end_physio = init_physio + n_obs/meta_info['SamplingFrequency']
 
     # Define time ticks then
-    time = np.linspace(init_physio, end_physio, num=n_obs)
+    time = np.linspace(init_physio, end_physio, num=n_obs, endpoint=False)
 
     # Number of times, depending on whether we are resampling or not
-    n_resample = int(n_obs*(resample_freq/meta_info['SamplingFrequency']))
-    new_time = np.linspace(init_physio, end_physio, num=n_resample)
+    n_resample = int(
+        np.round(n_obs * (resample_freq / meta_info['SamplingFrequency']))
+        )
+    new_time = np.linspace(init_physio, end_physio, num=n_resample,
+                           endpoint=False)
 
     if sync_scan:
         new_num = sum(new_time >= 0)
         # Resample to init time 0, keeping the same number of obs after 0
-        new_time = np.linspace(0, end_physio, num=new_num)
+        new_time = np.linspace(0, end_physio, num=new_num,  endpoint=False)
         meta_info['StartTime'] = 0.0
 
     signal = []
@@ -390,6 +408,9 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
         signal.append(interp1d(time[mask], s_channel[mask],
                                fill_value="extrapolate")(new_time))
     signal = np.column_stack(signal)
+
+    # Update field in meta information object
+    meta_info['SamplingFrequency'] = resample_freq
 
     return signal, meta_info
 
