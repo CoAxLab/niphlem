@@ -318,7 +318,7 @@ def proc_input(path,
 
 def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     """
-    Load physiological data in BIDS format
+    Load physiological data in BIDS format.
 
     Parameters
     ----------
@@ -350,6 +350,12 @@ def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
         raise ValueError("Data file should end with physio.tsv.gz")
     if json_file.endswith("physio.json") is False:
         raise ValueError("Sidecar file should end with physio.json")
+
+    # Check that both files have the same name without extensions
+    if data_file.split(".tsv.gz")[0] != json_file.split(".json")[0]:
+        raise ValueError("data file and json file do not have the same "
+                         "name (without extensions), which invalidates "
+                         " BIDS specification")
 
     # Load sidecar information
     with open(json_file) as fp:
