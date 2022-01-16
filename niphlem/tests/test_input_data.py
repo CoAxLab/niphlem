@@ -1,9 +1,6 @@
-import numpy as np
 import os
-import json
 from pathlib import Path
-
-import niphlem.input_data as unit
+import pytest
 
 
 def test_get_lines():
@@ -11,12 +8,68 @@ def test_get_lines():
     Test that get_lines function returns correct first, middle, and last lines
     of a sample file
     """
-    fn = Path(__file__).parent.as_posix() + '/datasets/sample1/Physio_sample1_Info.log'
+    import niphlem.input_data as unit
+
+    fn = Path(__file__).parent.as_posix()
+    fn += '/datasets/sample1/Physio_sample1_Info.log'
     lines = unit.get_lines(fn)
     # Test first, random middle, and last line
-    assert lines[0] == 'UUID        = 6ec4c7ab-b798-4eec-989c-9458617d425c'
-    assert lines[10000] == '   312      19         21985776         21985799     0'
+    assert lines[0] == \
+        'UUID        = 6ec4c7ab-b798-4eec-989c-9458617d425c'
+    assert lines[10000] == \
+        '   312      19         21985776         21985799     0'
     assert lines[23627] == 'LastTime    = 22113530'
+
+
+def test_load_bids():
+    " Test that data in bids format is loaded correctly."
+    from niphlem.input_data import load_bids_physio
+
+    data_dir = Path(__file__).parent.joinpath('datasets').as_posix()
+    data_file = os.path.join(data_dir, "test_bids_ok_physio.tsv.gz")
+    json_file = os.path.join(data_dir, "test_bids_ok_physio.json")
+
+    data, meta_info = load_bids_physio(data_file, json_file)
+
+    assert data.shape == (10, 4)
+    assert meta_info['SamplingFrequency'] == 100
+    assert meta_info['StartTime'] == 0.0
+    assert len(meta_info['Columns']) == 4
+
+    data_file = os.path.join(data_dir, "test_bids_ok_physio.tsv.gz")
+    json_file = os.path.join(data_dir, "test_bids_col_missing_physio.json")
+
+    with pytest.raises(ValueError) as exc_info:
+        data, meta_info = load_bids_physio(data_file, json_file)
+    assert exc_info.type is ValueError
+    print(f"We have passed the test: {exc_info.value.args[0]}")
+
+    data_file = os.path.join(data_dir, "test_bids_col_missing_physio.tsv.gz")
+    json_file = os.path.join(data_dir, "test_bids_col_missing_physio.json")
+
+    with pytest.raises(ValueError) as exc_info:
+        data, meta_info = load_bids_physio(data_file, json_file)
+    assert exc_info.type is ValueError
+    print(f"We have passed the test: {exc_info.value.args[0]}")
+
+    data_file = os.path.join(data_dir, "test_bids_field_bad_physio.tsv.gz")
+    json_file = os.path.join(data_dir, "test_bids_field_bad_physio.json")
+
+    with pytest.raises(ValueError) as exc_info:
+        data, meta_info = load_bids_physio(data_file, json_file)
+    assert exc_info.type is ValueError
+    print(f"We have passed the test: {exc_info.value.args[0]}")
+
+    data_file = os.path.join(data_dir,
+                             "test_bids_cols_different_physio.tsv.gz")
+    json_file = os.path.join(data_dir,
+                             "test_bids_cols_different_physio.json")
+
+    with pytest.warns(UserWarning) as exc_info:
+        load_bids_physio(data_file, json_file)
+
+    assert exc_info.list[0].category is UserWarning
+    print(f"We have passed the warning: {exc_info.list[0].message}")
 
 #def test_load_cmrr_info_old():
 #
@@ -83,7 +136,7 @@ def test_get_lines():
 # Run tests                                                                    #
 ################################################################################
 
-test_get_lines()
+#test_get_lines()
 #test_load_cmrr_info_old()
 #test_load_cmrr_info()
 #test_getData()
