@@ -33,7 +33,21 @@ release = '0.0.1-beta'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 #extensions = ['sphinx.ext.autodoc', 'sphinx.ext.githubpages', 'sphinx_rtd_theme', 'sphinx_gallery.gen_gallery', 'nbsphinx', 'sphinx_gallery.load_style', 'nbsphinx_link']
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.githubpages', 'sphinx_rtd_theme', 'sphinx_gallery.gen_gallery', 'nbsphinx', 'sphinx_gallery.load_style', 'nbsphinx_link']
+extensions =  [
+    'sphinx.ext.autodoc', 
+    'sphinx.ext.autosummary', 
+    'sphinx.ext.napoleon', 
+    'sphinx.ext.githubpages', 
+    'sphinx.ext.viewcode',
+    'sphinx_rtd_theme', 
+    'sphinx_gallery.gen_gallery',
+    'nbsphinx', 
+    'sphinx_gallery.load_style', 
+    'nbsphinx_link'
+     ]
+
+autodoc_default_flags = ['members']
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

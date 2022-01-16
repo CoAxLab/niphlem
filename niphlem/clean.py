@@ -1,10 +1,10 @@
 import numpy as np
 import json
 import matplotlib.pyplot as mpl
+import warnings
 
 
-
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+def butter_filter(data, *, fs, low_pass=None, high_pass=None, order=5):
     """
     Applies Butterworth bandpass double filter (to minimize shift).
 
@@ -12,63 +12,55 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     ---------
     data : vector
         signal to be filtered
-    lowcut : real
-        lowpass cutoff frequency (Hz)
-    highcut : real
-        highpass cutoff frequency (Hz)
     fs : real
         sampling frequency (Hz)
+    low_pass : real
+        frequency below passing data (Hz)
+    high_pass : real
+        frequency above passing data (Hz)
     order : int
         filter order (will be rounded up to even integer)
 
     Returns
     -------
-    bandpass filtered signal
+    filtered signal
     """
 
-    # fs, lowcut and highcut are in frequency units (Hz)
     from scipy.signal import (sosfiltfilt, butter)
 
+    if low_pass is None and high_pass is None:
+        # TODO: Maybe we could delete this warning message
+        warnings.warn("No low_pass or high_pass filtered supplied,"
+                      " so no filtering was performed")
+        return data
+
+    fs = float(fs)
     nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
+
+    if high_pass is not None and low_pass is not None:
+        lowcut = float(high_pass)/nyq
+        highcut = float(low_pass)/nyq
+        Wn = [lowcut, highcut]
+        btype = 'band'
+    elif high_pass is not None:
+        lowcut = float(high_pass)/nyq
+        Wn = lowcut
+        btype = 'highpass'
+    else:
+        highcut = float(low_pass)/nyq
+        Wn = highcut
+        btype = 'lowpass'
+
     sos = butter(N=np.ceil(order/2),
-                 Wn=[low, high],
+                 Wn=Wn,
                  analog=False,
-                 btype='band',
+                 btype=btype,
                  output='sos')
 
     return sosfiltfilt(sos, data)
 
 
-
-def gaussian_lowpass_filter(data, fs, cut):
-    """
-    Applies Gaussian lowpass filter.
-
-    Parameters
-    ---------
-    data : array
-        signal to be filtered
-    fs : real
-        sampling frequency (Hz)
-    cut : real
-        cutoff frequency (Hz)
-
-    Returns
-    -------
-    lowpass filtered signal
-    """
-
-    from scipy.ndimage import gaussian_filter1d
-
-    sigma = fs/(2*np.pi*cut)
-    signal = gaussian_filter1d(data, sigma)
-
-    return signal
-
-
-
+# TODO: Ask Andrew about the use of this function
 def filter_signals(meta, sig_file, show_signals=False):
     """
     Applies filters to data and write to new npy file
@@ -96,19 +88,19 @@ def filter_signals(meta, sig_file, show_signals=False):
     # filter
     filtered_signal = np.zeros_like(signal)
     filtered_signal[:, 0] = signal[:, 0]
-    filtered_signal[:, -2] = butter_bandpass_filter(signal[:, -2],
-                                                    card_range[0],
-                                                    card_range[1],
-                                                    sf)
-    filtered_signal[:, -1] = butter_bandpass_filter(signal[:, -1],
-                                                    resp_range[0],
-                                                    resp_range[1],
-                                                    sf)
+    filtered_signal[:, -2] = butter_filter(signal[:, -2],
+                                           high_pass=card_range[0],
+                                           low_pass=card_range[1],
+                                           fs=sf)
+    filtered_signal[:, -1] = butter_filter(signal[:, -1],
+                                           high_pass=resp_range[0],
+                                           low_pass=resp_range[1],
+                                           fs=sf)
     # note: factor of 5 is empirical
     for i in range(nch):
-        filtered_signal[:, i] = gaussian_lowpass_filter(signal[:, i],
-                                                        sf,
-                                                        card_range[1])
+        filtered_signal[:, i] = butter_filter(signal[:, i],
+                                              fs=sf,
+                                              low_pass=card_range[1])
     # save filtered signal to filtered_signal.npy
     np.save('filtered_signal', filtered_signal)
 
@@ -132,11 +124,11 @@ def filter_signals(meta, sig_file, show_signals=False):
 
 
 def _transform_filter(data,
-                      transform,
-                      filtering,
-                      high_pass,
-                      low_pass,
-                      sampling_rate):
+                      *,
+                      sampling_rate,
+                      transform=None,
+                      high_pass=None,
+                      low_pass=None):
 
     # Guarantee original data is not overwritten
     data = data.copy()
@@ -153,18 +145,10 @@ def _transform_filter(data,
         # Only demean
         data = data - np.mean(data)
 
-    if filtering == "butter":
-        # TODO: Add more flexible butter filter, not only bandpass?
-        # high_pass == frequency above to clean, then here is the lower range,
-        # low_pass == frequency below to clean, then here is the higher range.
-        data = butter_bandpass_filter(data,
-                                      lowcut=high_pass,
-                                      highcut=low_pass,
-                                      fs=sampling_rate)
-    elif filtering == "gaussian":
-        data = gaussian_lowpass_filter(data,
-                                       fs=sampling_rate,
-                                       cut=low_pass)
+    data = butter_filter(data,
+                         high_pass=high_pass,
+                         low_pass=low_pass,
+                         fs=sampling_rate)
     return data
 
 
@@ -179,4 +163,3 @@ def zscore(x, axis=1, nan_omit=True):
 
     zscores = (x - mean(x))/std(x)
     return zscores
-  

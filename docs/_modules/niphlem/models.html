@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>niphlem.models &mdash; niphlem 0.0.1-beta documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-binder.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-dataframe.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/gallery-rendered-html.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> niphlem
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../citing.html">Citing niphlem</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">niphlem</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>niphlem.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for niphlem.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module for regressors computation.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_array</span><span class="p">,</span> <span class="n">column_or_1d</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.events</span> <span class="kn">import</span> <span class="n">compute_max_events</span><span class="p">,</span> <span class="n">correct_anomalies</span>
+<span class="kn">from</span> <span class="nn">.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span><span class="p">,</span> <span class="n">zscore</span>
+
+
+<span class="k">class</span> <span class="nc">BasePhysio</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Bare class.</span>
+
+<span class="sd">     Bare class from which more specific, e.g. Retroicor and</span>
+<span class="sd">     Variational, classes will inherit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    physio_rate : float</span>
+<span class="sd">        Sampling rate for the recording in Hz.</span>
+<span class="sd">        This is needed for filtering to define the nyquist frequency.</span>
+<span class="sd">    t_r : float</span>
+<span class="sd">        Repetition time for the scanner (the usual T_R) in secs.</span>
+<span class="sd">    transform : {&quot;demean&quot;, &quot;zscore&quot;, &quot;abs&quot;}, optional</span>
+<span class="sd">        Transform data before filtering. The default is &quot;demean&quot;.</span>
+<span class="sd">    high_pass : float, optional</span>
+<span class="sd">        High-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    low_pass : float, optional</span>
+<span class="sd">        Low-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    columns : List or array of n_channels elements, &quot;mean&quot; or None, optional</span>
+<span class="sd">        It describes how to handle input signal channels. If a list, it will</span>
+<span class="sd">        weight each channel and take the dot product. If &quot;mean&quot;,</span>
+<span class="sd">        the average across the channels. If None, it will consider each</span>
+<span class="sd">        channel separately. The default is None.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">physio_rate</span><span class="p">,</span>
+                 <span class="n">t_r</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span>
+                 <span class="n">filtering</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">high_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">low_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># common arguments for all classess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">physio_rate</span> <span class="o">=</span> <span class="n">physio_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_r</span> <span class="o">=</span> <span class="n">t_r</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span> <span class="o">=</span> <span class="n">high_pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="o">=</span> <span class="n">low_pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+
+    <span class="k">def</span> <span class="nf">compute_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">signal</span><span class="p">,</span>
+                           <span class="n">time_scan</span><span class="p">,</span>
+                           <span class="n">time_physio</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute regressors.</span>
+
+<span class="sd">         It basically takes care of all the preprocessing before</span>
+<span class="sd">         concentrating on the specific type of physiological regressors</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : array -like of shape (n_physio_samples, n_channels)</span>
+<span class="sd">            Signal, where each column corresponds to a recording.</span>
+<span class="sd">        time_scan :  array -like of shape (n_scan_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the scanner resolution.</span>
+<span class="sd">        time_physio : array -like of shape (n_physio_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the physio recording resolution.</span>
+<span class="sd">            The default is None. In this default case, the time of the</span>
+<span class="sd">            physiological recording is computed multiplying</span>
+<span class="sd">            the number of points with the sampling period.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like with the physiological regressors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Validate input parameters and arguments</span>
+        <span class="n">signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="p">,</span> <span class="n">time_physio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_inputs</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
+                                                               <span class="n">time_scan</span><span class="p">,</span>
+                                                               <span class="n">time_physio</span><span class="p">)</span>
+
+        <span class="n">parallel</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">)</span>
+
+        <span class="n">signal_prep</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span>
+            <span class="n">delayed</span><span class="p">(</span><span class="n">_transform_filter</span><span class="p">)(</span><span class="n">data</span><span class="o">=</span><span class="n">s</span><span class="p">,</span>
+                                       <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+                                       <span class="n">high_pass</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="p">,</span>
+                                       <span class="n">low_pass</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="p">,</span>
+                                       <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">physio_rate</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">signal</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">signal_prep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">signal_prep</span><span class="p">)</span>
+
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_regressors</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">parallel</span><span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">func</span><span class="p">)(</span><span class="n">s</span><span class="p">,</span>
+                                            <span class="n">time_physio</span><span class="p">,</span>
+                                            <span class="n">time_scan</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">signal_prep</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">regressors</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">regressors</span>
+
+    <span class="k">def</span> <span class="nf">_process_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">signal</span><span class="p">,</span>
+                            <span class="n">time_physio</span><span class="p">,</span>
+                            <span class="n">time_scan</span><span class="p">):</span>
+        <span class="c1"># bare method to be overwitten by derived classes</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_validate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">signal</span><span class="p">,</span>
+                         <span class="n">time_scan</span><span class="p">,</span>
+                         <span class="n">time_physio</span><span class="p">):</span>
+
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">check_array</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+        <span class="n">time_scan</span> <span class="o">=</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="n">time_scan</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">time_physio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_physio</span> <span class="o">=</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="n">time_physio</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">time_physio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Signal has </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> time points, &quot;</span>
+                                 <span class="s2">&quot; whilst physiological times has&quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">time_physio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+                                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_physio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">physio_rate</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span> <span class="s2">&quot;zscore&quot;</span><span class="p">,</span> <span class="s2">&quot;abs&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="si">}</span><span class="s2">&#39; transform option passed, &quot;</span>
+                             <span class="s2">&quot;but only &#39;mean&#39; (default), &#39;zscore&#39; or &#39;abs&#39; &quot;</span>
+                             <span class="s2">&quot;are allowed.&quot;</span>
+                             <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="si">}</span><span class="s2">&#39; was provided &quot;</span>
+                                 <span class="s2">&quot;as highpass frequency, but it should &quot;</span>
+                                 <span class="s2">&quot;be a number&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="si">}</span><span class="s2">&#39; was provided &quot;</span>
+                                 <span class="s2">&quot;as lowpass frequency, but it should &quot;</span>
+                                 <span class="s2">&quot;be a number&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;high pass frequency should be lower &quot;</span>
+                                 <span class="s2">&quot;than the low pass frequency for a &quot;</span>
+                                 <span class="s2">&quot;bandpass filtering&quot;</span>
+                                 <span class="p">)</span>
+        <span class="c1"># Decide how to handle data and loop through</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+                <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;supplied columns has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
+                                     <span class="sa">f</span><span class="s2">&quot; but signal has </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                                     <span class="s2">&quot; channels.&quot;</span>
+                                     <span class="p">)</span>
+                <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="c1"># reshape again to 2D</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="p">,</span> <span class="n">time_physio</span>
+
+    <span class="k">def</span> <span class="nf">generate_report</span><span class="p">():</span>
+        <span class="c1"># TODO</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<div class="viewcode-block" id="RetroicorPhysio"><a class="viewcode-back" href="../../api.html#niphlem.models.RetroicorPhysio">[docs]</a><span class="k">class</span> <span class="nc">RetroicorPhysio</span><span class="p">(</span><span class="n">BasePhysio</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Physiological regressors using Retroicor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    physio_rate : float</span>
+<span class="sd">        Sampling rate for the recording in Hz.</span>
+<span class="sd">        This is needed for filtering to define the nyquist frequency.</span>
+<span class="sd">    t_r : float</span>
+<span class="sd">        Repetition time for the scanner (the usual T_R) in secs.</span>
+<span class="sd">    delta: float</span>
+<span class="sd">        minimum separation (in physio recording units) between</span>
+<span class="sd">        events in signal to be considered peaks</span>
+<span class="sd">    peak_rise: float</span>
+<span class="sd">        relative height with respect to the 20th tallest events in signal</span>
+<span class="sd">        to consider events as peak.</span>
+<span class="sd">    order: int or array-like of shape (n_orders,)</span>
+<span class="sd">        Fourier expansion for phases. If int, the fourier expansion is</span>
+<span class="sd">        performed to that order, starting from 1. If an array is provided,</span>
+<span class="sd">        each element will multiply the phases.</span>
+<span class="sd">    transform : {&quot;demean&quot;, &quot;zscore&quot;, &quot;abs&quot;}, optional</span>
+<span class="sd">        Transform data before filtering. The default is &quot;demean&quot;.</span>
+<span class="sd">    high_pass : float, optional</span>
+<span class="sd">        High-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    low_pass : float, optional</span>
+<span class="sd">        Low-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    columns : List or array of n_channels elements, &quot;mean&quot; or None, optional</span>
+<span class="sd">        It describes how to handle input signal channels. If a list, it will</span>
+<span class="sd">        weight each channel and take the dot product. If &quot;mean&quot;,</span>
+<span class="sd">        the average across the channels. If None, it will consider each</span>
+<span class="sd">        channel separately. The default is None.</span>
+<span class="sd">    peak_correct : bool, optional</span>
+<span class="sd">	Whether to apply an automatic Grubbs&#39; test for peak outlier</span>
+<span class="sd">        correction. The default is True.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">physio_rate</span><span class="p">,</span>
+                 <span class="n">t_r</span><span class="p">,</span>
+                 <span class="n">delta</span><span class="p">,</span>
+                 <span class="n">peak_rise</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span>
+                 <span class="n">filtering</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">high_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">low_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">peak_correct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_rise</span> <span class="o">=</span> <span class="n">peak_rise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_correct</span> <span class="o">=</span> <span class="n">peak_correct</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="n">physio_rate</span><span class="p">,</span>
+                         <span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span>
+                         <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                         <span class="n">filtering</span><span class="o">=</span><span class="n">filtering</span><span class="p">,</span>
+                         <span class="n">high_pass</span><span class="o">=</span><span class="n">high_pass</span><span class="p">,</span>
+                         <span class="n">low_pass</span><span class="o">=</span><span class="n">low_pass</span><span class="p">,</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">time_physio</span><span class="p">,</span> <span class="n">time_scan</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate regressors as phases using RETROICOR method.</span>
+
+<span class="sd">        First, peaks in the signal are identified. Then, phases</span>
+<span class="sd">        are sampled such a complete cycle [0, 2pi] happens between peaks.</span>
+<span class="sd">        Then, phases are expanded up to or for a given fourier order. Then,</span>
+<span class="sd">        phases are subsampled to the scanner time. Finally, sine and cosine</span>
+<span class="sd">        are generated for each fourier mode.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : array -like of shape (n_physio_samples, n_channels)</span>
+<span class="sd">            Signal, where each column corresponds to a recording.</span>
+<span class="sd">        time_physio : array -like of shape (n_physio_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the physio recording resolution.</span>
+<span class="sd">        time_scan :  array -like of shape (n_scan_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the scanner resolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like with the physiological regressors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Compute peaks in signal</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">compute_max_events</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_rise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="c1"># Correct peaks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_correct</span><span class="p">:</span>
+            <span class="n">peaks</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">correct_anomalies</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+
+        <span class="c1"># Compute phases according to peaks (changed to an interpolation)</span>
+        <span class="n">phases_in_peaks</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">))</span>
+        <span class="n">phases</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">time_physio</span><span class="p">[</span><span class="n">peaks</span><span class="p">],</span>
+                          <span class="n">y</span><span class="o">=</span><span class="n">phases_in_peaks</span><span class="p">,</span>
+                          <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+                          <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)(</span><span class="n">time_physio</span><span class="p">)</span>
+
+        <span class="c1"># Expand phases according to Fourier expansion order</span>
+        <span class="n">phases_fourier</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m</span><span class="o">*</span><span class="n">phases</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                          <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">phases_fourier</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">phases_fourier</span><span class="p">)</span>
+
+        <span class="c1"># Downsample phases</span>
+        <span class="n">phases_scan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_scan</span><span class="p">),</span> <span class="n">phases_fourier</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">phases</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phases_fourier</span><span class="o">.</span><span class="n">T</span><span class="p">):</span>
+            <span class="n">interp</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">time_physio</span><span class="p">,</span>
+                              <span class="n">phases</span><span class="p">,</span>
+                              <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span>  <span class="c1"># TODO: Add this as parameter?</span>
+                              <span class="n">fill_value</span><span class="o">=</span><span class="s1">&#39;extrapolate&#39;</span><span class="p">)</span>
+            <span class="n">phases_scan</span><span class="p">[:,</span> <span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">time_scan</span><span class="p">)</span>
+
+        <span class="c1"># Apply sin and cos functions</span>
+        <span class="n">sin_phases</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phases_scan</span><span class="p">)</span>
+        <span class="n">cos_phases</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phases_scan</span><span class="p">)</span>
+
+        <span class="c1"># This is just to be ordered according to the fourier expansion</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span>
+                      <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sin_phases</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">cos_phases</span><span class="o">.</span><span class="n">T</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">regressors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">signal</span><span class="p">,</span>
+                         <span class="n">time_scan</span><span class="p">,</span>
+                         <span class="n">time_physio</span><span class="p">):</span>
+
+        <span class="n">signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="p">,</span> <span class="n">time_physio</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_validate_inputs</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
+                                                                  <span class="n">time_scan</span><span class="p">,</span>
+                                                                  <span class="n">time_physio</span><span class="p">)</span>
+
+        <span class="c1"># cast to integer</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fourier expansion should be &quot;</span>
+                             <span class="s2">&quot; a positive integer&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="p">,</span> <span class="n">time_physio</span></div>
+
+
+<div class="viewcode-block" id="RVPhysio"><a class="viewcode-back" href="../../api.html#niphlem.models.RVPhysio">[docs]</a><span class="k">class</span> <span class="nc">RVPhysio</span><span class="p">(</span><span class="n">BasePhysio</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Physiological regressors for variations in breathing rate/volume.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    physio_rate : float</span>
+<span class="sd">        Sampling rate for the recording in Hz.</span>
+<span class="sd">        This is needed for filtering to define the nyquist frequency.</span>
+<span class="sd">    t_r : float</span>
+<span class="sd">        Repetition time for the scanner (the usual T_R) in secs.</span>
+<span class="sd">    time_window : float</span>
+<span class="sd">        Time window (in secs) around the T_R from which computing variations</span>
+<span class="sd">        (standard deviation of signal). The default is 6 secs.</span>
+<span class="sd">    transform : {&quot;demean&quot;, &quot;zscore&quot;, &quot;abs&quot;}, optional</span>
+<span class="sd">        Transform data before filtering. The default is &quot;demean&quot;.</span>
+<span class="sd">    high_pass : float, optional</span>
+<span class="sd">        High-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    low_pass : float, optional</span>
+<span class="sd">        Low-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    columns : List or array of n_channels elements, &quot;mean&quot; or None, optional</span>
+<span class="sd">        It describes how to handle input signal channels. If a list, it will</span>
+<span class="sd">        weight each channel and take the dot product. If &quot;mean&quot;,</span>
+<span class="sd">        the average across the channels. If None, it will consider each</span>
+<span class="sd">        channel separately. The default is None.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">physio_rate</span><span class="p">,</span>
+                 <span class="n">t_r</span><span class="p">,</span>
+                 <span class="n">time_window</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span>
+                 <span class="n">high_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">low_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">=</span> <span class="n">time_window</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="n">physio_rate</span><span class="p">,</span>
+                         <span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span>
+                         <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                         <span class="n">high_pass</span><span class="o">=</span><span class="n">high_pass</span><span class="p">,</span>
+                         <span class="n">low_pass</span><span class="o">=</span><span class="n">low_pass</span><span class="p">,</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">signal</span><span class="p">,</span>
+                            <span class="n">time_physio</span><span class="p">,</span>
+                            <span class="n">time_scan</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate regressors as variations in breathing rate/volume.</span>
+
+<span class="sd">        Compute rate variations for respiration signal computed by taking</span>
+<span class="sd">        the standard deviation of the raw respiratory waveform over the 3 TR</span>
+<span class="sd">        time interval defined by the (k − 1)th, kth, and (k + 1)th TRs.</span>
+<span class="sd">        The resulting vector is then convolved with the respiratory response</span>
+<span class="sd">        function (Birn et al 2008).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : array -like of shape (n_physio_samples, n_channels)</span>
+<span class="sd">            Signal, where each column corresponds to a recording.</span>
+<span class="sd">        time_physio : array -like of shape (n_physio_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the physio recording resolution.</span>
+<span class="sd">        time_scan :  array -like of shape (n_scan_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the scanner resolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like with the physiological regressors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_scan</span><span class="p">)</span>
+        <span class="n">rv_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+
+            <span class="c1"># TODO: See border effects and maybe a way to optimize this</span>
+            <span class="n">t_i</span> <span class="o">=</span> <span class="n">time_scan</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span><span class="o">/</span><span class="mf">2.</span>
+            <span class="n">t_f</span> <span class="o">=</span> <span class="n">time_scan</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span><span class="o">/</span><span class="mf">2.</span>
+
+            <span class="k">if</span> <span class="n">t_i</span> <span class="o">&lt;</span> <span class="n">time_physio</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">t_i</span> <span class="o">=</span> <span class="n">time_physio</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">t_f</span> <span class="o">&gt;</span> <span class="n">time_physio</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">t_f</span> <span class="o">=</span> <span class="n">time_physio</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Take points of recording between these times</span>
+            <span class="n">mask_times</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_physio</span> <span class="o">&gt;=</span> <span class="n">t_i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time_physio</span> <span class="o">&lt;=</span> <span class="n">t_f</span><span class="p">)</span>
+            <span class="n">rv_values</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="n">mask_times</span><span class="p">])</span>
+
+        <span class="c1"># return zscores of these values</span>
+        <span class="n">rv_values</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">rv_values</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">RRF</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Respiration Response Function (eq. 3 Birn 2008).&quot;&quot;&quot;</span>
+            <span class="n">rrf</span> <span class="o">=</span> <span class="mf">0.6</span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="o">**</span><span class="mf">2.1</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span><span class="o">/</span><span class="mf">1.6</span><span class="p">)</span>
+            <span class="n">rrf</span> <span class="o">-=</span> <span class="mf">0.0023</span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="o">**</span><span class="mf">3.54</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span><span class="o">/</span><span class="mf">4.25</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rrf</span>
+
+        <span class="n">t_rrf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_r</span><span class="p">)</span>
+        <span class="n">rrf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">RRF</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">=</span><span class="n">t_rrf</span><span class="p">)</span>
+        <span class="c1"># Convolve rv values with response function</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">rv_values</span><span class="p">,</span> <span class="n">rrf</span><span class="p">)</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">regressors</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span>  <span class="c1"># Trim excess</span>
+        <span class="k">return</span> <span class="n">regressors</span></div>
+
+
+<div class="viewcode-block" id="HVPhysio"><a class="viewcode-back" href="../../api.html#niphlem.models.HVPhysio">[docs]</a><span class="k">class</span> <span class="nc">HVPhysio</span><span class="p">(</span><span class="n">BasePhysio</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Physiological regressors for variations in heart rate.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    physio_rate : float</span>
+<span class="sd">        Sampling rate for the recording in Hz.</span>
+<span class="sd">        This is needed for filtering to define the nyquist frequency.</span>
+<span class="sd">    t_r : float</span>
+<span class="sd">        Repetition time for the scanner (the usual T_R) in secs.</span>
+<span class="sd">    delta: float</span>
+<span class="sd">        minimum separation (in physio recording units) between</span>
+<span class="sd">        events in signal to be considered peaks</span>
+<span class="sd">    peak_rise: float</span>
+<span class="sd">        relative height with respect to the 20th tallest events in signal</span>
+<span class="sd">        to consider events as peak.</span>
+<span class="sd">    time_window : float</span>
+<span class="sd">        Time window (in secs) around the T_R from which computing variations</span>
+<span class="sd">        (time differences between signal events ). The default is 6 secs.</span>
+<span class="sd">    transform : {&quot;demean&quot;, &quot;zscore&quot;, &quot;abs&quot;}, optional</span>
+<span class="sd">        Transform data before filtering. The default is &quot;demean&quot;.</span>
+<span class="sd">    high_pass : float, optional</span>
+<span class="sd">        High-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    low_pass : float, optional</span>
+<span class="sd">        Low-pass filtering frequency (in Hz).  The default is None.</span>
+<span class="sd">    columns : List or array of n_channels elements, &quot;mean&quot; or None, optional</span>
+<span class="sd">        It describes how to handle input signal channels. If a list, it will</span>
+<span class="sd">        weight each channel and take the dot product. If &quot;mean&quot;,</span>
+<span class="sd">        the average across the channels. If None, it will consider each</span>
+<span class="sd">        channel separately. The default is None.</span>
+<span class="sd">    peak_correct : bool, optional</span>
+<span class="sd">	Whether to apply an automatic Grubbs&#39; test for peak outlier</span>
+<span class="sd">        correction. The default is True.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">physio_rate</span><span class="p">,</span>
+                 <span class="n">t_r</span><span class="p">,</span>
+                 <span class="n">delta</span><span class="p">,</span>
+                 <span class="n">peak_rise</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                 <span class="n">time_window</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span>
+                 <span class="n">high_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">low_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">peak_correct</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_rise</span> <span class="o">=</span> <span class="n">peak_rise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">=</span> <span class="n">time_window</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak_correct</span> <span class="o">=</span> <span class="n">peak_correct</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="n">physio_rate</span><span class="p">,</span>
+                         <span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span>
+                         <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                         <span class="n">high_pass</span><span class="o">=</span><span class="n">high_pass</span><span class="p">,</span>
+                         <span class="n">low_pass</span><span class="o">=</span><span class="n">low_pass</span><span class="p">,</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">signal</span><span class="p">,</span>
+                            <span class="n">time_physio</span><span class="p">,</span>
+                            <span class="n">time_scan</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate regressors as variations in hear rate.</span>
+
+<span class="sd">        Compute rate variations in heart rate by taking the average</span>
+<span class="sd">        time differences between peaks over the 3 TR</span>
+<span class="sd">        time interval defined by the (k − 1)th, kth, and (k + 1)th TRs.</span>
+<span class="sd">        The resulting vector is then convolved with the cardiac response</span>
+<span class="sd">        function (Chang et al 2009).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : array -like of shape (n_physio_samples, n_channels)</span>
+<span class="sd">            Signal, where each column corresponds to a recording.</span>
+<span class="sd">        time_physio : array -like of shape (n_physio_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the physio recording resolution.</span>
+<span class="sd">        time_scan :  array -like of shape (n_scan_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the scanner resolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like with the physiological regressors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO: Add checks specific to this task</span>
+        <span class="c1"># Compute peaks in signal</span>
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">compute_max_events</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_rise</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">)</span>
+
+        <span class="c1"># Correct peaks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peak_correct</span><span class="p">:</span>
+            <span class="n">peaks</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">correct_anomalies</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+
+        <span class="n">peaks</span> <span class="o">=</span> <span class="n">peaks</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># Compute times of maximum event peaks</span>
+        <span class="n">time_peaks</span> <span class="o">=</span> <span class="n">time_physio</span><span class="p">[</span><span class="n">peaks</span><span class="p">]</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_scan</span><span class="p">)</span>
+
+        <span class="n">hv_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="c1"># TODO: See border effects and maybe a way to optimize this</span>
+            <span class="n">t_i</span> <span class="o">=</span> <span class="n">time_scan</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span><span class="o">/</span><span class="mi">2</span>
+            <span class="n">t_f</span> <span class="o">=</span> <span class="n">time_scan</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span><span class="o">/</span><span class="mi">2</span>
+
+            <span class="k">if</span> <span class="n">t_i</span> <span class="o">&lt;</span> <span class="n">time_physio</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">t_i</span> <span class="o">=</span> <span class="n">time_physio</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">t_f</span> <span class="o">&gt;</span> <span class="n">time_physio</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">t_f</span> <span class="o">=</span> <span class="n">time_physio</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">mask_times</span> <span class="o">=</span> <span class="p">(</span><span class="n">time_peaks</span> <span class="o">&gt;=</span> <span class="n">t_i</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time_peaks</span> <span class="o">&lt;=</span> <span class="n">t_f</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">mask_times</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">hv_values</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hv_values</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">time_peaks</span><span class="p">[</span><span class="n">mask_times</span><span class="p">]))</span>
+
+        <span class="c1"># return zscores of these values</span>
+        <span class="n">hv_values</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">hv_values</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">CRF</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Cardiac Response Function (eq. 5 Chang 2009).&quot;&quot;&quot;</span>
+            <span class="n">crf</span> <span class="o">=</span> <span class="mf">0.6</span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="o">**</span><span class="mf">2.7</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span><span class="o">/</span><span class="mf">1.6</span><span class="p">)</span>
+            <span class="n">crf</span> <span class="o">-=</span> <span class="mf">16.</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">9</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="mf">0.5</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="mf">12.</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">crf</span>
+
+        <span class="n">t_crf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_r</span><span class="p">)</span>
+        <span class="n">crf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">CRF</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="o">=</span><span class="n">t_crf</span><span class="p">)</span>
+        <span class="c1"># Convolve rv values with response function</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">hv_values</span><span class="p">,</span> <span class="n">crf</span><span class="p">)</span>
+        <span class="n">regressors</span> <span class="o">=</span> <span class="n">regressors</span><span class="p">[:</span><span class="n">N</span><span class="p">]</span>  <span class="c1"># Trim excess</span>
+        <span class="k">return</span> <span class="n">regressors</span></div>
+
+
+<div class="viewcode-block" id="DownsamplePhysio"><a class="viewcode-back" href="../../api.html#niphlem.models.DownsamplePhysio">[docs]</a><span class="k">class</span> <span class="nc">DownsamplePhysio</span><span class="p">(</span><span class="n">BasePhysio</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Physiological regressors by downsampling</span>
+
+<span class="sd">     As in Verstynen 2011, raw physiological data is downsample</span>
+<span class="sd">     to the scanner resolution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    physio_rate : float</span>
+<span class="sd">        Sampling rate for the recording in Hz.</span>
+<span class="sd">        This is needed for filtering to define the nyquist frequency.</span>
+<span class="sd">    t_r : float</span>
+<span class="sd">        Repetition time for the scanner (the usual T_R) in secs.</span>
+<span class="sd">    transform : {&quot;demean&quot;, &quot;zscore&quot;, &quot;abs&quot;}, optional</span>
+<span class="sd">        Transform data before filtering. The default is &quot;demean&quot;.</span>
+<span class="sd">    high_pass : float, optional</span>
+<span class="sd">        High-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    low_pass : float, optional</span>
+<span class="sd">        Low-pass filtering frequency (in Hz). The default is None.</span>
+<span class="sd">    columns : List or array of n_channels elements, &quot;mean&quot; or None, optional</span>
+<span class="sd">        It describes how to handle input signal channels. If a list, it will</span>
+<span class="sd">        weight each channel and take the dot product. If &quot;mean&quot;,</span>
+<span class="sd">        the average across the channels. If None, it will consider each</span>
+<span class="sd">        channel separately. The default is None.</span>
+<span class="sd">    kind : str or int, optional</span>
+<span class="sd">        This is just the kind of interpolation to use. The allowed values are</span>
+<span class="sd">        those in interp1d function of scipy. Just copying its documentation,</span>
+<span class="sd">        the string has to be one of ‘linear’, ‘nearest’, ‘nearest-up’, ‘zero’,</span>
+<span class="sd">        ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’,</span>
+<span class="sd">        or ‘next’. ‘zero’, ‘slinear’, ‘quadratic’ and ‘cubic’. which refer to</span>
+<span class="sd">        a spline interpolation of zeroth, first, second or third order;</span>
+<span class="sd">        ‘previous’ and ‘next’ simply return the previous or</span>
+<span class="sd">        next value of the point; ‘nearest-up’ and ‘nearest’ differ</span>
+<span class="sd">        when interpolating half-integers (e.g. 0.5, 1.5) in that</span>
+<span class="sd">        ‘nearest-up’ rounds up and ‘nearest’ rounds down.</span>
+<span class="sd">        Our default value is &#39;cubic&#39;.</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">physio_rate</span><span class="p">,</span>
+                 <span class="n">t_r</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span>
+                 <span class="n">high_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">low_pass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+                 <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># common arguments for all classess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">physio_rate</span> <span class="o">=</span> <span class="n">physio_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_r</span> <span class="o">=</span> <span class="n">t_r</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span> <span class="o">=</span> <span class="n">high_pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="o">=</span> <span class="n">low_pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+
+    <span class="k">def</span> <span class="nf">_process_regressors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">signal</span><span class="p">,</span>
+                            <span class="n">time_physio</span><span class="p">,</span>
+                            <span class="n">time_scan</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate regressors by downsampling.</span>
+
+<span class="sd">        Just downsample the data to the scanner resolution by using the</span>
+<span class="sd">        provided scanner times.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : array -like of shape (n_physio_samples, n_channels)</span>
+<span class="sd">            Signal, where each column corresponds to a recording.</span>
+<span class="sd">        time_physio : array -like of shape (n_physio_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the physio recording resolution.</span>
+<span class="sd">        time_scan :  array -like of shape (n_scan_samples, )</span>
+<span class="sd">            Time ticks (in secs) at the scanner resolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like with the physiological regressors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">downsampled_signal</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">time_physio</span><span class="p">,</span>
+                                      <span class="n">signal</span><span class="p">,</span>
+                                      <span class="n">kind</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span>
+                                      <span class="n">fill_value</span><span class="o">=</span><span class="s1">&#39;extrapolate&#39;</span><span class="p">)(</span><span class="n">time_scan</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">downsampled_signal</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, coaxlab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
