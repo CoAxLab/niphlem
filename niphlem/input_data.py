@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import matplotlib.pyplot as mpl
+import warnings
 
 
 def get_lines(filename):
@@ -150,6 +151,7 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
     from scipy.interpolate import interp1d
 
     # TODO: Add checks of filename and info dict
+    info_dict = info_dict.copy()
 
     lines = get_lines(filename)
 
@@ -210,7 +212,8 @@ def load_cmrr_data(filename, sig_type, info_dict, sync_scan=True):
 
     signal = []
     for s_channel in full_signal.T:
-        mask = (s_channel != 0.)
+        # Use a mask to interpolate possible zero/nan artifacts
+        mask = (s_channel != 0.) & ~np.isnan(s_channel)
         signal.append(interp1d(time[mask], s_channel[mask],
                                fill_value="extrapolate")(new_time))
     signal = np.column_stack(signal)
@@ -313,12 +316,109 @@ def proc_input(path,
         mpl.show()
 
 
-def load_bids_physio():
+def load_bids_physio(data_file, json_file, resample_freq=None, sync_scan=True):
     """
-    Load physiological data in BIDS format
+    Load physiological data in BIDS format.
+
+    Parameters
+    ----------
+    data_file : str, pathlike
+        Path to recording bids physio file.
+    json_file : str, pathlike
+        Path to the sidecar json file of the input bids physio.
+    resample_freq : float, optional
+        Frequency to resample the data. The default is None.
+    sync_scan : bool, optional
+        Whether we want the signal to be synchronized
+        with the scanner times. The default is True.
+
+    Returns
+    -------
+    signal : ndarray
+        The signal, where each columns corresponds to a particular
+        recording, whose names can wh be identfied in the meta_info
+        dictionary returned, and the rows to observations.
+    meta_info : dict
+        Meta information that at least contains the sampling frequency,
+        the start time of the signals, and the name of each signal column.
     """
-    # TODO
-    return NotImplementedError
+
+    from scipy.interpolate import interp1d
+
+    # Validate input data
+    if data_file.endswith("physio.tsv.gz") is False:
+        raise ValueError("Data file should end with physio.tsv.gz")
+    if json_file.endswith("physio.json") is False:
+        raise ValueError("Sidecar file should end with physio.json")
+
+    # Check that both files have the same name without extensions
+    if data_file.split(".tsv.gz")[0] != json_file.split(".json")[0]:
+        raise ValueError("data file and json file do not have the same "
+                         "name (without extensions), which invalidates "
+                         " BIDS specification")
+
+    # Load sidecar information
+    with open(json_file) as fp:
+        meta_info = json.load(fp)
+
+    # Validate fields in JSON file according to BIDS
+    req_fields = ['Columns', 'SamplingFrequency', 'StartTime']
+    if set(req_fields).issubset(set(meta_info.keys())) is False:
+        missing_fields = set(req_fields).difference(set(meta_info.keys()))
+        raise ValueError("The following required fields appear to be missing "
+                         "in the BIDS JSON file: " + ', '.join(missing_fields)
+                         )
+    # Load data file
+    data = np.loadtxt(data_file)
+
+    if data.ndim == 1:
+        data = data.reshape(-1, 1)
+
+    # Check that the number of columns in data is the same as the number of
+    # names in "Columns" of the json file. If not, a warning will be prompted.
+    if data.shape[1] != len(meta_info['Columns']):
+        warnings.warn("The number of columns in the data file does not "
+                      " match the number of names in the metafield 'Columns'"
+                      )
+
+    if resample_freq is None:
+        resample_freq = meta_info['SamplingFrequency']
+    else:
+        resample_freq = float(resample_freq)
+
+    # Define init and end time recording
+    n_obs = data.shape[0]
+    init_physio = meta_info['StartTime']
+    end_physio = init_physio + n_obs/meta_info['SamplingFrequency']
+
+    # Define time ticks then
+    time = np.linspace(init_physio, end_physio, num=n_obs, endpoint=False)
+
+    # Number of times, depending on whether we are resampling or not
+    n_resample = int(
+        np.round(n_obs * (resample_freq / meta_info['SamplingFrequency']))
+        )
+    new_time = np.linspace(init_physio, end_physio, num=n_resample,
+                           endpoint=False)
+
+    if sync_scan:
+        new_num = sum(new_time >= 0)
+        # Resample to init time 0, keeping the same number of obs after 0
+        new_time = np.linspace(0, end_physio, num=new_num,  endpoint=False)
+        meta_info['StartTime'] = 0.0
+
+    signal = []
+    for s_channel in data.T:
+        # Use a mask to interpolate possible zero/nan artifacts
+        mask = (s_channel != 0.) & ~np.isnan(s_channel)
+        signal.append(interp1d(time[mask], s_channel[mask],
+                               fill_value="extrapolate")(new_time))
+    signal = np.column_stack(signal)
+
+    # Update field in meta information object
+    meta_info['SamplingFrequency'] = resample_freq
+
+    return signal, meta_info
 
 
 ###############################################################################

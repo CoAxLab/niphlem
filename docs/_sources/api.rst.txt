@@ -6,12 +6,15 @@
 Input data
 ------------------------
 
-CMRR data
+CMRR format
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: niphlem.input_data.load_cmrr_info
 
 .. autofunction:: niphlem.input_data.load_cmrr_data
 
+BIDS format
+^^^^^^^^^^^^^^^^^^^^^^^^^
+.. autofunction:: niphlem.input_data.load_bids_physio
 
 
 Models
