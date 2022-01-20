@@ -77,10 +77,9 @@ def compute_max_events(signal, peak_rise, delta):
     return new_pks.astype(int)
 
 
-def correct_anomalies(peaks, alpha=0.05, save_name=''):
+def correct_anomalies_old(peaks, alpha=0.05, save_name=''):
     """
     Outlier peak detection (Grubb's test) and removal.
-
     Parameters
     ----------
     peaks : array
@@ -89,7 +88,6 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
         significance level for Grubb's test
     save_name : str
         filename to save peaks as to, empty does not save
-
     Results
     -------
     corrected_peaks2 : array
@@ -98,7 +96,6 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
         indices of original peaks marked as too slow
     min_indices : array
         indices of original peaks marked as too fast
-
     """
 
     from outliers import smirnov_grubbs as grubbs
@@ -172,5 +169,112 @@ def correct_anomalies(peaks, alpha=0.05, save_name=''):
     # save peaks
     if save_name != '':
         np.savetxt(save_name, corrected_peaks2, delimiter=',')
+
+    return corrected_peaks2, max_indices, min_indices
+
+
+def correct_anomalies(peaks, alpha=0.05, save_name=""):
+    """
+    Outlier peak detection (Grubb's test) and removal.
+
+    Parameters
+    ----------
+    peaks : array
+        vector of peak locations
+    alpha : real
+        significance level for Grubb's test
+    save_name : str
+        filename to save peaks as to, empty does not save
+
+    Results
+    -------
+    corrected_peaks2 : array
+        vector of corrected peak locations
+    max_indices : array
+        indices of original peaks marked as too slow
+    min_indices : array
+        indices of original peaks marked as too fast
+
+    """
+
+    from outliers import smirnov_grubbs as grubbs
+
+    peak_diffs = abs(np.diff(peaks))
+
+    max_indices = grubbs.max_test_indices(peak_diffs, alpha=alpha)
+    min_indices = grubbs.min_test_indices(peak_diffs, alpha=alpha)
+    grubb_idxs = max_indices + min_indices
+
+    # Compute representative difference based on its distribution
+    mean_rr = np.mean(
+        peak_diffs[[ii for ii in range(len(peak_diffs))
+                    if ii not in grubb_idxs]]
+        )
+    mean_rr = int(np.round(mean_rr))
+
+    corrected_peaks = peaks.copy()
+
+    for ix in max_indices:
+        n = int(np.round((peaks[ix + 1] - peaks[ix]) / mean_rr))
+
+        if n == 1:
+            continue
+
+        new_peaks = np.linspace(peaks[ix],
+                                peaks[ix + 1],
+                                n,
+                                dtype=int,
+                                endpoint=False)[1:]
+
+        corrected_peaks = np.append(corrected_peaks, new_peaks)
+
+    corrected_peaks = np.sort(corrected_peaks)
+    corrected_peak_diffs = abs(np.diff(corrected_peaks))
+
+    min_indices = grubbs.min_test_indices(corrected_peak_diffs, alpha=alpha)
+
+    # deleting peak such that resultant RR interval is furthest from mean RR
+    # (i.e. gives longer RR interval)
+    too_fast = np.array(min_indices)
+    # index of peaks to delete (and then reinsert)
+    peaks_to_replace = np.zeros_like(too_fast)
+    new_peaks2 = np.zeros_like(too_fast, dtype=float)
+
+    for index, i in enumerate(too_fast):
+
+        # print(index, i)
+        if i == (corrected_peak_diffs.size - 1):
+            # if last RR interval (edge case)
+            peaks_to_replace[index] = i  # replace first peak
+            # compute new diff_peak
+            new_diff = (corrected_peaks[i + 1] - corrected_peaks[i - 1])/2
+            new_peaks2[index] = corrected_peaks[i - 1] + new_diff
+        else:
+            # replace first peak
+            new_diff1 = corrected_peaks[i + 1] - corrected_peaks[i - 1]
+            # replace second peak
+            new_diff2 = corrected_peaks[i + 2] - corrected_peaks[i]
+
+            if new_diff1 > new_diff2:
+                # replacing first peak results in new RR interval
+                # furthest from mean RR interval
+                peaks_to_replace[index] = i
+                # compute new diff_peak
+                new_diff = (corrected_peaks[i + 1] - corrected_peaks[i - 1])/2
+                new_peaks2[index] = corrected_peaks[i - 1] + new_diff
+            else:
+                # replacing second peak results in new RR interval
+                # furthest from mean RR interval
+                peaks_to_replace[index] = i + 1
+                # compute new diff_peak
+                new_diff = (corrected_peaks[i + 2] - corrected_peaks[i])/2
+                new_peaks2[index] = corrected_peaks[i] + new_diff
+
+    corrected_peaks2 = corrected_peaks.copy()
+    np.put(corrected_peaks2, peaks_to_replace.astype(int), new_peaks2)
+
+    # save peaks
+    if save_name != "":
+        np.savetxt(save_name, corrected_peaks2, delimiter=",")
 
     return corrected_peaks2, max_indices, min_indices
