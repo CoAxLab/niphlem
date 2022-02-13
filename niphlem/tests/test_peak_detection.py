@@ -1,6 +1,6 @@
 import numpy as np
 
-from niphlem.events import compute_max_events
+from niphlem.events import compute_max_events, correct_anomalies
 
 
 def test_peak_detection():
@@ -58,3 +58,26 @@ def test_peak_detection():
     peaks_idxs = compute_max_events(signal_3, peak_rise=0.75, delta=delta)
 
     assert len(peaks_idxs) == n_peaks_by_delta
+
+
+def test_correct_peak():
+    """
+    Function that tests that the peak correction algorithm inserts missing
+    peaks in a signal that misses one, two and three successive events.
+    """
+
+    ipi = 100  # Some interpeak interval
+
+    peaks = np.ones(100)
+    peaks[10] = 0  # one missing peak
+    peaks[69:72] = 0  # two missing successive peaks
+    peaks[45:47] = 0  # three missing successive peaks
+
+    signal = np.where(peaks)[0]*ipi
+
+    # Ensure that we are missing some peaks because interpeak interval > 10
+    assert np.any(np.diff(signal) != ipi)
+
+    signal_corrected, _, _ = correct_anomalies(signal)
+
+    assert np.alltrue(np.diff(signal_corrected) == ipi)
