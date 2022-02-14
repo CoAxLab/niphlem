@@ -1,9 +1,7 @@
 """
 This file contains the code to generate the ECG report.
-
 Many of the functionalites used here have been borrowed from Nilearn
 (https://nilearn.github.io/)
-
 """
 
 import io
@@ -22,7 +20,7 @@ from scipy.signal import welch
 
 from niphlem.clean import butter_filter
 from niphlem.events import compute_max_events, correct_anomalies
-
+from .report_general import compute_stats, _dataframe_to_html, figure_to_svg_bytes, figure_to_svg_quoted, _plot_to_svg, plot_average_signal, plot_peaks, generate_rate_df, generate_interval_df
 from .html_report import HTMLReport
 
 
@@ -38,7 +36,6 @@ def make_ecg_report(ecg_signal,
                     ):
     """
     Generate QC report for ECG data.
-
     Parameters
     ----------
     ecg_signal : array-like of shape (n_physio_samples, n_channels)
@@ -65,7 +62,6 @@ def make_ecg_report(ecg_signal,
         If provided, Path where report the HTML report,
         averaged filtered signal and corrected peaks will be saved.
         The default is None.
-
     Returns
     -------
     report : html file
@@ -121,8 +117,8 @@ def make_ecg_report(ecg_signal,
                                               peak_rise,
                                               delta)
 
-    hr_df = generate_hr_df(fs, diff_peaks, heart_rate)
-    rr_df = generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR)
+    hr_df = generate_rate_df(fs, diff_peaks, heart_rate)
+    rr_df = generate_interval_df(mean_RR, median_RR, stdev_RR, snr_RR)
 
     corrected_peaks, max_indices, min_indices = correct_anomalies(peaks,
                                                                   alpha=0.05,
@@ -136,22 +132,22 @@ def make_ecg_report(ecg_signal,
         np.savetxt(filepath, corrected_peaks)
 
     fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
-        c_inst_hr = plot_corrected_data(mean_signal_filt,
-                                        corrected_peaks,
-                                        corrected_peak_diffs,
-                                        delta, fs)
+        c_inst_hr = plot_corrected_ecg(mean_signal_filt,
+                                       corrected_peaks,
+                                       corrected_peak_diffs,
+                                       delta, fs)
 
-    corrected_hr_df = generate_hr_df(fs,
-                                     corrected_peak_diffs,
-                                     c_heart_rate)
-    corrected_rr_df = generate_rr_df(c_mean_RR, c_median_RR, c_stdev_RR,
-                                     c_snr_RR)
+    corrected_hr_df = generate_rate_df(fs,
+                                       corrected_peak_diffs,
+                                       c_heart_rate)
+    corrected_rr_df = generate_interval_df(c_mean_RR, c_median_RR, c_stdev_RR,
+                                           c_snr_RR)
 
-    fig3 = plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                           mean_RR, median_RR, stdev_RR,
-                           corrected_peaks, corrected_peak_diffs,
-                           c_heart_rate, c_mean_RR, c_median_RR,
-                           c_stdev_RR, delta, fs)
+    fig3 = plot_comparison_ecg(mean_signal_filt, peaks, diff_peaks, heart_rate,
+                               mean_RR, median_RR, stdev_RR,
+                               corrected_peaks, corrected_peak_diffs,
+                               c_heart_rate, c_mean_RR, c_median_RR,
+                               c_stdev_RR, delta, fs)
 
     # generate html report
     report = _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
@@ -171,16 +167,6 @@ def make_ecg_report(ecg_signal,
     return report, mean_signal_filt, corrected_peaks
 
 
-def compute_stats(x):
-
-    mean_x = np.mean(x)
-    median_x = np.median(x)
-    stdev_x = np.std(x)
-    snr_x = mean_x/stdev_x
-
-    return mean_x, median_x, stdev_x, snr_x
-
-
 def plot_filtered_signal(ax, mean_signal, mean_signal_filt):
     # plots comparison between unfiltered and filtered signal (one panel)
     ax.plot(mean_signal, label="unfiltered signal")
@@ -190,7 +176,7 @@ def plot_filtered_signal(ax, mean_signal, mean_signal_filt):
     return ax
 
 
-def plot_power_spectrum(ax, mean_signal, mean_signal_filt, fs):
+def plot_power_spectrum_ecg(ax, mean_signal, mean_signal_filt, fs):
     # plots power spectrum of unfiltered, filtered signal (one panel)
     f, Pxx = welch(mean_signal, fs=fs, nperseg=2048, scaling="spectrum")
     ax.semilogy(f, Pxx, label="unfiltered signal")
@@ -200,40 +186,6 @@ def plot_power_spectrum(ax, mean_signal, mean_signal_filt, fs):
     ax.set_ylabel("Power spectrum")
     ax.set_xlim([0, 20])
     ax.legend()
-
-    return ax
-
-
-def plot_peaks(ax, mean_signal_filt, peaks):
-
-    ax.plot(mean_signal_filt)
-    ax.scatter(peaks.astype(int),
-               mean_signal_filt[peaks.astype(int)],
-               c="red", marker="x",
-               s=100)
-    # ax.set_xlim([5000, 7000])
-
-    return ax
-
-
-def plot_average_QRS(ax, peaks, delta, mean_signal_filt):
-
-    sign_peaks = []
-    for pk in peaks.astype(int):
-        i_0 = pk-delta
-        i_f = pk+delta
-        if i_0 < 0:
-            continue
-        if i_f > len(mean_signal_filt):
-            continue
-        sign_peaks.append(mean_signal_filt[i_0:i_f])
-
-    ax.plot(np.mean(np.array(sign_peaks), axis=0))
-    ax.errorbar(x=np.arange(2*delta),
-                y=np.mean(np.array(sign_peaks), axis=0),
-                yerr=np.std(np.array(sign_peaks), axis=0),
-                alpha=0.5
-                )
 
     return ax
 
@@ -274,7 +226,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     ax1.set_xlim([x_i, x_f])
 
     ax2 = axs[0, 1]
-    ax2 = plot_power_spectrum(ax2, mean_signal, mean_signal_filt, fs)
+    ax2 = plot_power_spectrum_ecg(ax2, mean_signal, mean_signal_filt, fs)
     ax2.set_title("B", size=15)
 
     # Compute peaks
@@ -292,7 +244,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
 
     # Compute signal around peaks
     ax4 = axs[1, 1]
-    ax4 = plot_average_QRS(ax4, peaks, delta, mean_signal_filt)
+    ax4 = plot_average_signal(ax4, peaks, delta, mean_signal_filt)
     ax4.set_title("D: Heart rate = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -317,7 +269,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     return fig, peaks, diff_peaks, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR
 
 
-def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
+def plot_corrected_ecg(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(12, 8))
 
@@ -339,7 +291,7 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     # Compute signal around peaks
     ax2 = axs[0, 1]
-    ax2 = plot_average_QRS(ax2, peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, peaks, delta, mean_signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -365,20 +317,20 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
     return fig, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR, inst_hr
 
 
-def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                    mean_RR, median_RR, stddev_RR,
-                    corrected_peaks, corrected_diff_peaks2,
-                    corrected_heart_rate, c_mean_RR, c_median_RR,
-                    c_stdev_RR, delta, fs):
+def plot_comparison_ecg(mean_signal_filt, peaks, diff_peaks, heart_rate,
+                        mean_RR, median_RR, stddev_RR,
+                        corrected_peaks, corrected_diff_peaks2,
+                        corrected_heart_rate, c_mean_RR, c_median_RR,
+                        c_stdev_RR, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
     ax1 = axs[0, 0]
-    ax1 = plot_average_QRS(ax1, peaks, delta, mean_signal_filt)
+    ax1 = plot_average_signal(ax1, peaks, delta, mean_signal_filt)
     ax1.set_title("A: HR = %.2f bpm" % heart_rate, size=15)
 
     ax2 = axs[0, 1]
-    ax2 = plot_average_QRS(ax2, corrected_peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, corrected_peaks, delta, mean_signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % corrected_heart_rate, size=15)
 
     # Plot histogram of RR interval
@@ -413,96 +365,6 @@ def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
     return fig
 
 
-def generate_hr_df(fs, diff_peaks, heart_rate):
-
-    # generate table of statistics for heart rate
-    # already calculated: heart_rate (mean)
-
-    all_hr = (fs/diff_peaks)*60
-    # min_hr = np.min(all_hr)
-    # max_hr = np.max(all_hr)
-
-    # create 95% confidence interval
-    lower_bound, upper_bound = st.t.interval(alpha=0.95,
-                                             df=len(all_hr)-1,
-                                             loc=heart_rate,
-                                             scale=st.sem(all_hr)
-                                             )
-
-    hr_dict = {'mean': [heart_rate],
-               '95% CI (lower bound)': [lower_bound],
-               '95% CI (upper bound)': [upper_bound]
-               }
-    hr_df = pd.DataFrame(data=hr_dict)
-
-    return hr_df
-
-
-def generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR):
-
-    # generate table of statistics for RR interval
-    # already calculated: mean_RR, median_RR, stdev_RR, snr_RR
-
-    rr_dict = {'mean': [mean_RR], 'median': [median_RR],
-               'standard deviation': [stdev_RR],
-               'SNR': [snr_RR]}
-    rr_df = pd.DataFrame(data=rr_dict)
-
-    return rr_df
-
-
-def _dataframe_to_html(df, precision, **kwargs):
-    """Makes HTML table from provided dataframe.
-    Removes HTML5 non-compliant attributes (ex: `border`).
-    Parameters
-    ----------
-    df : pandas.Dataframe
-        Dataframe to be converted into HTML table.
-    precision : int
-        The display precision for float values in the table.
-    **kwargs : keyworded arguments
-        Supplies keyworded arguments for func: pandas.Dataframe.to_html()
-    Returns
-    -------
-    html_table : String
-        Code for HTML table.
-    """
-    with pd.option_context('display.precision', precision):
-        html_table = df.to_html(**kwargs)
-    html_table = html_table.replace('border="1" ', '')
-    return html_table
-
-
-def figure_to_svg_bytes(fig):
-    with io.BytesIO() as io_buffer:
-        fig.savefig(
-            io_buffer, format="svg", facecolor="white", edgecolor="white"
-        )
-        return io_buffer.getvalue()
-
-
-def figure_to_svg_quoted(fig):
-    return urllib.parse.quote(figure_to_svg_bytes(fig).decode("utf-8"))
-
-
-def _plot_to_svg(plot):
-    """Creates an SVG image as a data URL
-    from a Matplotlib Axes or Figure object.
-    Parameters
-    ----------
-    plot : Matplotlib Axes or Figure object
-        Contains the plot information.
-    Returns
-    -------
-    url_plot_svg : String
-        SVG Image Data URL.
-    """
-    try:
-        return figure_to_svg_quoted(plot)
-    except AttributeError:
-        return figure_to_svg_quoted(plot.figure)
-
-
 def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
                        max_indices, min_indices,
                        corrected_hr_df, corrected_rr_df,
@@ -519,7 +381,6 @@ def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
     report.save_as_html(destination_path)
     Parameters
     ----------
-
     Returns
     -------
     report_text : HTMLReport Object
