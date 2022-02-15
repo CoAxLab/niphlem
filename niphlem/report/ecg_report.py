@@ -70,10 +70,8 @@ def make_ecg_report(ecg_signal,
     -------
     report : html file
         HTML report.
-    signal_filt : array-like of shape (n_physio_samples, )
-        averaged filtered signa.
-    corrected_peaks : array-like
-        corrected peaks locations.
+    output_dict : dict
+        Dictionary with the filtered signal and (corrected) peak locations.
     """
 
     signal = ecg_signal.copy()

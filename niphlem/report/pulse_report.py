@@ -41,7 +41,8 @@ def make_pulseox_report(pulse_signal,
     Generate QC report for pulse-ox data.
     Parameters
     ----------
-    pulse_signal : array-like of shape (n_physio_samples, 1)
+    pulse_signal : array-like of shape (n_physio_samples, ),
+        or (n_physio_samples, n_channels).
         Pulse-oximetry belt signal.
     fs : float
         Sampling frequency of pulse-oximetry recording.
@@ -65,10 +66,9 @@ def make_pulseox_report(pulse_signal,
     -------
     report : html file
         HTML report.
-    signal_filt : array-like of shape (n_physio_samples, )
-        averaged filtered signal.
-    corrected_peaks : array-like
-        corrected peaks locations.
+    output_dict : dict
+        Dictionary with the (high and low) filtered signals and
+        (corrected) peak locations.
     """
 
     signal = pulse_signal.copy()

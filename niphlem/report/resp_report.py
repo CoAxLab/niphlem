@@ -37,11 +37,11 @@ def make_resp_report(resp_signal,
     Generate QC report for respiration data.
     Parameters
     ----------
-    resp_signal : array-like of shape (n_physio_samples, 1)
+    resp_signal : array-like of shape (n_physio_samples, ),
+        or (n_physio_samples, n_channels).
         Penumatic belt signal.
     fs : float
         Sampling frequency of pneumatic belt recording.
-        (Upsampled to matched ECG frequency.)
     delta: float
         minimum separation (in physio recording units) between
         events in signal to be considered peaks
@@ -62,10 +62,8 @@ def make_resp_report(resp_signal,
     -------
     report : html file
         HTML report.
-    signal_filt : array-like of shape (n_physio_samples, )
-        averaged filtered signal.
-    corrected_peaks : array-like
-        corrected peaks locations.
+    output_dict : dict
+        Dictionary with the filtered signal and (corrected) peak locations.
     """
 
     signal = resp_signal.copy()
