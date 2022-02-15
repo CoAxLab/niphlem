@@ -1,8 +1,15 @@
 """
-This file contains the code to generate the ECG report.
-Many of the functionalites used here have been borrowed from Nilearn
+This file contains some general code to aid the generation of the reports.
+
+Some of the code used here has been borrowed from Nilearn
 (https://nilearn.github.io/)
 """
+
+import numpy as np
+import pandas as pd
+import scipy.stats as st
+import io
+import urllib
 
 
 def compute_stats(x):
@@ -39,7 +46,8 @@ def plot_average_signal(ax, peaks, delta, signal_filt):
 
 def generate_rate_df(fs, diff_peaks, signal_rate):
 
-    # generate table of statistics for signal rate (either resp rate or heart rate)
+    # generate table of statistics for signal rate
+    # (either resp rate or heart rate)
     # already calculated: signal_rate (mean)
 
     all_rate = (fs/diff_peaks)*60
@@ -52,9 +60,9 @@ def generate_rate_df(fs, diff_peaks, signal_rate):
                                              )
 
     rate_dict = {'mean': [signal_rate],
-               '95% CI (lower bound)': [lower_bound],
-               '95% CI (upper bound)': [upper_bound]
-               }
+                 '95% CI (lower bound)': [lower_bound],
+                 '95% CI (upper bound)': [upper_bound]
+                 }
     rate_df = pd.DataFrame(data=rate_dict)
 
     return rate_df
@@ -66,8 +74,9 @@ def generate_interval_df(mean_ipi, median_ipi, stdev_ipi, snr_ipi):
     # already calculated: mean_ipi, median_ipi, stdev_ipi, snr_ipi
 
     ipi_dict = {'mean': [mean_ipi], 'median': [median_ipi],
-               'standard deviation': [stdev_ipi],
-               'SNR': [snr_ipi]}
+                'standard deviation': [stdev_ipi],
+                'SNR': [snr_ipi]
+                }
     ipi_df = pd.DataFrame(data=ipi_dict)
 
     return ipi_df
@@ -125,3 +134,41 @@ def _plot_to_svg(plot):
         return figure_to_svg_quoted(plot.figure)
 
 
+def validate_signal(signal, ground=None):
+    """
+    This function validates the input data for the report generattion.
+    Basically it returns a 2D array, even in the case of just one channel.
+    Later during the reports generation, signal is collapsed across channels
+    by averaging them. A ground argument is added for substraction (e.g. ECG).
+    """
+
+    signal = np.squeeze(signal)
+
+    if signal.ndim > 2:
+        raise ValueError("Supplied signal should be at most 2D")
+    if signal.ndim == 2:
+        if ground is not None:
+            n_ch = signal.shape[1]
+            # Substract ground from signal
+            ground = int(ground)
+            signal -= signal[:, [ground]]
+            signal = signal[:, np.arange(n_ch) != ground]
+    else:
+        signal = signal[:, None]
+
+    return signal
+
+
+def validate_output(outpath):
+    "Validates outpath."
+    from pathlib import Path
+
+    if outpath is not None:
+        try:
+            outpath = Path(outpath)
+        except TypeError:
+            raise ValueError("outpath should be a string")
+
+        outpath.mkdir(exist_ok=True, parents=True)
+        outpath = outpath.absolute().as_posix()
+    return outpath

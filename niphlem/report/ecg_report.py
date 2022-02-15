@@ -1,26 +1,29 @@
 """
 This file contains the code to generate the ECG report.
+
 Many of the functionalites used here have been borrowed from Nilearn
 (https://nilearn.github.io/)
 """
 
-import io
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import scipy.stats as st
+
 import string
-import urllib.parse
-from pathlib import Path
+
 
 from html import escape
 from os.path import join as opj
 from scipy.signal import welch
 
-from niphlem.clean import butter_filter
+from niphlem.clean import _transform_filter
 from niphlem.events import compute_max_events, correct_anomalies
-from .report_general import compute_stats, _dataframe_to_html, figure_to_svg_bytes, figure_to_svg_quoted, _plot_to_svg, plot_average_signal, plot_peaks, generate_rate_df, generate_interval_df
+from .report_general import (validate_signal, validate_outpath,
+                             compute_stats, _dataframe_to_html,
+                             _plot_to_svg, plot_average_signal, plot_peaks,
+                             generate_rate_df, generate_interval_df
+                             )
+
 from .html_report import HTMLReport
 
 
@@ -38,7 +41,8 @@ def make_ecg_report(ecg_signal,
     Generate QC report for ECG data.
     Parameters
     ----------
-    ecg_signal : array-like of shape (n_physio_samples, n_channels)
+    ecg_signal : array-like of shape (n_physio_samples, ),
+        or (n_physio_samples, n_channels).
         ECG Signal, where each column corresponds to a recording.
     fs : float
         Sampling frequency of ECG recording.
@@ -66,53 +70,37 @@ def make_ecg_report(ecg_signal,
     -------
     report : html file
         HTML report.
-    mean_signal_filt : array-like of shape (n_physio_samples, )
+    signal_filt : array-like of shape (n_physio_samples, )
         averaged filtered signa.
     corrected_peaks : array-like
         corrected peaks locations.
     """
-    # TODO: Add extra checks to input arguments
-    # TODO: Change np.mean to np.nanmean?
-    n_obs, n_ch = ecg_signal.shape
-    signals = ecg_signal.copy()
 
-    # Substract ground from signal
-    if ground is not None:
-        ground_ix = int(ground)
-        signals -= signals[:, [ground_ix]]
-        signals = signals[:, np.arange(n_ch) != ground_ix]
+    signal = ecg_signal.copy()
 
-    if outpath is not None:
-        try:
-            outpath = Path(outpath)
-        except TypeError:
-            raise ValueError("outpath should be a string")
+    signal = validate_signal(signal, ground=ground)
 
-        outpath.mkdir(exist_ok=True, parents=True)
-        outpath = outpath.absolute().as_posix()
+    outpath = validate_outpath(outpath)
 
-    # demean signal
-    signals -= np.mean(signals, axis=0)
-    # Filter signal
-    signals_filt = np.apply_along_axis(butter_filter,
-                                       axis=0,
-                                       arr=signals,
-                                       high_pass=high_pass,
-                                       low_pass=low_pass,
-                                       fs=fs
-                                       )
-
+    # demean and filter signal
+    signal_filt = np.apply_along_axis(_transform_filter,
+                                      axis=0,
+                                      arr=signal,
+                                      high_pass=high_pass,
+                                      low_pass=low_pass,
+                                      sampling_rate=fs
+                                      )
     # Compute average signal across channels for both raw and filter data
-    mean_signal = np.mean(signals, axis=1)
-    mean_signal_filt = np.mean(signals_filt, axis=1)
+    signal = np.mean(signal, axis=1)
+    signal_filt = np.mean(signal_filt, axis=1)
 
     if outpath is not None:
-        filepath = opj(outpath, "mean_filtered_signal.txt")
-        np.savetxt(filepath, mean_signal_filt)
+        filepath = opj(outpath, "transformed_signal_ecg.txt")
+        np.savetxt(filepath, signal_filt)
 
     fig1, peaks, diff_peaks, heart_rate, mean_RR, median_RR, \
-        stdev_RR, snr_RR = plot_filtered_data(mean_signal,
-                                              mean_signal_filt,
+        stdev_RR, snr_RR = plot_filtered_data(signal,
+                                              signal_filt,
                                               fs,
                                               peak_rise,
                                               delta)
@@ -120,19 +108,16 @@ def make_ecg_report(ecg_signal,
     hr_df = generate_rate_df(fs, diff_peaks, heart_rate)
     rr_df = generate_interval_df(mean_RR, median_RR, stdev_RR, snr_RR)
 
-    corrected_peaks, max_indices, min_indices = correct_anomalies(peaks,
-                                                                  alpha=0.05,
-                                                                  save_name=''
-                                                                  )
+    corrected_peaks, max_indices, min_indices = correct_anomalies(peaks)
     # Compute differences between corrected peaks
     corrected_peak_diffs = abs(np.diff(corrected_peaks))
 
     if outpath is not None:
-        filepath = opj(outpath, "corrected_peaks.txt")
+        filepath = opj(outpath, "corrected_peaks_ecg.txt")
         np.savetxt(filepath, corrected_peaks)
 
     fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
-        c_inst_hr = plot_corrected_ecg(mean_signal_filt,
+        c_inst_hr = plot_corrected_ecg(signal_filt,
                                        corrected_peaks,
                                        corrected_peak_diffs,
                                        delta, fs)
@@ -143,7 +128,7 @@ def make_ecg_report(ecg_signal,
     corrected_rr_df = generate_interval_df(c_mean_RR, c_median_RR, c_stdev_RR,
                                            c_snr_RR)
 
-    fig3 = plot_comparison_ecg(mean_signal_filt, peaks, diff_peaks, heart_rate,
+    fig3 = plot_comparison_ecg(signal_filt, peaks, diff_peaks, heart_rate,
                                mean_RR, median_RR, stdev_RR,
                                corrected_peaks, corrected_peak_diffs,
                                c_heart_rate, c_mean_RR, c_median_RR,
@@ -164,23 +149,28 @@ def make_ecg_report(ecg_signal,
         report.save_as_html(filepath)
         print(f"QC report for ECG signal saved in: {filepath}")
 
-    return report, mean_signal_filt, corrected_peaks
+    # Store filtered data and peaks in a dictionary for output
+    output_dict = {'filtered_signal': signal_filt,
+                   'peaks': corrected_peaks
+                   }
+
+    return report, output_dict
 
 
-def plot_filtered_signal(ax, mean_signal, mean_signal_filt):
+def plot_filtered_signal(ax, signal, signal_filt):
     # plots comparison between unfiltered and filtered signal (one panel)
-    ax.plot(mean_signal, label="unfiltered signal")
-    ax.plot(mean_signal_filt, label="filtered signal")
+    ax.plot(signal, label="unfiltered signal")
+    ax.plot(signal_filt, label="filtered signal")
     # ax.set_xlim([5000, 7000])
     ax.legend()
     return ax
 
 
-def plot_power_spectrum_ecg(ax, mean_signal, mean_signal_filt, fs):
+def plot_power_spectrum_ecg(ax, signal, signal_filt, fs):
     # plots power spectrum of unfiltered, filtered signal (one panel)
-    f, Pxx = welch(mean_signal, fs=fs, nperseg=2048, scaling="spectrum")
+    f, Pxx = welch(signal, fs=fs, nperseg=2048, scaling="spectrum")
     ax.semilogy(f, Pxx, label="unfiltered signal")
-    f, Pxx = welch(mean_signal_filt, fs=fs, nperseg=2048, scaling="spectrum")
+    f, Pxx = welch(signal_filt, fs=fs, nperseg=2048, scaling="spectrum")
     ax.semilogy(f, Pxx, label="filtered signal")
     ax.set_xlabel("Frequency (Hz)")
     ax.set_ylabel("Power spectrum")
@@ -210,27 +200,27 @@ def plot_inst_hr(ax, fs, diff_peaks):
     return ax, inst_hr
 
 
-def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
+def plot_filtered_data(signal, signal_filt, fs, peak_rise, delta):
 
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
     # Limits for signal plots of 5 secs
     x_i = 0
     x_f = fs*5
-    if mean_signal.shape[0] < x_f:
+    if signal.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
-        x_f = mean_signal.shape[0]
+        x_f = signal.shape[0]
     ax1 = axs[0, 0]
-    ax1 = plot_filtered_signal(ax1, mean_signal, mean_signal_filt)
+    ax1 = plot_filtered_signal(ax1, signal, signal_filt)
     ax1.set_title("A", size=15)
     ax1.set_xlim([x_i, x_f])
 
     ax2 = axs[0, 1]
-    ax2 = plot_power_spectrum_ecg(ax2, mean_signal, mean_signal_filt, fs)
+    ax2 = plot_power_spectrum_ecg(ax2, signal, signal_filt, fs)
     ax2.set_title("B", size=15)
 
     # Compute peaks
-    peaks = compute_max_events(mean_signal_filt,
+    peaks = compute_max_events(signal_filt,
                                peak_rise=peak_rise,
                                delta=delta)
     diff_peaks = abs(np.diff(peaks))
@@ -238,13 +228,13 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     heart_rate = np.mean(fs/diff_peaks)*60
 
     ax3 = axs[1, 0]
-    ax3 = plot_peaks(ax3, mean_signal_filt, peaks)
+    ax3 = plot_peaks(ax3, signal_filt, peaks)
     ax3.set_title("C", size=15)
     ax3.set_xlim([x_i, x_f])
 
     # Compute signal around peaks
     ax4 = axs[1, 1]
-    ax4 = plot_average_signal(ax4, peaks, delta, mean_signal_filt)
+    ax4 = plot_average_signal(ax4, peaks, delta, signal_filt)
     ax4.set_title("D: Heart rate = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -269,7 +259,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     return fig, peaks, diff_peaks, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR
 
 
-def plot_corrected_ecg(mean_signal_filt, peaks, diff_peaks, delta, fs):
+def plot_corrected_ecg(signal_filt, peaks, diff_peaks, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(12, 8))
 
@@ -277,12 +267,12 @@ def plot_corrected_ecg(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     x_i = 0
     x_f = fs*5
-    if mean_signal_filt.shape[0] < x_f:
+    if signal_filt.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
-        x_f = mean_signal_filt.shape[0]
+        x_f = signal_filt.shape[0]
 
     ax1 = axs[0, 0]
-    ax1 = plot_peaks(ax1, mean_signal_filt, peaks)
+    ax1 = plot_peaks(ax1, signal_filt, peaks)
     ax1.set_title("A", size=15)
     ax1.set_xlim([x_i, x_f])
 
@@ -291,7 +281,7 @@ def plot_corrected_ecg(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     # Compute signal around peaks
     ax2 = axs[0, 1]
-    ax2 = plot_average_signal(ax2, peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, peaks, delta, signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -317,7 +307,7 @@ def plot_corrected_ecg(mean_signal_filt, peaks, diff_peaks, delta, fs):
     return fig, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR, inst_hr
 
 
-def plot_comparison_ecg(mean_signal_filt, peaks, diff_peaks, heart_rate,
+def plot_comparison_ecg(signal_filt, peaks, diff_peaks, heart_rate,
                         mean_RR, median_RR, stddev_RR,
                         corrected_peaks, corrected_diff_peaks2,
                         corrected_heart_rate, c_mean_RR, c_median_RR,
@@ -326,11 +316,11 @@ def plot_comparison_ecg(mean_signal_filt, peaks, diff_peaks, heart_rate,
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
     ax1 = axs[0, 0]
-    ax1 = plot_average_signal(ax1, peaks, delta, mean_signal_filt)
+    ax1 = plot_average_signal(ax1, peaks, delta, signal_filt)
     ax1.set_title("A: HR = %.2f bpm" % heart_rate, size=15)
 
     ax2 = axs[0, 1]
-    ax2 = plot_average_signal(ax2, corrected_peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, corrected_peaks, delta, signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % corrected_heart_rate, size=15)
 
     # Plot histogram of RR interval

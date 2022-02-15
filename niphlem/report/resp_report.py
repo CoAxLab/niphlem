@@ -1,18 +1,14 @@
 """
 This file contains the code to generate the respiration report.
+
 Many of the functionalites used here have been borrowed from Nilearn
 (https://nilearn.github.io/)
 """
 
-import io
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import scipy.stats as st
 import string
-import urllib.parse
-from pathlib import Path
 
 from html import escape
 from os.path import join as opj
@@ -20,7 +16,11 @@ from scipy.signal import welch
 
 from niphlem.clean import _transform_filter
 from niphlem.events import compute_max_events, correct_anomalies
-from .report_general import compute_stats, _dataframe_to_html, figure_to_svg_bytes, figure_to_svg_quoted, _plot_to_svg, plot_average_signal, plot_peaks, generate_rate_df, generate_interval_df
+from .report_general import (validate_signal, validate_outpath,
+                             compute_stats, _dataframe_to_html, _plot_to_svg,
+                             plot_average_signal, plot_peaks,
+                             generate_rate_df, generate_interval_df
+                             )
 from .html_report import HTMLReport
 
 
@@ -40,7 +40,8 @@ def make_resp_report(resp_signal,
     resp_signal : array-like of shape (n_physio_samples, 1)
         Penumatic belt signal.
     fs : float
-        Sampling frequency of pneumatic belt recording. (Upsampled to matched ECG frequency.)
+        Sampling frequency of pneumatic belt recording.
+        (Upsampled to matched ECG frequency.)
     delta: float
         minimum separation (in physio recording units) between
         events in signal to be considered peaks
@@ -66,26 +67,27 @@ def make_resp_report(resp_signal,
     corrected_peaks : array-like
         corrected peaks locations.
     """
-    
+
     signal = resp_signal.copy()
 
+    signal = validate_signal(signal)
+
+    outpath = validate_outpath(outpath)
+
+    # demean and filter signal
+    signal_filt = np.apply_along_axis(_transform_filter,
+                                      axis=0,
+                                      arr=signal,
+                                      high_pass=high_pass,
+                                      low_pass=low_pass,
+                                      sampling_rate=fs
+                                      )
+    # Compute average signal across channels for both raw and filter data
+    signal = np.mean(signal, axis=1)
+    signal_filt = np.mean(signal_filt, axis=1)
+
     if outpath is not None:
-        try:
-            outpath = Path(outpath)
-        except TypeError:
-            raise ValueError("outpath should be a string")
-
-        outpath.mkdir(exist_ok=True, parents=True)
-        outpath = outpath.absolute().as_posix()
-
-    # demean signal
-    signal_filt = _transform_filter(signal[:,0],
-                                    high_pass=high_pass,
-                                    low_pass=low_pass,
-                                    sampling_rate=fs)
-
-    if outpath is not None:
-        filepath = opj(outpath, "transformed_signal.txt")
+        filepath = opj(outpath, "transformed_signal_resp.txt")
         np.savetxt(filepath, signal_filt)
 
     fig1, peaks, diff_peaks, resp_rate, mean_ipi, median_ipi, \
@@ -106,7 +108,7 @@ def make_resp_report(resp_signal,
     corrected_peak_diffs = abs(np.diff(corrected_peaks))
 
     if outpath is not None:
-        filepath = opj(outpath, "corrected_peaks.txt")
+        filepath = opj(outpath, "peaks_resp.txt")
         np.savetxt(filepath, corrected_peaks)
 
     fig2, c_resp_rate, c_mean_ipi, c_median_ipi, c_stdev_ipi, c_snr_ipi,\
@@ -118,7 +120,8 @@ def make_resp_report(resp_signal,
     corrected_rr_df = generate_rate_df(fs,
                                        corrected_peak_diffs,
                                        c_resp_rate)
-    corrected_ipi_df = generate_interval_df(c_mean_ipi, c_median_ipi, c_stdev_ipi,
+    corrected_ipi_df = generate_interval_df(c_mean_ipi, c_median_ipi,
+                                            c_stdev_ipi,
                                             c_snr_ipi)
 
     fig3 = plot_comparison_resp(signal_filt, peaks, diff_peaks, resp_rate,
@@ -142,7 +145,12 @@ def make_resp_report(resp_signal,
         report.save_as_html(filepath)
         print(f"QC report for pneumatic belt signal saved in: {filepath}")
 
-    return report, signal_filt, corrected_peaks
+    # Store filtered data and peaks in a dictionary for output
+    output_dict = {'filtered_signal': signal_filt,
+                   'peaks': corrected_peaks
+                   }
+
+    return report, output_dict
 
 
 def plot_transformed_signal_resp(ax, signal, signal_filt):
