@@ -105,8 +105,15 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath_low = opj(outpath, "transformed_signal_low_puls.txt")
         np.savetxt(filepath_low, signal_filt_low)
+        print("Transformed low frequency pulse-ox "
+              f"signal saved in: {filepath_low}"
+              )
+
         filepath_high = opj(outpath, "transformed_signal_high_puls.txt")
         np.savetxt(filepath_high, signal_filt_high)
+        print("Transformed high frequency pulse-ox "
+              f"signal saved in: {filepath_high}"
+              )
 
     fig0 = plot_combined_transformed_data(signal,
                                           signal_filt_low,
@@ -136,6 +143,9 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath_low = opj(outpath, "peaks_low_puls.txt")
         np.savetxt(filepath_low, corrected_resp_peaks)
+        print("Peaks of the low frequency pulse-ox "
+              f"signal saved in: {filepath_low}"
+              )
 
     fig2, c_resp_rate, c_mean_ipi, c_median_ipi, \
         c_stdev_ipi, c_snr_ipi, c_inst_resp = plot_corrected_pulse(
@@ -188,6 +198,9 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath_high = opj(outpath, "peaks_high_puls.txt")
         np.savetxt(filepath_high, corrected_hr_peaks)
+        print("Peaks of the high frequency pulse-ox "
+              f"signal saved in: {filepath_high}"
+              )
 
     fig5, c_heart_rate, c_mean_rr, c_median_rr, \
         c_stdev_rr, c_snr_rr, c_inst_hr = plot_corrected_pulse(
@@ -228,7 +241,7 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath = opj(outpath, "pulseox_qc.html")
         report.save_as_html(filepath)
-        print(f"QC report for pneumatic belt signal saved in: {filepath}")
+        print(f"QC report for pulse-ox signal saved in: {filepath}")
 
     # Store filtered data and peaks in a dictionary for output
     output_dict = {'low_filtered_signal': signal_filt_low,
@@ -518,8 +531,7 @@ def _generate_pulse_html(fig0, fig1, fig2, fig3, fig4, fig5, fig6,
         Contains the HTML code for the GLM Report.
     """
 
-    #HTML_TEMPLATE_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
-    HTML_TEMPLATE_ROOT_PATH = "./"
+    HTML_TEMPLATE_ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
     html_head_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
                                            'report_head.html')
@@ -552,7 +564,7 @@ def _generate_pulse_html(fig0, fig1, fig2, fig3, fig4, fig5, fig6,
                                  header=True,
                                  sparsify=False
                                  )
-    
+
     hr_html = _dataframe_to_html(hr_df,
                                  precision=2,
                                  header=True,
@@ -564,7 +576,7 @@ def _generate_pulse_html(fig0, fig1, fig2, fig3, fig4, fig5, fig6,
                                   header=True,
                                   sparsify=False,
                                   )
-    
+
     rri_html = _dataframe_to_html(rri_df,
                                   precision=2,
                                   header=True,
@@ -576,7 +588,7 @@ def _generate_pulse_html(fig0, fig1, fig2, fig3, fig4, fig5, fig6,
                                            header=True,
                                            sparsify=False,
                                            )
-    
+
     corrected_hr_html = _dataframe_to_html(corrected_hr_df,
                                            precision=2,
                                            header=True,
@@ -588,7 +600,7 @@ def _generate_pulse_html(fig0, fig1, fig2, fig3, fig4, fig5, fig6,
                                             header=True,
                                             sparsify=False,
                                             )
-    
+
     corrected_rri_html = _dataframe_to_html(corrected_rri_df,
                                             precision=2,
                                             header=True,

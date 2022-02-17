@@ -95,6 +95,7 @@ def make_ecg_report(ecg_signal,
     if outpath is not None:
         filepath = opj(outpath, "transformed_signal_ecg.txt")
         np.savetxt(filepath, signal_filt)
+        print(f"Transformed ECG signal saved in: {filepath}")
 
     fig1, peaks, diff_peaks, heart_rate, mean_RR, median_RR, \
         stdev_RR, snr_RR = plot_filtered_data(signal,
@@ -113,6 +114,7 @@ def make_ecg_report(ecg_signal,
     if outpath is not None:
         filepath = opj(outpath, "corrected_peaks_ecg.txt")
         np.savetxt(filepath, corrected_peaks)
+        print(f"ECG peaks saved in: {filepath}")
 
     fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
         c_inst_hr = plot_corrected_ecg(signal_filt,
@@ -381,7 +383,7 @@ def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
                                            'report_head.html')
 
     html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                           'report_body.html')
+                                           'report_body_ecg.html')
 
     with open(html_head_template_path) as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()

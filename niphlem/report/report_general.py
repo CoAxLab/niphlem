@@ -22,6 +22,19 @@ def compute_stats(x):
     return mean_x, median_x, stdev_x, snr_x
 
 
+def plot_peaks(ax, signal_filt, peaks):
+
+    ax.plot(signal_filt)
+
+    ax.scatter(peaks.astype(int),
+               signal_filt[peaks.astype(int)],
+               c="red", marker="x",
+               s=100)
+    ax.set_xlabel("Time (s)")
+
+    return ax
+
+
 def plot_average_signal(ax, peaks, delta, signal_filt):
 
     sign_peaks = []
@@ -159,7 +172,7 @@ def validate_signal(signal, ground=None):
     return signal
 
 
-def validate_output(outpath):
+def validate_outpath(outpath):
     "Validates outpath."
     from pathlib import Path
 

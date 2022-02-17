@@ -87,6 +87,7 @@ def make_resp_report(resp_signal,
     if outpath is not None:
         filepath = opj(outpath, "transformed_signal_resp.txt")
         np.savetxt(filepath, signal_filt)
+        print(f"Transformed respiratory signal saved in: {filepath}")
 
     fig1, peaks, diff_peaks, resp_rate, mean_ipi, median_ipi, \
         stdev_ipi, snr_ipi = plot_transformed_resp(signal,
@@ -108,6 +109,7 @@ def make_resp_report(resp_signal,
     if outpath is not None:
         filepath = opj(outpath, "peaks_resp.txt")
         np.savetxt(filepath, corrected_peaks)
+        print(f"Respiratory peaks saved in: {filepath}")
 
     fig2, c_resp_rate, c_mean_ipi, c_median_ipi, c_stdev_ipi, c_snr_ipi,\
         c_inst_resp = plot_corrected_resp(signal_filt,
