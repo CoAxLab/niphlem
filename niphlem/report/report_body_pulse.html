@@ -1,0 +1,201 @@
+    <style>
+        div.report {
+            font-family: sans-serif;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        div.pulse_statistics {
+            margin-left: auto;
+            margin-right: auto;
+            width: 100px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 5px;
+            padding-left: 15px;
+            padding-right: 15px;
+            text-align: center;
+        }
+
+        tr, td {
+            border-bottom: 0px;
+            border-top: 0px;
+        }
+
+        tr:nth-child(even) {
+            background-color: lightgray;
+        }
+
+        tr:hover {
+            background-color: yellow;
+        }
+
+        details:hover {
+            cursor: pointer;
+        }
+        details > summary {
+            margin-left: auto;
+            margin-right: auto;
+            width: 25%;
+            background-color: lightgray;
+            outline-color: lightgray;
+        }
+
+        address {
+            color: lightgray;
+        }
+        address > a:visited {
+            color: lightgray;
+        }
+    </style>
+
+<div class="report">
+
+    <h1>${page_heading}</h1>  
+
+    niphlem version 0.0.1
+
+    <h3>Plot raw and transformed signals (left) and power spectrum (right)</h3>
+    <img src="data:image/svg+xml,${fig0_html}"/> 
+
+    <h2>Respiration signal recovery</h2>
+
+    <h3>Filtering:</h3>
+    Pulse-oximetry sampling rate: ${fs} <br>
+    lower bandpass frequency: ${resp_low_cut} <br>
+    higher bandpass frequency: ${resp_high_cut} <br>
+    minimum peak separation: ${delta_low} <br>
+    relative peak height: ${peak_rise_low} <br>
+
+    <h3>Plot A) respiration timeseries snapshot with marked peaks, B) average respiration waveform signal, C) IPI histogram and D) instantaneous respiration rate</h3>
+    <img src="data:image/svg+xml,${fig1_html}"/> 
+
+    <h3>Respiration rate statistics (breaths per minute):</h3>
+    <div class="pulse_statistics">
+    ${rr_html}  
+    </div>
+
+    <br><br>
+
+    <h3>IPI statistics (ms):</h3>
+    <div class="pulse_statistics">
+    ${ipi_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Correct anomalies/artifacts in instantaneous respiration rate</h3>
+
+    IPI outliers detected via one-sided Grubb's test (IPI that are too large and result in an abnormally slow instantaneous respiration rate): ${resp_max_indices}
+
+    <br><br>
+    
+    IPI outliers detected via one-sided Grubb's test (IPI that are too small and result in an abnormally fast instantaneous respiration rate): ${resp_min_indices}
+
+    <br><br>
+
+    <h3>Plot A) respiration timeseries snapshot with corrected peaks marked, B) corrected average respiration waveform signal, C) corrected IPI histogram and D) corrected instantaneous respiration rate</h3>
+    <img src="data:image/svg+xml,${fig2_html}"/> 
+
+    <h3>Corrected respiration rate statistics (breaths per minute):</h3>
+    <div class="pulse_statistics">
+    ${corrected_rr_html} 
+    </div>
+
+    <h3>Corrected IPI statistics (ms):</h3>
+    <div class="pulse_statistics">
+    ${corrected_ipi_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Compare pre and post corrected graphs</h3>
+
+    Side-by-side comparison of average respiration waveform (A, B), IPI histogram (C, D) and instantaneous respiration rate (E, F) before (left) and after (right) anomaly/artifact correction
+
+    <img src="data:image/svg+xml,${fig3_html}"/> 
+    
+    <!---
+    <h3>Save transformed timeseries, corrected peaks for recovered respiration signal</h3>
+    Transformed timeseries saved as: resp_signal.txt
+    <br><br>
+    Corrected respiration peaks saved as: resp_events.txt
+    
+    <br><br>
+    --->
+
+    <h2>Cardiac signal recovery</h2>
+
+    <h3>Filtering:</h3>
+    Pulse-oximetry sampling rate: ${fs} <br>
+    lower bandpass frequency: ${hr_low_cut} <br>
+    higher bandpass frequency: ${hr_high_cut} <br>
+    minimum peak separation: ${delta_high} <br>
+    relative peak height: ${peak_rise_high}
+
+    <h3>Plot A) cardiac timeseries snapshot with marked peaks, B) average QRS waveform signal, C) RR interval histogram and D) instantaneous heart rate</h3>
+    <img src="data:image/svg+xml,${fig4_html}"/> 
+
+    <h3>Heart rate statistics (BPM):</h3>
+    <div class="pulse_statistics">
+    ${hr_html}  
+    </div>
+
+    <br><br>
+
+    <h3>RR interval statistics (ms):</h3>
+    <div class="pulse_statistics">
+    ${rri_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Correct anomalies/artifacts in instantaneous heart rate</h3>
+
+    RR interval outliers detected via one-sided Grubb's test (RR intervals that are too large and result in an abnormally slow instantaneous heart rate): ${hr_max_indices}
+
+    <br><br>
+    
+    RR interval outliers detected via one-sided Grubb's test (RR intervals that are too small and result in an abnormally fast instantaneous heart rate): ${hr_min_indices}
+
+    <br><br>
+
+    <h3>Plot A) cardiac timeseries snapshot with corrected peaks marked, B) corrected average QRS waveform signal, C) corrected RR interval histogram and D) corrected instantaneous heart rate</h3>
+    <img src="data:image/svg+xml,${fig5_html}"/> 
+
+    <h3>Corrected heart rate statistics (BPM):</h3>
+    <div class="pulse_statistics">
+    ${corrected_hr_html} 
+    </div>
+
+    <h3>Corrected RR interval statistics (ms):</h3>
+    <div class="pulse_statistics">
+    ${corrected_rri_html} 
+    </div>
+
+    <br><br>
+
+    <h3>Compare pre and post corrected graphs</h3>
+
+    Side-by-side comparison of average QRS waveform (A, B), RR interval histogram (C, D) and instantaneous heart rate (E, F) before (left) and after (right) anomaly/artifact correction
+
+    <img src="data:image/svg+xml,${fig6_html}"/> 
+
+    <!---
+    <h3>Save transformed timeseries, corrected peaks for recovered cardiac signal</h3>
+    Transformed timeseries saved as: cardiac_signal.txt
+    <br><br>
+    Corrected cardiac peaks saved as: cardiac_events.txt
+
+    <br><br>
+    --->
+<address>
+    Built using <a href="https://coaxlab.github.io/niphlem">niphlem</a>.
+</address>
+</div>

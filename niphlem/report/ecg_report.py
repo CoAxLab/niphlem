@@ -3,25 +3,26 @@ This file contains the code to generate the ECG report.
 
 Many of the functionalites used here have been borrowed from Nilearn
 (https://nilearn.github.io/)
-
 """
 
-import io
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-import scipy.stats as st
+
 import string
-import urllib.parse
-from pathlib import Path
+
 
 from html import escape
 from os.path import join as opj
 from scipy.signal import welch
 
-from niphlem.clean import butter_filter
+from niphlem.clean import _transform_filter
 from niphlem.events import compute_max_events, correct_anomalies
+from .report_general import (validate_signal, validate_outpath,
+                             compute_stats, _dataframe_to_html,
+                             _plot_to_svg, plot_average_signal, plot_peaks,
+                             generate_rate_df, generate_interval_df
+                             )
 
 from .html_report import HTMLReport
 
@@ -38,10 +39,10 @@ def make_ecg_report(ecg_signal,
                     ):
     """
     Generate QC report for ECG data.
-
     Parameters
     ----------
-    ecg_signal : array-like of shape (n_physio_samples, n_channels)
+    ecg_signal : array-like of shape (n_physio_samples, ),
+        or (n_physio_samples, n_channels).
         ECG Signal, where each column corresponds to a recording.
     fs : float
         Sampling frequency of ECG recording.
@@ -65,93 +66,73 @@ def make_ecg_report(ecg_signal,
         If provided, Path where report the HTML report,
         averaged filtered signal and corrected peaks will be saved.
         The default is None.
-
     Returns
     -------
     report : html file
         HTML report.
-    mean_signal_filt : array-like of shape (n_physio_samples, )
-        averaged filtered signa.
-    corrected_peaks : array-like
-        corrected peaks locations.
+    output_dict : dict
+        Dictionary with the filtered signal and (corrected) peak locations.
     """
-    # TODO: Add extra checks to input arguments
-    # TODO: Change np.mean to np.nanmean?
-    n_obs, n_ch = ecg_signal.shape
-    signals = ecg_signal.copy()
 
-    # Substract ground from signal
-    if ground is not None:
-        ground_ix = int(ground)
-        signals -= signals[:, [ground_ix]]
-        signals = signals[:, np.arange(n_ch) != ground_ix]
+    signal = ecg_signal.copy()
 
-    if outpath is not None:
-        try:
-            outpath = Path(outpath)
-        except TypeError:
-            raise ValueError("outpath should be a string")
+    signal = validate_signal(signal, ground=ground)
 
-        outpath.mkdir(exist_ok=True, parents=True)
-        outpath = outpath.absolute().as_posix()
+    outpath = validate_outpath(outpath)
 
-    # demean signal
-    signals -= np.mean(signals, axis=0)
-    # Filter signal
-    signals_filt = np.apply_along_axis(butter_filter,
-                                       axis=0,
-                                       arr=signals,
-                                       high_pass=high_pass,
-                                       low_pass=low_pass,
-                                       fs=fs
-                                       )
-
+    # demean and filter signal
+    signal_filt = np.apply_along_axis(_transform_filter,
+                                      axis=0,
+                                      arr=signal,
+                                      high_pass=high_pass,
+                                      low_pass=low_pass,
+                                      sampling_rate=fs
+                                      )
     # Compute average signal across channels for both raw and filter data
-    mean_signal = np.mean(signals, axis=1)
-    mean_signal_filt = np.mean(signals_filt, axis=1)
+    signal = np.mean(signal, axis=1)
+    signal_filt = np.mean(signal_filt, axis=1)
 
     if outpath is not None:
-        filepath = opj(outpath, "mean_filtered_signal.txt")
-        np.savetxt(filepath, mean_signal_filt)
+        filepath = opj(outpath, "transformed_signal_ecg.txt")
+        np.savetxt(filepath, signal_filt)
+        print(f"Transformed ECG signal saved in: {filepath}")
 
     fig1, peaks, diff_peaks, heart_rate, mean_RR, median_RR, \
-        stdev_RR, snr_RR = plot_filtered_data(mean_signal,
-                                              mean_signal_filt,
+        stdev_RR, snr_RR = plot_filtered_data(signal,
+                                              signal_filt,
                                               fs,
                                               peak_rise,
                                               delta)
 
-    hr_df = generate_hr_df(fs, diff_peaks, heart_rate)
-    rr_df = generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR)
+    hr_df = generate_rate_df(fs, diff_peaks, heart_rate)
+    rr_df = generate_interval_df(mean_RR, median_RR, stdev_RR, snr_RR)
 
-    corrected_peaks, max_indices, min_indices = correct_anomalies(peaks,
-                                                                  alpha=0.05,
-                                                                  save_name=''
-                                                                  )
+    corrected_peaks, max_indices, min_indices = correct_anomalies(peaks)
     # Compute differences between corrected peaks
     corrected_peak_diffs = abs(np.diff(corrected_peaks))
 
     if outpath is not None:
-        filepath = opj(outpath, "corrected_peaks.txt")
+        filepath = opj(outpath, "corrected_peaks_ecg.txt")
         np.savetxt(filepath, corrected_peaks)
+        print(f"ECG peaks saved in: {filepath}")
 
     fig2, c_heart_rate, c_mean_RR, c_median_RR, c_stdev_RR, c_snr_RR,\
-        c_inst_hr = plot_corrected_data(mean_signal_filt,
-                                        corrected_peaks,
-                                        corrected_peak_diffs,
-                                        delta, fs)
+        c_inst_hr = plot_corrected_ecg(signal_filt,
+                                       corrected_peaks,
+                                       corrected_peak_diffs,
+                                       delta, fs)
 
-    corrected_hr_df = generate_hr_df(fs,
-                                     corrected_peak_diffs,
-                                     c_heart_rate)
-    corrected_rr_df = generate_rr_df(c_mean_RR, c_median_RR, c_stdev_RR,
-                                     c_snr_RR)
+    corrected_hr_df = generate_rate_df(fs,
+                                       corrected_peak_diffs,
+                                       c_heart_rate)
+    corrected_rr_df = generate_interval_df(c_mean_RR, c_median_RR, c_stdev_RR,
+                                           c_snr_RR)
 
-    fig3 = plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                           mean_RR, median_RR, stdev_RR,
-                           corrected_peaks, corrected_peak_diffs,
-                           c_heart_rate, c_mean_RR, c_median_RR,
-                           c_stdev_RR, delta, fs)
+    fig3 = plot_comparison_ecg(signal_filt, peaks, diff_peaks, heart_rate,
+                               mean_RR, median_RR, stdev_RR,
+                               corrected_peaks, corrected_peak_diffs,
+                               c_heart_rate, c_mean_RR, c_median_RR,
+                               c_stdev_RR, delta, fs)
 
     # generate html report
     report = _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
@@ -168,72 +149,33 @@ def make_ecg_report(ecg_signal,
         report.save_as_html(filepath)
         print(f"QC report for ECG signal saved in: {filepath}")
 
-    return report, mean_signal_filt, corrected_peaks
+    # Store filtered data and peaks in a dictionary for output
+    output_dict = {'filtered_signal': signal_filt,
+                   'peaks': corrected_peaks
+                   }
+
+    return report, output_dict
 
 
-def compute_stats(x):
-
-    mean_x = np.mean(x)
-    median_x = np.median(x)
-    stdev_x = np.std(x)
-    snr_x = mean_x/stdev_x
-
-    return mean_x, median_x, stdev_x, snr_x
-
-
-def plot_filtered_signal(ax, mean_signal, mean_signal_filt):
+def plot_filtered_signal(ax, signal, signal_filt):
     # plots comparison between unfiltered and filtered signal (one panel)
-    ax.plot(mean_signal, label="unfiltered signal")
-    ax.plot(mean_signal_filt, label="filtered signal")
+    ax.plot(signal, label="unfiltered signal")
+    ax.plot(signal_filt, label="filtered signal")
     # ax.set_xlim([5000, 7000])
     ax.legend()
     return ax
 
 
-def plot_power_spectrum(ax, mean_signal, mean_signal_filt, fs):
+def plot_power_spectrum_ecg(ax, signal, signal_filt, fs):
     # plots power spectrum of unfiltered, filtered signal (one panel)
-    f, Pxx = welch(mean_signal, fs=fs, nperseg=2048, scaling="spectrum")
+    f, Pxx = welch(signal, fs=fs, nperseg=2048, scaling="spectrum")
     ax.semilogy(f, Pxx, label="unfiltered signal")
-    f, Pxx = welch(mean_signal_filt, fs=fs, nperseg=2048, scaling="spectrum")
+    f, Pxx = welch(signal_filt, fs=fs, nperseg=2048, scaling="spectrum")
     ax.semilogy(f, Pxx, label="filtered signal")
     ax.set_xlabel("Frequency (Hz)")
     ax.set_ylabel("Power spectrum")
     ax.set_xlim([0, 20])
     ax.legend()
-
-    return ax
-
-
-def plot_peaks(ax, mean_signal_filt, peaks):
-
-    ax.plot(mean_signal_filt)
-    ax.scatter(peaks.astype(int),
-               mean_signal_filt[peaks.astype(int)],
-               c="red", marker="x",
-               s=100)
-    # ax.set_xlim([5000, 7000])
-
-    return ax
-
-
-def plot_average_QRS(ax, peaks, delta, mean_signal_filt):
-
-    sign_peaks = []
-    for pk in peaks.astype(int):
-        i_0 = pk-delta
-        i_f = pk+delta
-        if i_0 < 0:
-            continue
-        if i_f > len(mean_signal_filt):
-            continue
-        sign_peaks.append(mean_signal_filt[i_0:i_f])
-
-    ax.plot(np.mean(np.array(sign_peaks), axis=0))
-    ax.errorbar(x=np.arange(2*delta),
-                y=np.mean(np.array(sign_peaks), axis=0),
-                yerr=np.std(np.array(sign_peaks), axis=0),
-                alpha=0.5
-                )
 
     return ax
 
@@ -258,27 +200,27 @@ def plot_inst_hr(ax, fs, diff_peaks):
     return ax, inst_hr
 
 
-def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
+def plot_filtered_data(signal, signal_filt, fs, peak_rise, delta):
 
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
     # Limits for signal plots of 5 secs
     x_i = 0
     x_f = fs*5
-    if mean_signal.shape[0] < x_f:
+    if signal.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
-        x_f = mean_signal.shape[0]
+        x_f = signal.shape[0]
     ax1 = axs[0, 0]
-    ax1 = plot_filtered_signal(ax1, mean_signal, mean_signal_filt)
+    ax1 = plot_filtered_signal(ax1, signal, signal_filt)
     ax1.set_title("A", size=15)
     ax1.set_xlim([x_i, x_f])
 
     ax2 = axs[0, 1]
-    ax2 = plot_power_spectrum(ax2, mean_signal, mean_signal_filt, fs)
+    ax2 = plot_power_spectrum_ecg(ax2, signal, signal_filt, fs)
     ax2.set_title("B", size=15)
 
     # Compute peaks
-    peaks = compute_max_events(mean_signal_filt,
+    peaks = compute_max_events(signal_filt,
                                peak_rise=peak_rise,
                                delta=delta)
     diff_peaks = abs(np.diff(peaks))
@@ -286,13 +228,13 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     heart_rate = np.mean(fs/diff_peaks)*60
 
     ax3 = axs[1, 0]
-    ax3 = plot_peaks(ax3, mean_signal_filt, peaks)
+    ax3 = plot_peaks(ax3, signal_filt, peaks)
     ax3.set_title("C", size=15)
     ax3.set_xlim([x_i, x_f])
 
     # Compute signal around peaks
     ax4 = axs[1, 1]
-    ax4 = plot_average_QRS(ax4, peaks, delta, mean_signal_filt)
+    ax4 = plot_average_signal(ax4, peaks, delta, signal_filt)
     ax4.set_title("D: Heart rate = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -317,7 +259,7 @@ def plot_filtered_data(mean_signal, mean_signal_filt, fs, peak_rise, delta):
     return fig, peaks, diff_peaks, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR
 
 
-def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
+def plot_corrected_ecg(signal_filt, peaks, diff_peaks, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(12, 8))
 
@@ -325,12 +267,12 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     x_i = 0
     x_f = fs*5
-    if mean_signal_filt.shape[0] < x_f:
+    if signal_filt.shape[0] < x_f:
         # In the unlikely case where mean signal duration is less than 5 secs
-        x_f = mean_signal_filt.shape[0]
+        x_f = signal_filt.shape[0]
 
     ax1 = axs[0, 0]
-    ax1 = plot_peaks(ax1, mean_signal_filt, peaks)
+    ax1 = plot_peaks(ax1, signal_filt, peaks)
     ax1.set_title("A", size=15)
     ax1.set_xlim([x_i, x_f])
 
@@ -339,7 +281,7 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
 
     # Compute signal around peaks
     ax2 = axs[0, 1]
-    ax2 = plot_average_QRS(ax2, peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, peaks, delta, signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % heart_rate, size=15)
 
     # Compute mean, median, stdev, snr of RR interval
@@ -365,20 +307,20 @@ def plot_corrected_data(mean_signal_filt, peaks, diff_peaks, delta, fs):
     return fig, heart_rate, mean_RR, median_RR, stdev_RR, snr_RR, inst_hr
 
 
-def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
-                    mean_RR, median_RR, stddev_RR,
-                    corrected_peaks, corrected_diff_peaks2,
-                    corrected_heart_rate, c_mean_RR, c_median_RR,
-                    c_stdev_RR, delta, fs):
+def plot_comparison_ecg(signal_filt, peaks, diff_peaks, heart_rate,
+                        mean_RR, median_RR, stddev_RR,
+                        corrected_peaks, corrected_diff_peaks2,
+                        corrected_heart_rate, c_mean_RR, c_median_RR,
+                        c_stdev_RR, delta, fs):
 
     fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(12, 12))
 
     ax1 = axs[0, 0]
-    ax1 = plot_average_QRS(ax1, peaks, delta, mean_signal_filt)
+    ax1 = plot_average_signal(ax1, peaks, delta, signal_filt)
     ax1.set_title("A: HR = %.2f bpm" % heart_rate, size=15)
 
     ax2 = axs[0, 1]
-    ax2 = plot_average_QRS(ax2, corrected_peaks, delta, mean_signal_filt)
+    ax2 = plot_average_signal(ax2, corrected_peaks, delta, signal_filt)
     ax2.set_title("B: Corrected HR = %.2f bpm" % corrected_heart_rate, size=15)
 
     # Plot histogram of RR interval
@@ -413,96 +355,6 @@ def plot_comparison(mean_signal_filt, peaks, diff_peaks, heart_rate,
     return fig
 
 
-def generate_hr_df(fs, diff_peaks, heart_rate):
-
-    # generate table of statistics for heart rate
-    # already calculated: heart_rate (mean)
-
-    all_hr = (fs/diff_peaks)*60
-    # min_hr = np.min(all_hr)
-    # max_hr = np.max(all_hr)
-
-    # create 95% confidence interval
-    lower_bound, upper_bound = st.t.interval(alpha=0.95,
-                                             df=len(all_hr)-1,
-                                             loc=heart_rate,
-                                             scale=st.sem(all_hr)
-                                             )
-
-    hr_dict = {'mean': [heart_rate],
-               '95% CI (lower bound)': [lower_bound],
-               '95% CI (upper bound)': [upper_bound]
-               }
-    hr_df = pd.DataFrame(data=hr_dict)
-
-    return hr_df
-
-
-def generate_rr_df(mean_RR, median_RR, stdev_RR, snr_RR):
-
-    # generate table of statistics for RR interval
-    # already calculated: mean_RR, median_RR, stdev_RR, snr_RR
-
-    rr_dict = {'mean': [mean_RR], 'median': [median_RR],
-               'standard deviation': [stdev_RR],
-               'SNR': [snr_RR]}
-    rr_df = pd.DataFrame(data=rr_dict)
-
-    return rr_df
-
-
-def _dataframe_to_html(df, precision, **kwargs):
-    """Makes HTML table from provided dataframe.
-    Removes HTML5 non-compliant attributes (ex: `border`).
-    Parameters
-    ----------
-    df : pandas.Dataframe
-        Dataframe to be converted into HTML table.
-    precision : int
-        The display precision for float values in the table.
-    **kwargs : keyworded arguments
-        Supplies keyworded arguments for func: pandas.Dataframe.to_html()
-    Returns
-    -------
-    html_table : String
-        Code for HTML table.
-    """
-    with pd.option_context('display.precision', precision):
-        html_table = df.to_html(**kwargs)
-    html_table = html_table.replace('border="1" ', '')
-    return html_table
-
-
-def figure_to_svg_bytes(fig):
-    with io.BytesIO() as io_buffer:
-        fig.savefig(
-            io_buffer, format="svg", facecolor="white", edgecolor="white"
-        )
-        return io_buffer.getvalue()
-
-
-def figure_to_svg_quoted(fig):
-    return urllib.parse.quote(figure_to_svg_bytes(fig).decode("utf-8"))
-
-
-def _plot_to_svg(plot):
-    """Creates an SVG image as a data URL
-    from a Matplotlib Axes or Figure object.
-    Parameters
-    ----------
-    plot : Matplotlib Axes or Figure object
-        Contains the plot information.
-    Returns
-    -------
-    url_plot_svg : String
-        SVG Image Data URL.
-    """
-    try:
-        return figure_to_svg_quoted(plot)
-    except AttributeError:
-        return figure_to_svg_quoted(plot.figure)
-
-
 def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
                        max_indices, min_indices,
                        corrected_hr_df, corrected_rr_df,
@@ -519,7 +371,6 @@ def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
     report.save_as_html(destination_path)
     Parameters
     ----------
-
     Returns
     -------
     report_text : HTMLReport Object
@@ -532,7 +383,7 @@ def _generate_ecg_html(fig1, fig2, fig3, hr_df, rr_df,
                                            'report_head.html')
 
     html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                           'report_body.html')
+                                           'report_body_ecg.html')
 
     with open(html_head_template_path) as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
