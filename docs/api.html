@@ -612,11 +612,14 @@ possible to update each component of a nested object.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="niphlem.report.make_ecg_report">
 <span class="sig-prename descclassname"><span class="pre">niphlem.report.</span></span><span class="sig-name descname"><span class="pre">make_ecg_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecg_signal</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ground</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/niphlem/report/ecg_report.html#make_ecg_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#niphlem.report.make_ecg_report" title="Permalink to this definition"></a></dt>
-<dd><p>Generate QC report for ECG data.</p>
+<dd><p>Generate QC report for ECG data.
+:param ecg_signal: or (n_physio_samples, n_channels).</p>
+<blockquote>
+<div><p>ECG Signal, where each column corresponds to a recording.</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ecg_signal</strong> (<em>array-like of shape</em><em> (</em><em>n_physio_samples</em><em>, </em><em>n_channels</em><em>)</em>) – ECG Signal, where each column corresponds to a recording.</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – Sampling frequency of ECG recording.</p></li>
 <li><p><strong>delta</strong> (<em>float</em>) – minimum separation (in physio recording units) between
 events in signal to be considered peaks</p></li>
@@ -637,8 +640,7 @@ The default is None.</p></li>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>report</strong> (<em>html file</em>) – HTML report.</p></li>
-<li><p><strong>mean_signal_filt</strong> (<em>array-like of shape (n_physio_samples, )</em>) – averaged filtered signa.</p></li>
-<li><p><strong>corrected_peaks</strong> (<em>array-like</em>) – corrected peaks locations.</p></li>
+<li><p><strong>output_dict</strong> (<em>dict</em>) – Dictionary with the filtered signal and (corrected) peak locations.</p></li>
 </ul>
 </p>
 </dd>
