@@ -143,7 +143,7 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath_low = opj(outpath, "peaks_low_puls.txt")
         np.savetxt(filepath_low, corrected_resp_peaks)
-        print("Peaks of the low frequency pulse-ox "
+        print("Peaks from the low frequency pulse-ox "
               f"signal saved in: {filepath_low}"
               )
 
@@ -198,7 +198,7 @@ def make_pulseox_report(pulse_signal,
     if outpath is not None:
         filepath_high = opj(outpath, "peaks_high_puls.txt")
         np.savetxt(filepath_high, corrected_hr_peaks)
-        print("Peaks of the high frequency pulse-ox "
+        print("Peaks from the high frequency pulse-ox "
               f"signal saved in: {filepath_high}"
               )
 
