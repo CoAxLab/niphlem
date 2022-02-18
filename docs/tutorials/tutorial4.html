@@ -21,8 +21,8 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -298,7 +298,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
@@ -366,8 +366,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># IMPORTS</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># IMPORTS</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
@@ -383,8 +382,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Our preprocessed BOLD image</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Our preprocessed BOLD image</span>
 <span class="n">run_img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">load_img</span><span class="p">(</span><span class="s2">&quot;./data/demo/sub-06_ses-04_task-resting_run-01_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz&quot;</span><span class="p">)</span>
 <span class="c1"># The repetition time of the scanner</span>
 <span class="n">t_r</span> <span class="o">=</span> <span class="mf">1.5</span>
@@ -407,8 +405,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">time_traces</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> <span class="n">load_cmrr_info</span><span class="p">(</span><span class="n">info_log</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">time_traces</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> <span class="n">load_cmrr_info</span><span class="p">(</span><span class="n">info_log</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -416,8 +413,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">meta_info</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">meta_info</span>
 </pre></div>
 </div>
 </div>
@@ -445,8 +441,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> <span class="n">load_cmrr_data</span><span class="p">(</span><span class="n">pulse_log</span><span class="p">,</span> <span class="n">info_dict</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span> <span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;pulse&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">meta_info</span> <span class="o">=</span> <span class="n">load_cmrr_data</span><span class="p">(</span><span class="n">pulse_log</span><span class="p">,</span> <span class="n">info_dict</span><span class="o">=</span><span class="n">meta_info</span><span class="p">,</span> <span class="n">sig_type</span><span class="o">=</span><span class="s2">&quot;pulse&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -455,8 +450,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">meta_info</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">meta_info</span>
 </pre></div>
 </div>
 </div>
@@ -485,8 +479,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pulse_signal</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1600</span><span class="p">])</span>
 <span class="k">pass</span>
@@ -505,8 +498,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">periodogram</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">periodogram</span>
 
 <span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span> <span class="o">=</span> <span class="n">periodogram</span><span class="p">(</span><span class="n">pulse_signal</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fs</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 <span class="n">max_pxx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Pxx</span><span class="p">))</span>
@@ -534,8 +526,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">niphlem.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span>
 <span class="kn">from</span> <span class="nn">niphlem.events</span> <span class="kn">import</span> <span class="n">compute_max_events</span>
 
 <span class="n">puls_filt_low</span> <span class="o">=</span> <span class="n">_transform_filter</span><span class="p">(</span><span class="n">pulse_signal</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>
@@ -592,8 +583,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">RetroicorPhysio</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">RetroicorPhysio</span>
 </pre></div>
 </div>
 </div>
@@ -601,8 +591,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="n">RetroicorPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">RetroicorPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -655,8 +644,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">retro_breath</span> <span class="o">=</span> <span class="n">RetroicorPhysio</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="c1"># Physiological rate (400 Hz)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">retro_breath</span> <span class="o">=</span> <span class="n">RetroicorPhysio</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="c1"># Physiological rate (400 Hz)</span>
                                <span class="n">t_r</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="c1"># Scan rate (1.5 s)</span>
                                <span class="n">delta</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
                                <span class="n">peak_rise</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
@@ -681,8 +669,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">breath_regressors</span> <span class="o">=</span> <span class="n">retro_breath</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">breath_regressors</span> <span class="o">=</span> <span class="n">retro_breath</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
 <span class="n">cardiac_regressors</span> <span class="o">=</span> <span class="n">retro_cardiac</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -692,8 +679,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">7</span><span class="p">),</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">7</span><span class="p">),</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame_times</span><span class="p">,</span> <span class="n">breath_regressors</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;sin1&quot;</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame_times</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">breath_regressors</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cos1&quot;</span><span class="p">)</span>
 <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame_times</span><span class="p">,</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">breath_regressors</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;sin2&quot;</span><span class="p">)</span>
@@ -729,8 +715,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">dm_retroicor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_times</span><span class="p">)),</span> <span class="c1"># Intercept</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dm_retroicor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_times</span><span class="p">)),</span> <span class="c1"># Intercept</span>
                                 <span class="n">conf_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="s2">&quot;rot|trans&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="c1"># Motion parameters</span>
                                 <span class="n">breath_regressors</span><span class="p">,</span> <span class="c1"># breath retro regressors</span>
                                 <span class="n">cardiac_regressors</span><span class="p">,</span> <span class="c1"># cardiac retro regressors</span>
@@ -886,8 +871,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">dm_retroicor</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">dm_retroicor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">dm_retroicor</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
@@ -907,8 +891,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">first_level</span> <span class="o">=</span> <span class="n">FirstLevelModel</span><span class="p">(</span><span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span> <span class="n">drift_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">signal_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">first_level</span> <span class="o">=</span> <span class="n">FirstLevelModel</span><span class="p">(</span><span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span> <span class="n">drift_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">signal_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">first_level</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">run_imgs</span><span class="o">=</span><span class="n">run_img</span><span class="p">,</span> <span class="n">design_matrices</span><span class="o">=</span><span class="n">dm_retroicor</span><span class="p">)</span>
 
 <span class="n">breath_retro_map</span> <span class="o">=</span> <span class="n">first_level</span><span class="o">.</span><span class="n">compute_contrast</span><span class="p">(</span><span class="s2">&quot;breath_sin1+breath_cos1+breath_sin2+breath_cos2&quot;</span><span class="p">,</span>
@@ -924,8 +907,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">breath_retro_map</span><span class="p">,</span>  <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">breath_retro_map</span><span class="p">,</span>  <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">title</span><span class="o">=</span><span class="s2">&quot;RETROICOR: Lowpass PULSE-OX&quot;</span><span class="p">)</span>
 <span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">cardiac_retro_map</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">title</span><span class="o">=</span><span class="s2">&quot;RETROICOR: Highpass PULSE-OX&quot;</span><span class="p">)</span>
@@ -963,8 +945,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">HVPhysio</span><span class="p">,</span> <span class="n">RVPhysio</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">HVPhysio</span><span class="p">,</span> <span class="n">RVPhysio</span>
 </pre></div>
 </div>
 </div>
@@ -973,8 +954,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="n">RVPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">RVPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1016,8 +996,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="n">HVPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">HVPhysio</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1068,8 +1047,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variaton_breath</span> <span class="o">=</span> <span class="n">RVPhysio</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variaton_breath</span> <span class="o">=</span> <span class="n">RVPhysio</span><span class="p">(</span><span class="n">physio_rate</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
                            <span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span>
                            <span class="n">time_window</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="c1"># 3 T_R</span>
                            <span class="n">low_pass</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
@@ -1090,8 +1068,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">breath_regressors</span> <span class="o">=</span> <span class="n">variaton_breath</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">breath_regressors</span> <span class="o">=</span> <span class="n">variaton_breath</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
 <span class="n">cardiac_regressors</span> <span class="o">=</span> <span class="n">variaton_cardiac</span><span class="o">.</span><span class="n">compute_regressors</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="n">pulse_signal</span><span class="p">,</span> <span class="n">time_scan</span><span class="o">=</span><span class="n">frame_times</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1101,8 +1078,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame_times</span><span class="p">,</span> <span class="n">breath_regressors</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;breath&quot;</span><span class="p">)</span>
 <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame_times</span><span class="p">,</span> <span class="n">cardiac_regressors</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;cardiac&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">])</span>
@@ -1125,8 +1101,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">dm_variation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_times</span><span class="p">)),</span> <span class="c1"># Intercept</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dm_variation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frame_times</span><span class="p">)),</span> <span class="c1"># Intercept</span>
                                 <span class="n">conf_df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regex</span><span class="o">=</span><span class="s2">&quot;rot|trans&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="c1"># Motion parameters</span>
                                 <span class="n">breath_regressors</span><span class="p">,</span> <span class="c1"># breath variation regressors</span>
                                 <span class="n">cardiac_regressors</span><span class="p">,</span> <span class="c1"># cardiac variation regressors</span>
@@ -1247,8 +1222,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">dm_variation</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">dm_variation</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">dm_variation</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
@@ -1268,8 +1242,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">first_level</span> <span class="o">=</span> <span class="n">FirstLevelModel</span><span class="p">(</span><span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span> <span class="n">drift_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">signal_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">first_level</span> <span class="o">=</span> <span class="n">FirstLevelModel</span><span class="p">(</span><span class="n">t_r</span><span class="o">=</span><span class="n">t_r</span><span class="p">,</span> <span class="n">drift_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">signal_scaling</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 <span class="n">first_level</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">run_imgs</span><span class="o">=</span><span class="n">run_img</span><span class="p">,</span> <span class="n">design_matrices</span><span class="o">=</span><span class="n">dm_variation</span><span class="p">)</span>
 
 <span class="n">breath_variation_map</span> <span class="o">=</span> <span class="n">first_level</span><span class="o">.</span><span class="n">compute_contrast</span><span class="p">(</span><span class="s2">&quot;breath_var&quot;</span><span class="p">,</span>
@@ -1285,8 +1258,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">breath_variation_map</span><span class="p">,</span>  <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">breath_variation_map</span><span class="p">,</span>  <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Variations: Lowpass PULSE-OX&quot;</span><span class="p">)</span>
 <span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">cardiac_variation_map</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                           <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Variations: Highpass PULSE-OX&quot;</span><span class="p">)</span>
