@@ -68,12 +68,77 @@ The algorithm in these models works as follows:
 
 After these four steps, we obtain a series of phase regressors that we can use in our fMRI models to account for the physiological signal.
 
+.. figure:: images/retroicor_1.jpg
+   :align: center
 
+   RETROICOR algorithm procedure (borrowed from Verstynen, 2011).
+
+
+Niphlem has a class `RetroicorPhysio <https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio>`_, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the `tutorial 3 <https://coaxlab.github.io/niphlem/tutorials/tutorial3.html>`_ and `tutorial 4 <https://coaxlab.github.io/niphlem/tutorials/tutorial4.html>`_.
+
+*Refereces*:
+
+- Glover, G.H., Li, T.-Q. and Ress, D. (2000), Image-based method for retrospective correction of physiological motion effects in fMRI: RETROICOR. Magn. Reson. Med., 44: 162-167.
+- Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
 
 4-Variation Models
 ====================
 
-Under construction...
+Niphlem can also generate nuisance regressors for variations in breathing rate/volume and heart rate.
+
+
+4.1- Variations in breathing rate/volume regressors
+------------------------------------------------------------
+
+The algorithm for variations in breathing rate/volume is as follows:
+
+1. Computation of the standard deviation of the signal within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.
+2. Z-score normalization.
+3. Convolution with the respiratory response function (RRF(t)), which reads:
+
+.. math::
+
+   RRF(t) = 0.6 t^{2.1} e^{-t/1.6} - 0.0023 t^{3.54} e^{-t/4.25}
+
+
+Niphlem has a class `RVPhysio <https://coaxlab.github.io/niphlem/api.html#niphlem.models.RVPhysio>`_, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the `tutorial 3 <https://coaxlab.github.io/niphlem/tutorials/tutorial3.html>`_ and `tutorial 4 <https://coaxlab.github.io/niphlem/tutorials/tutorial4.html>`_.
+
+
+.. figure:: images/variations_rv.jpg
+   :align: center
+
+   Variations in breathing rate/volume procedure (borrowed from Verstynen, 2011).
+
+
+4.2- Variations in heart rate regressors
+------------------------------------------------------------
+
+The algorithm for variations in heart rate is as follows:
+
+1. Computation of the average deviation in inter-event interval (i.e., ms between R-components of the QRS complex), per second,  within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.
+2. Z-score normalization.
+3. Convolution with the respiratory response function (CRF(t)), which reads:
+
+.. math::
+
+   CRF(t) = 0.6 t^{2.7}e^{-t/1.6} - \frac{16}{\sqrt{18 \pi }}e^{-\frac{1}{2}\frac{(t-12)^2}{9}}
+
+Niphlem has a class `HVPhysio <https://coaxlab.github.io/niphlem/api.html#niphlem.models.HVPhysio>`_, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the `tutorial 3 <https://coaxlab.github.io/niphlem/tutorials/tutorial3.html>`_ and `tutorial 4 <https://coaxlab.github.io/niphlem/tutorials/tutorial4.html>`_.
+
+
+.. figure:: images/variations_hv.jpg
+   :align: center
+
+   Variations in heart rate procedure (borrowed from Verstynen, 2011).
+
+
+*Refereces*:
+
+- Birn RM, Smith MA, Jones TB, Bandettini PA. The respiration response function: the temporal dynamics of fMRI signal fluctuations related to changes in respiration. Neuroimage. 2008;40(2):644-654.
+- Chang C, Cunningham JP, Glover GH. Influence of heart rate on the BOLD signal: the cardiac response function. Neuroimage. 2009 Feb 1;44(3):857-69.
+- Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
+
+
 
 5-Reports
 ====================
