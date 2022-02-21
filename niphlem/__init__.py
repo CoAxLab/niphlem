@@ -15,7 +15,7 @@
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 
 __all__ = ["input_data", "models", "output"]
