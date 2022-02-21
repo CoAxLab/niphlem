@@ -24,7 +24,13 @@ Python 3.6 or greater is required. Any of the below dependencies compatible wth 
     
 ## Install
 
-    pip install niphlem
+    pip install - U niphlem
+ 
+ Alternatively, if you are interested in installing the latest version under development, you may clone the github repository and install it from there directly:
+
+    git clone https://github.com/CoAxLab/niphlem.git
+    cd niphlem
+    pip install -U .
     
 ## References:
 - Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
