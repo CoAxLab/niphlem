@@ -19,7 +19,7 @@ Installation
 
 ::
 
-    pip install niphlem
+    pip install -U niphlem
 
 
 --------------
