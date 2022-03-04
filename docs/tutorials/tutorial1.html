@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutorial 1: QC report for ecg data &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -21,8 +20,8 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -357,7 +356,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Tutorial-1:-QC-report-for-ecg-data">
+<div class="section" id="Tutorial-1:-QC-report-for-ecg-data">
 <h1>Tutorial 1: QC report for ecg data<a class="headerlink" href="#Tutorial-1:-QC-report-for-ecg-data" title="Permalink to this headline"></a></h1>
 <p>This tutorial demonstrates the QC report capability of <em>niphlem</em>. For simplicity, we focus on the cardiac signal from ecg for one subject from one of our internal projects.</p>
 <p>Define filepaths for physiological data (ECG and info logs):</p>
@@ -370,14 +369,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<section id="Load-data">
+<div class="section" id="Load-data">
 <h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this headline"></a></h2>
 <p>First load the info file, which provides scanner timing using the <code class="docutils literal notranslate"><span class="pre">niphlem.input_data.load_cmrr_info</span></code> function.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="kn">import</span> <span class="n">load_cmrr_info</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="k">import</span> <span class="n">load_cmrr_info</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">load_cmrr_info</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
@@ -419,7 +418,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="kn">import</span> <span class="n">load_cmrr_data</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="k">import</span> <span class="n">load_cmrr_data</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">load_cmrr_data</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
@@ -466,15 +465,15 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-</section>
-<section id="Run-QC">
+</div>
+<div class="section" id="Run-QC">
 <h2>Run QC<a class="headerlink" href="#Run-QC" title="Permalink to this headline"></a></h2>
 <p>To run QC on our ECG data, we use the <code class="docutils literal notranslate"><span class="pre">niphlem.report.make_ecg_report</span></code> function.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.report</span> <span class="kn">import</span> <span class="n">make_ecg_report</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.report</span> <span class="k">import</span> <span class="n">make_ecg_report</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">make_ecg_report</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
 </pre></div>
@@ -902,8 +901,8 @@ QC report for ECG signal saved in: /home/javi/Documentos/niphlem/examples/ecg_qc
         211549])}
 </pre></div></div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

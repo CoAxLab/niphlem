@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>niphlem: Physiological Log Extraction for Modeling in Neuroimaging &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -96,7 +95,7 @@
     text-align: unset;
 }
 </style>
-<section id="niphlem-physiological-log-extraction-for-modeling-in-neuroimaging">
+<div class="section" id="niphlem-physiological-log-extraction-for-modeling-in-neuroimaging">
 <h1><em>niphlem</em>: Physiological Log Extraction for Modeling in Neuroimaging<a class="headerlink" href="#niphlem-physiological-log-extraction-for-modeling-in-neuroimaging" title="Permalink to this headline"></a></h1>
 <p><em>niphlem</em> is a toolbox that extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.</p>
 <p><em>niphlem</em> can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).</p>
@@ -105,22 +104,22 @@
 <li><p><strong>RETROICOR</strong>:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues.</p></li>
 <li><p><strong>Variation Models</strong>:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).</p></li>
 </ul>
-<section id="installation">
+<div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
 <p><em>niphlem</em> can be easily installed through pypi as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">niphlem</span>
 </pre></div>
 </div>
-</section>
-<section id="references">
+</div>
+<div class="section" id="references">
 <h2>References:<a class="headerlink" href="#references" title="Permalink to this headline"></a></h2>
 <ul class="simple">
 <li><p>Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.</p></li>
 <li><p>Chang C, Cunningham JP, Glover GH. Influence of heart rate on the BOLD signal: the cardiac response function. Neuroimage. 2009 Feb 1;44(3):857-69.</p></li>
 <li><p>Birn RM, Smith MA, Jones TB, Bandettini PA. The respiration response function: the temporal dynamics of fMRI signal fluctuations related to changes in respiration. Neuroimage. 2008;40(2):644-654.</p></li>
 </ul>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>User guide &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -21,8 +20,8 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -119,50 +118,50 @@
     text-align: unset;
 }
 </style>
-<section id="user-guide">
+<div class="section" id="user-guide">
 <h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline"></a></h1>
-<section id="intro-to-niphlem">
+<div class="section" id="intro-to-niphlem">
 <h2>1-Intro to Niphlem<a class="headerlink" href="#intro-to-niphlem" title="Permalink to this headline"></a></h2>
-<section id="what-is-niphlem">
+<div class="section" id="what-is-niphlem">
 <h3>1.1- What is Niphlem?<a class="headerlink" href="#what-is-niphlem" title="Permalink to this headline"></a></h3>
-<p><em>Niphlem</em> is a toolbox originated to preprocess phsyiological signal collected during MRI scannings. It is able to estimate from these recording covariates that can be later used in  general linear model (GLM) analyses of fMRI data.</p>
+<p><em>Niphlem</em> is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data.</p>
 <p>It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the <a class="reference external" href="http://scipy-lectures.org/">scipy lecture notes</a>.</p>
 <p>Alternatively, Matlab users may be more interested in using PhLEM, which is what <em>niphlem</em> is based on. Check <a class="reference external" href="https://sites.google.com/site/phlemtoolbox/">PhLEM Toolbox</a> for more details on this toolbox.</p>
-</section>
-<section id="installing-niphlem">
+</div>
+<div class="section" id="installing-niphlem">
 <h3>1.2- Installing niphlem<a class="headerlink" href="#installing-niphlem" title="Permalink to this headline"></a></h3>
 <p><em>niphlem</em> can be easily installed through pypi as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">niphlem</span>
 </pre></div>
 </div>
-<p>The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas,scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing <em>niphlem</em>.</p>
+<p>The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas, scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing <em>niphlem</em>.</p>
 <p>Alternatively, if you are interested in installing the latest version under development, you may clone the github repository and install it from there directly:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">CoAxLab</span><span class="o">/</span><span class="n">niphlem</span><span class="o">.</span><span class="n">git</span>
 <span class="n">cd</span> <span class="n">niphlem</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="o">.</span>
 </pre></div>
 </div>
-</section>
-</section>
-<section id="physiological-signal">
+</div>
+</div>
+<div class="section" id="physiological-signal">
 <h2>2-Physiological Signal<a class="headerlink" href="#physiological-signal" title="Permalink to this headline"></a></h2>
-<p><em>Niphlem</em> is particularly designed to exctract physiological signal (cardiac, respiration) from usually electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.</p>
+<p><em>Niphlem</em> is particularly designed to exctract physiological signal (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.</p>
 <p>Right now, <em>niphlem</em> is able to work with physiological data in the form of log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit <a class="reference external" href="https://www.cmrr.umn.edu/multiband">https://www.cmrr.umn.edu/multiband</a> for more details), and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.</p>
-<section id="loading-physiological-data-from-cmrr-mb-sequences">
+<div class="section" id="loading-physiological-data-from-cmrr-mb-sequences">
 <h3>2.1- Loading physiological data from CMRR MB sequences<a class="headerlink" href="#loading-physiological-data-from-cmrr-mb-sequences" title="Permalink to this headline"></a></h3>
 <p>Under construction…</p>
-</section>
-<section id="loading-physiological-data-in-bids-format">
+</div>
+<div class="section" id="loading-physiological-data-in-bids-format">
 <h3>2.2- Loading physiological data in BIDS format<a class="headerlink" href="#loading-physiological-data-in-bids-format" title="Permalink to this headline"></a></h3>
 <p>Under construction…</p>
-</section>
-</section>
-<section id="retroicor-models">
+</div>
+</div>
+<div class="section" id="retroicor-models">
 <h2>3-RETROICOR Models<a class="headerlink" href="#retroicor-models" title="Permalink to this headline"></a></h2>
 <p>RETROICOR stands for Retrospective Image Correction and it calculates the fourier series expansion using the phases from the cardiac and respiratory cycles.</p>
 <p>The algorithm in these models works as follows:</p>
 <ol class="arabic simple">
-<li><p>Extract the peaks in the physiological data. In the case of cardiac, signals these would correspond to the R components of the QRS complex. In the pneumatic belt signal, they would correspnd to the peak expansion of the diaphragm. And for pulse-ox signals, the maxima in local blood oxygenation.</p></li>
+<li><p>Extract the peaks in the physiological data. In the case of cardiac, signals these would correspond to the R components of the QRS complex. In the pneumatic belt signal, they would correspond to the peak expansion of the diaphragm. And for pulse-ox signals, the maxima in local blood oxygenation.</p></li>
 <li><p>Estimation of a phase time to be between 0 and 2π between consecutive time peaks <span class="math notranslate nohighlight">\(t_1\)</span> and <span class="math notranslate nohighlight">\(t_2\)</span>, i.e., as having full phase cycles:</p></li>
 </ol>
 <div class="math notranslate nohighlight">
@@ -172,23 +171,21 @@
 <li><p>Downsampling each of these terms to the scanner time resolution.</p></li>
 </ol>
 <p>After these four steps, we obtain a series of phase regressors that we can use in our fMRI models to account for the physiological signal.</p>
-<figure class="align-center" id="id5">
+<div class="figure align-center" id="id5">
 <img alt="_images/retroicor_1.jpg" src="_images/retroicor_1.jpg" />
-<figcaption>
-<p><span class="caption-text">RETROICOR algorithm procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
+<p class="caption"><span class="caption-text">RETROICOR algorithm procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+</div>
 <p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio">RetroicorPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
 <p><em>Refereces</em>:</p>
 <ul class="simple">
 <li><p>Glover, G.H., Li, T.-Q. and Ress, D. (2000), Image-based method for retrospective correction of physiological motion effects in fMRI: RETROICOR. Magn. Reson. Med., 44: 162-167.</p></li>
 <li><p>Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.</p></li>
 </ul>
-</section>
-<section id="variation-models">
+</div>
+<div class="section" id="variation-models">
 <h2>4-Variation Models<a class="headerlink" href="#variation-models" title="Permalink to this headline"></a></h2>
 <p>Niphlem can also generate nuisance regressors for variations in breathing rate/volume and heart rate.</p>
-<section id="variations-in-breathing-rate-volume-regressors">
+<div class="section" id="variations-in-breathing-rate-volume-regressors">
 <h3>4.1- Variations in breathing rate/volume regressors<a class="headerlink" href="#variations-in-breathing-rate-volume-regressors" title="Permalink to this headline"></a></h3>
 <p>The algorithm for variations in breathing rate/volume is as follows:</p>
 <ol class="arabic simple">
@@ -199,14 +196,12 @@
 <div class="math notranslate nohighlight">
 \[RRF(t) = 0.6 t^{2.1} e^{-t/1.6} - 0.0023 t^{3.54} e^{-t/4.25}\]</div>
 <p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RVPhysio">RVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
-<figure class="align-center" id="id6">
+<div class="figure align-center" id="id6">
 <img alt="_images/variations_rv.jpg" src="_images/variations_rv.jpg" />
-<figcaption>
-<p><span class="caption-text">Variations in breathing rate/volume procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-</section>
-<section id="variations-in-heart-rate-regressors">
+<p class="caption"><span class="caption-text">Variations in breathing rate/volume procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="variations-in-heart-rate-regressors">
 <h3>4.2- Variations in heart rate regressors<a class="headerlink" href="#variations-in-heart-rate-regressors" title="Permalink to this headline"></a></h3>
 <p>The algorithm for variations in heart rate is as follows:</p>
 <ol class="arabic simple">
@@ -217,25 +212,23 @@
 <div class="math notranslate nohighlight">
 \[CRF(t) = 0.6 t^{2.7}e^{-t/1.6} - \frac{16}{\sqrt{18 \pi }}e^{-\frac{1}{2}\frac{(t-12)^2}{9}}\]</div>
 <p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.HVPhysio">HVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
-<figure class="align-center" id="id7">
+<div class="figure align-center" id="id7">
 <img alt="_images/variations_hv.jpg" src="_images/variations_hv.jpg" />
-<figcaption>
-<p><span class="caption-text">Variations in heart rate procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p><em>Refereces</em>:</p>
+<p class="caption"><span class="caption-text">Variations in heart rate procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id7" title="Permalink to this image"></a></p>
+</div>
+<p><em>References</em>:</p>
 <ul class="simple">
 <li><p>Birn RM, Smith MA, Jones TB, Bandettini PA. The respiration response function: the temporal dynamics of fMRI signal fluctuations related to changes in respiration. Neuroimage. 2008;40(2):644-654.</p></li>
 <li><p>Chang C, Cunningham JP, Glover GH. Influence of heart rate on the BOLD signal: the cardiac response function. Neuroimage. 2009 Feb 1;44(3):857-69.</p></li>
 <li><p>Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.</p></li>
 </ul>
-</section>
-</section>
-<section id="reports">
+</div>
+</div>
+<div class="section" id="reports">
 <h2>5-Reports<a class="headerlink" href="#reports" title="Permalink to this headline"></a></h2>
 <p>Under construction…</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

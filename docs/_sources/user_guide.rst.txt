@@ -9,7 +9,7 @@
 1.1- What is Niphlem?
 ------------------------
 
-*Niphlem* is a toolbox originated to preprocess phsyiological signal collected during MRI scannings. It is able to estimate from these recording covariates that can be later used in  general linear model (GLM) analyses of fMRI data.
+*Niphlem* is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data.
 
 It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the `scipy lecture notes <http://scipy-lectures.org/>`_.
 
@@ -22,7 +22,7 @@ Alternatively, Matlab users may be more interested in using PhLEM, which is what
 
     pip install -U niphlem
 
-The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas,scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing *niphlem*.
+The dependencies, beyond those libraries that come with python distributions, are numpy, matplotlib, pandas, scipy, scikit-learn and outlier_utils. All of these are checked and installed if missing when installing *niphlem*.
 
 Alternatively, if you are interested in installing the latest version under development, you may clone the github repository and install it from there directly::
 
@@ -34,7 +34,7 @@ Alternatively, if you are interested in installing the latest version under deve
 2-Physiological Signal
 ======================
 
-*Niphlem* is particularly designed to exctract physiological signal (cardiac, respiration) from usually electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.
+*Niphlem* is particularly designed to exctract physiological signal (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.
 
 Right now, *niphlem* is able to work with physiological data in the form of log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit `<https://www.cmrr.umn.edu/multiband>`_ for more details), and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.
 
@@ -55,7 +55,7 @@ RETROICOR stands for Retrospective Image Correction and it calculates the fourie
 
 The algorithm in these models works as follows:
 
-1. Extract the peaks in the physiological data. In the case of cardiac, signals these would correspond to the R components of the QRS complex. In the pneumatic belt signal, they would correspnd to the peak expansion of the diaphragm. And for pulse-ox signals, the maxima in local blood oxygenation.
+1. Extract the peaks in the physiological data. In the case of cardiac, signals these would correspond to the R components of the QRS complex. In the pneumatic belt signal, they would correspond to the peak expansion of the diaphragm. And for pulse-ox signals, the maxima in local blood oxygenation.
 
 2. Estimation of a phase time to be between 0 and 2π between consecutive time peaks :math:`t_1` and :math:`t_2`, i.e., as having full phase cycles:
 
@@ -132,7 +132,7 @@ Niphlem has a class `HVPhysio <https://coaxlab.github.io/niphlem/api.html#niphle
    Variations in heart rate procedure (borrowed from Verstynen, 2011).
 
 
-*Refereces*:
+*References*:
 
 - Birn RM, Smith MA, Jones TB, Bandettini PA. The respiration response function: the temporal dynamics of fMRI signal fluctuations related to changes in respiration. Neuroimage. 2008;40(2):644-654.
 - Chang C, Cunningham JP, Glover GH. Influence of heart rate on the BOLD signal: the cardiac response function. Neuroimage. 2009 Feb 1;44(3):857-69.

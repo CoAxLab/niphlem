@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>API &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -112,11 +111,11 @@
     text-align: unset;
 }
 </style>
-<section id="api">
+<div class="section" id="api">
 <h1>API<a class="headerlink" href="#api" title="Permalink to this headline"></a></h1>
-<section id="input-data">
+<div class="section" id="input-data">
 <h2>Input data<a class="headerlink" href="#input-data" title="Permalink to this headline"></a></h2>
-<section id="cmrr-format">
+<div class="section" id="cmrr-format">
 <h3>CMRR format<a class="headerlink" href="#cmrr-format" title="Permalink to this headline"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="niphlem.input_data.load_cmrr_info">
@@ -163,41 +162,20 @@ observations.</p></li>
 </dl>
 </dd></dl>
 
-</section>
-<section id="bids-format">
+</div>
+<div class="section" id="bids-format">
 <h3>BIDS format<a class="headerlink" href="#bids-format" title="Permalink to this headline"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="niphlem.input_data.load_bids_physio">
-<span class="sig-prename descclassname"><span class="pre">niphlem.input_data.</span></span><span class="sig-name descname"><span class="pre">load_bids_physio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_scan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/niphlem/input_data.html#load_bids_physio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#niphlem.input_data.load_bids_physio" title="Permalink to this definition"></a></dt>
-<dd><p>Load physiological data in BIDS format.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_file</strong> (<em>str</em><em>, </em><em>pathlike</em>) – Path to recording bids physio file.</p></li>
-<li><p><strong>json_file</strong> (<em>str</em><em>, </em><em>pathlike</em>) – Path to the sidecar json file of the input bids physio.</p></li>
-<li><p><strong>resample_freq</strong> (<em>float</em><em>, </em><em>optional</em>) – Frequency to resample the data. The default is None.</p></li>
-<li><p><strong>sync_scan</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether we want the signal to be synchronized
-with the scanner times. The default is True.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>signal</strong> (<em>ndarray</em>) – The signal, where each columns corresponds to a particular
-recording, whose names can wh be identfied in the meta_info
-dictionary returned, and the rows to observations.</p></li>
-<li><p><strong>meta_info</strong> (<em>dict</em>) – Meta information that at least contains the sampling frequency,
-the start time of the signals, and the name of each signal column.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
+<span class="sig-prename descclassname"><span class="pre">niphlem.input_data.</span></span><span class="sig-name descname"><span class="pre">load_bids_physio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/niphlem/input_data.html#load_bids_physio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#niphlem.input_data.load_bids_physio" title="Permalink to this definition"></a></dt>
+<dd><p>Load physiological data in BIDS format</p>
 </dd></dl>
 
-</section>
-</section>
-<section id="models">
+</div>
+</div>
+<div class="section" id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this headline"></a></h2>
-<section id="retroicor">
+<div class="section" id="retroicor">
 <h3>Retroicor<a class="headerlink" href="#retroicor" title="Permalink to this headline"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.RetroicorPhysio">
@@ -250,8 +228,11 @@ physiological recording is computed multiplying
 the number of points with the sampling period.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array-like with the physiological regressors</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like with the physiological regressors</p>
 </dd>
 </dl>
 </dd></dl>
@@ -262,14 +243,14 @@ the number of points with the sampling period.</p></li>
 <dd><p>Get parameters for this estimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>deep</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, will return the parameters for this estimator and
+<dd class="field-odd"><p><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
 contained subobjects that are estimators.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>params</strong> – Parameter names mapped to their values.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>mapping of string to any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -279,26 +260,23 @@ contained subobjects that are estimators.</p>
 <span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RetroicorPhysio.set_params" title="Permalink to this definition"></a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
-parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
-possible to update each component of a nested object.</p>
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>**params</strong> (<em>dict</em>) – Estimator parameters.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong> – Estimator instance.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>estimator instance</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>self</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
-<section id="variation">
+</div>
+<div class="section" id="variation">
 <h3>Variation<a class="headerlink" href="#variation" title="Permalink to this headline"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.RVPhysio">
@@ -344,8 +322,11 @@ physiological recording is computed multiplying
 the number of points with the sampling period.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array-like with the physiological regressors</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like with the physiological regressors</p>
 </dd>
 </dl>
 </dd></dl>
@@ -356,14 +337,14 @@ the number of points with the sampling period.</p></li>
 <dd><p>Get parameters for this estimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>deep</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, will return the parameters for this estimator and
+<dd class="field-odd"><p><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
 contained subobjects that are estimators.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>params</strong> – Parameter names mapped to their values.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>mapping of string to any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -373,18 +354,15 @@ contained subobjects that are estimators.</p>
 <span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.RVPhysio.set_params" title="Permalink to this definition"></a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
-parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
-possible to update each component of a nested object.</p>
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>**params</strong> (<em>dict</em>) – Estimator parameters.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong> – Estimator instance.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>estimator instance</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>self</p>
 </dd>
 </dl>
 </dd></dl>
@@ -441,8 +419,11 @@ physiological recording is computed multiplying
 the number of points with the sampling period.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array-like with the physiological regressors</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like with the physiological regressors</p>
 </dd>
 </dl>
 </dd></dl>
@@ -453,14 +434,14 @@ the number of points with the sampling period.</p></li>
 <dd><p>Get parameters for this estimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>deep</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, will return the parameters for this estimator and
+<dd class="field-odd"><p><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
 contained subobjects that are estimators.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>params</strong> – Parameter names mapped to their values.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>mapping of string to any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -470,26 +451,23 @@ contained subobjects that are estimators.</p>
 <span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.HVPhysio.set_params" title="Permalink to this definition"></a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
-parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
-possible to update each component of a nested object.</p>
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>**params</strong> (<em>dict</em>) – Estimator parameters.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong> – Estimator instance.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>estimator instance</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>self</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
-<section id="downsample">
+</div>
+<div class="section" id="downsample">
 <h3>Downsample<a class="headerlink" href="#downsample" title="Permalink to this headline"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="niphlem.models.DownsamplePhysio">
@@ -546,8 +524,11 @@ physiological recording is computed multiplying
 the number of points with the sampling period.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>array-like with the physiological regressors</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array-like with the physiological regressors</p>
 </dd>
 </dl>
 </dd></dl>
@@ -558,14 +539,14 @@ the number of points with the sampling period.</p></li>
 <dd><p>Get parameters for this estimator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>deep</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, will return the parameters for this estimator and
+<dd class="field-odd"><p><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and
 contained subobjects that are estimators.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>params</strong> – Parameter names mapped to their values.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p>mapping of string to any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,39 +556,33 @@ contained subobjects that are estimators.</p>
 <span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#niphlem.models.DownsamplePhysio.set_params" title="Permalink to this definition"></a></dt>
 <dd><p>Set the parameters of this estimator.</p>
 <p>The method works on simple estimators as well as on nested objects
-(such as <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>). The latter have
-parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
-possible to update each component of a nested object.</p>
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>**params</strong> (<em>dict</em>) – Estimator parameters.</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>self</strong> – Estimator instance.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>estimator instance</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>self</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
-</section>
-<section id="report">
+</div>
+</div>
+<div class="section" id="report">
 <h2>Report<a class="headerlink" href="#report" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="niphlem.report.make_ecg_report">
 <span class="sig-prename descclassname"><span class="pre">niphlem.report.</span></span><span class="sig-name descname"><span class="pre">make_ecg_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ecg_signal</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_rise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ground</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/niphlem/report/ecg_report.html#make_ecg_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#niphlem.report.make_ecg_report" title="Permalink to this definition"></a></dt>
-<dd><p>Generate QC report for ECG data.
-:param ecg_signal: or (n_physio_samples, n_channels).</p>
-<blockquote>
-<div><p>ECG Signal, where each column corresponds to a recording.</p>
-</div></blockquote>
+<dd><p>Generate QC report for ECG data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>ecg_signal</strong> (<em>array-like of shape</em><em> (</em><em>n_physio_samples</em><em>, </em><em>n_channels</em><em>)</em>) – ECG Signal, where each column corresponds to a recording.</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – Sampling frequency of ECG recording.</p></li>
 <li><p><strong>delta</strong> (<em>float</em>) – minimum separation (in physio recording units) between
 events in signal to be considered peaks</p></li>
@@ -628,15 +603,16 @@ The default is None.</p></li>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>report</strong> (<em>html file</em>) – HTML report.</p></li>
-<li><p><strong>output_dict</strong> (<em>dict</em>) – Dictionary with the filtered signal and (corrected) peak locations.</p></li>
+<li><p><strong>mean_signal_filt</strong> (<em>array-like of shape (n_physio_samples, )</em>) – averaged filtered signa.</p></li>
+<li><p><strong>corrected_peaks</strong> (<em>array-like</em>) – corrected peaks locations.</p></li>
 </ul>
 </p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

@@ -75,14 +75,14 @@
 <span></span><span class="sd">&quot;&quot;&quot;Module for regressors computation.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="k">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">interp1d</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_array</span><span class="p">,</span> <span class="n">column_or_1d</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="p">(</span><span class="n">check_array</span><span class="p">,</span> <span class="n">column_or_1d</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">.events</span> <span class="kn">import</span> <span class="n">compute_max_events</span><span class="p">,</span> <span class="n">correct_anomalies</span>
-<span class="kn">from</span> <span class="nn">.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span><span class="p">,</span> <span class="n">zscore</span>
+<span class="kn">from</span> <span class="nn">.events</span> <span class="k">import</span> <span class="n">compute_max_events</span><span class="p">,</span> <span class="n">correct_anomalies</span>
+<span class="kn">from</span> <span class="nn">.clean</span> <span class="k">import</span> <span class="n">_transform_filter</span><span class="p">,</span> <span class="n">zscore</span>
 
 
 <span class="k">class</span> <span class="nc">BasePhysio</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
@@ -114,7 +114,7 @@
 <span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
                  <span class="n">physio_rate</span><span class="p">,</span>
                  <span class="n">t_r</span><span class="p">,</span>
@@ -207,15 +207,15 @@
         <span class="k">if</span> <span class="n">time_physio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">time_physio</span> <span class="o">=</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="n">time_physio</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">time_physio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Signal has </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> time points, &quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Signal has </span><span class="si">{signal.shape[0]}</span><span class="s2"> time points, &quot;</span>
                                  <span class="s2">&quot; whilst physiological times has&quot;</span>
-                                 <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">time_physio</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+                                 <span class="n">f</span><span class="s2">&quot; </span><span class="si">{time_physio.shape[0]}</span><span class="s2">.&quot;</span>
                                  <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">time_physio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">physio_rate</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;demean&quot;</span><span class="p">,</span> <span class="s2">&quot;zscore&quot;</span><span class="p">,</span> <span class="s2">&quot;abs&quot;</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="si">}</span><span class="s2">&#39; transform option passed, &quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;&#39;</span><span class="si">{self.transform}</span><span class="s2">&#39; transform option passed, &quot;</span>
                              <span class="s2">&quot;but only &#39;mean&#39; (default), &#39;zscore&#39; or &#39;abs&#39; &quot;</span>
                              <span class="s2">&quot;are allowed.&quot;</span>
                              <span class="p">)</span>
@@ -223,14 +223,14 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span><span class="si">}</span><span class="s2">&#39; was provided &quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot; &#39;</span><span class="si">{self.high_pass}</span><span class="s2">&#39; was provided &quot;</span>
                                  <span class="s2">&quot;as highpass frequency, but it should &quot;</span>
                                  <span class="s2">&quot;be a number&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span><span class="si">}</span><span class="s2">&#39; was provided &quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot; &#39;</span><span class="si">{self.low_pass}</span><span class="s2">&#39; was provided &quot;</span>
                                  <span class="s2">&quot;as lowpass frequency, but it should &quot;</span>
                                  <span class="s2">&quot;be a number&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">low_pass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -246,8 +246,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">columns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;supplied columns has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
-                                     <span class="sa">f</span><span class="s2">&quot; but signal has </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;supplied columns has {len(columns)},&quot;</span>
+                                     <span class="n">f</span><span class="s2">&quot; but signal has </span><span class="si">{signal.shape[1]}</span><span class="s2">&quot;</span>
                                      <span class="s2">&quot; channels.&quot;</span>
                                      <span class="p">)</span>
                 <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
@@ -300,7 +300,7 @@
 <span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
                  <span class="n">physio_rate</span><span class="p">,</span>
                  <span class="n">t_r</span><span class="p">,</span>
@@ -439,7 +439,7 @@
 <span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
                  <span class="n">physio_rate</span><span class="p">,</span>
                  <span class="n">t_r</span><span class="p">,</span>
@@ -561,7 +561,7 @@
 <span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
                  <span class="n">physio_rate</span><span class="p">,</span>
                  <span class="n">t_r</span><span class="p">,</span>
@@ -706,7 +706,7 @@
 <span class="sd">        Number of jobs to consider in parallel. The default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="o">*</span><span class="p">,</span>
                  <span class="n">physio_rate</span><span class="p">,</span>
                  <span class="n">t_r</span><span class="p">,</span>
