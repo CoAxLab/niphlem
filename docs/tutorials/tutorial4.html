@@ -369,10 +369,10 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">image</span><span class="p">,</span> <span class="n">plotting</span>
-<span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="k">import</span> <span class="n">FirstLevelModel</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span><span class="p">,</span> <span class="n">plotting</span>
+<span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="kn">import</span> <span class="n">FirstLevelModel</span>
 
-<span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="k">import</span> <span class="p">(</span><span class="n">load_cmrr_info</span><span class="p">,</span> <span class="n">load_cmrr_data</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">niphlem.input_data</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_cmrr_info</span><span class="p">,</span> <span class="n">load_cmrr_data</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -497,7 +497,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="k">import</span> <span class="n">periodogram</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">periodogram</span>
 
 <span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span> <span class="o">=</span> <span class="n">periodogram</span><span class="p">(</span><span class="n">pulse_signal</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fs</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 <span class="n">max_pxx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Pxx</span><span class="p">))</span>
@@ -525,8 +525,8 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.clean</span> <span class="k">import</span> <span class="n">_transform_filter</span>
-<span class="kn">from</span> <span class="nn">niphlem.events</span> <span class="k">import</span> <span class="n">compute_max_events</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span>
+<span class="kn">from</span> <span class="nn">niphlem.events</span> <span class="kn">import</span> <span class="n">compute_max_events</span>
 
 <span class="n">puls_filt_low</span> <span class="o">=</span> <span class="n">_transform_filter</span><span class="p">(</span><span class="n">pulse_signal</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>
                                   <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
@@ -582,7 +582,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="k">import</span> <span class="n">RetroicorPhysio</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">RetroicorPhysio</span>
 </pre></div>
 </div>
 </div>
@@ -944,7 +944,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="k">import</span> <span class="n">HVPhysio</span><span class="p">,</span> <span class="n">RVPhysio</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">niphlem.models</span> <span class="kn">import</span> <span class="n">HVPhysio</span><span class="p">,</span> <span class="n">RVPhysio</span>
 </pre></div>
 </div>
 </div>

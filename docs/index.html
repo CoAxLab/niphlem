@@ -98,12 +98,12 @@
 </style>
 <div class="section" id="niphlem-physiological-log-extraction-for-modeling-in-neuroimaging">
 <h1><em>niphlem</em>: Physiological Log Extraction for Modeling in Neuroimaging<a class="headerlink" href="#niphlem-physiological-log-extraction-for-modeling-in-neuroimaging" title="Permalink to this headline"></a></h1>
-<p><em>niphlem</em> is a toolbox that extracts physiological recordings during MRI scanning and estimates the signal phases so that they can be used as a covariate in your general linear model (GLM) with fMRI data.</p>
-<p><em>niphlem</em> can generate multiple models of physiological noise to include as regressors in your GLM model from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in Verstynen and Deshpande (2011).</p>
+<p><em>niphlem</em> is a toolbox that extracts physiological signals recorded coincidentally with functional MRI data and estimates the signal phases so that they can be used as a covariate in subsequent analyses.</p>
+<p><em>niphlem</em> can generate multiple models of physiological noise to include as regressors from either ECG, pneumatic breathing belt or pulse-oximetry data.  These are described in detail in Verstynen and Deshpande (2011).</p>
 <p>Briefly, niphlem implements two physiological models for regressors generation:</p>
 <ul class="simple">
-<li><p><strong>RETROICOR</strong>:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues.</p></li>
-<li><p><strong>Variation Models</strong>:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).</p></li>
+<li><p><strong>RETROICOR</strong>:  A phasic decomposition method that isolates the fourier series that best describes the spectral properties of the input signal.  This was first described by Glover and colleagues (2000).</p></li>
+<li><p><strong>Variation Models</strong>:  For low frequency signals (like the pneumatic belt and low-pass filtered pulse-oximetry) this does the combined respiration variance and response function described by Birn and colleagues (2006, 2008).  For high frequency signals (i.e., ECG or high-pass filtered pulse-oximetry), this generates the heart-rate variance and cardiac response function described by Chang and colleagues (2009).</p></li>
 </ul>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h2>
