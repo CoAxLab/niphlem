@@ -58,8 +58,8 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#retroicor-models">3-RETROICOR Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#variation-models">4-Variation Models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#variations-in-breathing-rate-volume-regressors">4.1- Variations in breathing rate/volume regressors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#variations-in-heart-rate-regressors">4.2- Variations in heart rate regressors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#variation-in-breathing-rate-volume-regressors">4.1- Variation in breathing rate/volume regressors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#variation-in-heart-rate-regressors">4.2- Variation in heart rate regressors</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#reports">5-Reports</a></li>
@@ -174,7 +174,7 @@
 <p class="caption"><span class="caption-text">RETROICOR algorithm procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
 </div>
 <p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio">RetroicorPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
-<p><em>Refereces</em>:</p>
+<p><em>Refernces</em>:</p>
 <ul class="simple">
 <li><p>Glover, G.H., Li, T.-Q. and Ress, D. (2000), Image-based method for retrospective correction of physiological motion effects in fMRI: RETROICOR. Magn. Reson. Med., 44: 162-167.</p></li>
 <li><p>Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.</p></li>
@@ -182,10 +182,10 @@
 </div>
 <div class="section" id="variation-models">
 <h2>4-Variation Models<a class="headerlink" href="#variation-models" title="Permalink to this headline"></a></h2>
-<p>Niphlem can also generate nuisance regressors for variations in breathing rate/volume and heart rate.</p>
-<div class="section" id="variations-in-breathing-rate-volume-regressors">
-<h3>4.1- Variations in breathing rate/volume regressors<a class="headerlink" href="#variations-in-breathing-rate-volume-regressors" title="Permalink to this headline"></a></h3>
-<p>The algorithm for variations in breathing rate/volume is as follows:</p>
+<p>Niphlem can also generate nuisance regressors for variation in breathing rate/volume and heart rate.</p>
+<div class="section" id="variation-in-breathing-rate-volume-regressors">
+<h3>4.1- Variation in breathing rate/volume regressors<a class="headerlink" href="#variation-in-breathing-rate-volume-regressors" title="Permalink to this headline"></a></h3>
+<p>The algorithm for variability artifacts fromo breathing rate/volume is as follows:</p>
 <ol class="arabic simple">
 <li><p>Computation of the standard deviation of the signal within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.</p></li>
 <li><p>Z-score normalization.</p></li>
@@ -199,9 +199,9 @@
 <p class="caption"><span class="caption-text">Variations in breathing rate/volume procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
 </div>
 </div>
-<div class="section" id="variations-in-heart-rate-regressors">
-<h3>4.2- Variations in heart rate regressors<a class="headerlink" href="#variations-in-heart-rate-regressors" title="Permalink to this headline"></a></h3>
-<p>The algorithm for variations in heart rate is as follows:</p>
+<div class="section" id="variation-in-heart-rate-regressors">
+<h3>4.2- Variation in heart rate regressors<a class="headerlink" href="#variation-in-heart-rate-regressors" title="Permalink to this headline"></a></h3>
+<p>The algorithm for variability artifacts from heart rate is as follows:</p>
 <ol class="arabic simple">
 <li><p>Computation of the average deviation in inter-event interval (i.e., ms between R-components of the QRS complex), per second,  within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.</p></li>
 <li><p>Z-score normalization.</p></li>

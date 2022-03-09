@@ -72,7 +72,7 @@ After these four steps, we obtain a series of phase regressors that we can use i
 
 Niphlem has a class `RetroicorPhysio <https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio>`_, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the `tutorial 3 <https://coaxlab.github.io/niphlem/tutorials/tutorial3.html>`_ and `tutorial 4 <https://coaxlab.github.io/niphlem/tutorials/tutorial4.html>`_.
 
-*Refereces*:
+*Refernces*:
 
 - Glover, G.H., Li, T.-Q. and Ress, D. (2000), Image-based method for retrospective correction of physiological motion effects in fMRI: RETROICOR. Magn. Reson. Med., 44: 162-167.
 - Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.
@@ -80,13 +80,13 @@ Niphlem has a class `RetroicorPhysio <https://coaxlab.github.io/niphlem/api.html
 4-Variation Models
 ====================
 
-Niphlem can also generate nuisance regressors for variations in breathing rate/volume and heart rate.
+Niphlem can also generate nuisance regressors for variation in breathing rate/volume and heart rate.
 
 
-4.1- Variations in breathing rate/volume regressors
+4.1- Variation in breathing rate/volume regressors
 ------------------------------------------------------------
 
-The algorithm for variations in breathing rate/volume is as follows:
+The algorithm for variability artifacts fromo breathing rate/volume is as follows:
 
 1. Computation of the standard deviation of the signal within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.
 2. Z-score normalization.
@@ -106,10 +106,10 @@ Niphlem has a class `RVPhysio <https://coaxlab.github.io/niphlem/api.html#niphle
    Variations in breathing rate/volume procedure (borrowed from Verstynen, 2011).
 
 
-4.2- Variations in heart rate regressors
+4.2- Variation in heart rate regressors
 ------------------------------------------------------------
 
-The algorithm for variations in heart rate is as follows:
+The algorithm for variability artifacts from heart rate is as follows:
 
 1. Computation of the average deviation in inter-event interval (i.e., ms between R-components of the QRS complex), per second,  within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.
 2. Z-score normalization.
