@@ -9,11 +9,9 @@
 1.1- What is Niphlem?
 ------------------------
 
-*Niphlem* is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data.
+Nilearn-dependent Physiological Log Extraction for Modeling (*Niphlem*) is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data. 
 
-It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the `scipy lecture notes <http://scipy-lectures.org/>`_.
-
-Alternatively, Matlab users may be more interested in using PhLEM, which is what *niphlem* is based on. Check `PhLEM Toolbox <https://sites.google.com/site/phlemtoolbox/>`_ for more details on this toolbox.
+This is the python version of the original PhLEM toolbox written in Matlab (and no longer supported). The aim is to be as simple, flexible, and open as possible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the `scipy lecture notes <http://scipy-lectures.org/>`_.
 
 1.2- Installing niphlem
 ------------------------
@@ -34,9 +32,7 @@ Alternatively, if you are interested in installing the latest version under deve
 2-Physiological Signal
 ======================
 
-*Niphlem* is particularly designed to exctract physiological signal (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.
-
-Right now, *niphlem* is able to work with physiological data in the form of log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit `<https://www.cmrr.umn.edu/multiband>`_ for more details), and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.
+*Niphlem* is designed to exctract physiological signals (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings that are collected as participants are scanned in an MRI. The toolbox was specifically written with output from the Siemens Physiological Monitoring System in mind, but is able to work with and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.
 
 2.1- Loading physiological data from CMRR MB sequences
 ------------------------------------------------------------

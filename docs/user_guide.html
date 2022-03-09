@@ -124,9 +124,8 @@
 <h2>1-Intro to Niphlem<a class="headerlink" href="#intro-to-niphlem" title="Permalink to this headline"></a></h2>
 <div class="section" id="what-is-niphlem">
 <h3>1.1- What is Niphlem?<a class="headerlink" href="#what-is-niphlem" title="Permalink to this headline"></a></h3>
-<p><em>Niphlem</em> is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data.</p>
-<p>It is written in Python, with the aim of being simple and flexible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the <a class="reference external" href="http://scipy-lectures.org/">scipy lecture notes</a>.</p>
-<p>Alternatively, Matlab users may be more interested in using PhLEM, which is what <em>niphlem</em> is based on. Check <a class="reference external" href="https://sites.google.com/site/phlemtoolbox/">PhLEM Toolbox</a> for more details on this toolbox.</p>
+<p>Nilearn-dependent Physiological Log Extraction for Modeling (<em>Niphlem</em>) is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data.</p>
+<p>This is the python version of the original PhLEM toolbox written in Matlab (and no longer supported). The aim is to be as simple, flexible, and open as possible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the <a class="reference external" href="http://scipy-lectures.org/">scipy lecture notes</a>.</p>
 </div>
 <div class="section" id="installing-niphlem">
 <h3>1.2- Installing niphlem<a class="headerlink" href="#installing-niphlem" title="Permalink to this headline"></a></h3>
@@ -145,8 +144,7 @@
 </div>
 <div class="section" id="physiological-signal">
 <h2>2-Physiological Signal<a class="headerlink" href="#physiological-signal" title="Permalink to this headline"></a></h2>
-<p><em>Niphlem</em> is particularly designed to exctract physiological signal (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings.</p>
-<p>Right now, <em>niphlem</em> is able to work with physiological data in the form of log files acquired through a Multi-Band accelerated EPI Pulse sequence (visit <a class="reference external" href="https://www.cmrr.umn.edu/multiband">https://www.cmrr.umn.edu/multiband</a> for more details), and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.</p>
+<p><em>Niphlem</em> is designed to exctract physiological signals (cardiac, respiration) from electrocardiogram (ECG), pneumatic belt or pulse oximeter (pulse-ox) data recordings that are collected as participants are scanned in an MRI. The toolbox was specifically written with output from the Siemens Physiological Monitoring System in mind, but is able to work with and data in BIDS compliance. In the future, more formats of input physiological data will be incorporated.</p>
 <div class="section" id="loading-physiological-data-from-cmrr-mb-sequences">
 <h3>2.1- Loading physiological data from CMRR MB sequences<a class="headerlink" href="#loading-physiological-data-from-cmrr-mb-sequences" title="Permalink to this headline"></a></h3>
 <p>Under construction…</p>
