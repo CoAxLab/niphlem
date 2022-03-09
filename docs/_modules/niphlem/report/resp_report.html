@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>niphlem.report.ecg_report &mdash; niphlem 0.0.1-beta documentation</title>
+  <title>niphlem.report.resp_report &mdash; niphlem 0.0.1-beta documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
@@ -62,7 +62,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>niphlem.report.ecg_report</li>
+      <li>niphlem.report.resp_report</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -71,9 +71,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for niphlem.report.ecg_report</h1><div class="highlight"><pre>
+  <h1>Source code for niphlem.report.resp_report</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">This file contains the code to generate the ECG report.</span>
+<span class="sd">This file contains the code to generate the respiration report.</span>
 
 <span class="sd">Many of the functionalites used here have been borrowed from Nilearn</span>
 <span class="sd">(https://nilearn.github.io/)</span>
@@ -82,9 +82,7 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
-
 <span class="kn">import</span> <span class="nn">string</span>
-
 
 <span class="kn">from</span> <span class="nn">html</span> <span class="kn">import</span> <span class="n">escape</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span> <span class="k">as</span> <span class="n">opj</span>
@@ -93,49 +91,43 @@
 <span class="kn">from</span> <span class="nn">niphlem.clean</span> <span class="kn">import</span> <span class="n">_transform_filter</span>
 <span class="kn">from</span> <span class="nn">niphlem.events</span> <span class="kn">import</span> <span class="n">compute_max_events</span><span class="p">,</span> <span class="n">correct_anomalies</span>
 <span class="kn">from</span> <span class="nn">.report_general</span> <span class="kn">import</span> <span class="p">(</span><span class="n">validate_signal</span><span class="p">,</span> <span class="n">validate_outpath</span><span class="p">,</span>
-                             <span class="n">compute_stats</span><span class="p">,</span> <span class="n">_dataframe_to_html</span><span class="p">,</span>
-                             <span class="n">_plot_to_svg</span><span class="p">,</span> <span class="n">plot_average_signal</span><span class="p">,</span> <span class="n">plot_peaks</span><span class="p">,</span>
+                             <span class="n">compute_stats</span><span class="p">,</span> <span class="n">_dataframe_to_html</span><span class="p">,</span> <span class="n">_plot_to_svg</span><span class="p">,</span>
+                             <span class="n">plot_average_signal</span><span class="p">,</span> <span class="n">plot_peaks</span><span class="p">,</span>
                              <span class="n">generate_rate_df</span><span class="p">,</span> <span class="n">generate_interval_df</span>
                              <span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">.html_report</span> <span class="kn">import</span> <span class="n">HTMLReport</span>
 
 
-<div class="viewcode-block" id="make_ecg_report"><a class="viewcode-back" href="../../../api.html#niphlem.report.make_ecg_report">[docs]</a><span class="k">def</span> <span class="nf">make_ecg_report</span><span class="p">(</span><span class="n">ecg_signal</span><span class="p">,</span>
-                    <span class="o">*</span><span class="p">,</span>
-                    <span class="n">fs</span><span class="p">,</span>
-                    <span class="n">delta</span><span class="p">,</span>
-                    <span class="n">peak_rise</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
-                    <span class="n">ground</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
-                    <span class="n">low_pass</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
-                    <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="p">):</span>
+<div class="viewcode-block" id="make_resp_report"><a class="viewcode-back" href="../../../api.html#niphlem.report.make_resp_report">[docs]</a><span class="k">def</span> <span class="nf">make_resp_report</span><span class="p">(</span><span class="n">resp_signal</span><span class="p">,</span>
+                     <span class="o">*</span><span class="p">,</span>
+                     <span class="n">fs</span><span class="p">,</span>
+                     <span class="n">delta</span><span class="p">,</span>
+                     <span class="n">peak_rise</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                     <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                     <span class="n">low_pass</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                     <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generate QC report for ECG data.</span>
+<span class="sd">    Generate QC report for respiration data.</span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    ecg_signal : array-like of shape (n_physio_samples, ),</span>
+<span class="sd">    resp_signal : array-like of shape (n_physio_samples, ),</span>
 <span class="sd">        or (n_physio_samples, n_channels).</span>
-<span class="sd">        ECG Signal, where each column corresponds to a recording.</span>
+<span class="sd">        Pneumatic belt signal.</span>
 <span class="sd">    fs : float</span>
-<span class="sd">        Sampling frequency of ECG recording.</span>
+<span class="sd">        Sampling frequency of pneumatic belt recording.</span>
 <span class="sd">    delta: float</span>
 <span class="sd">        minimum separation (in physio recording units) between</span>
 <span class="sd">        events in signal to be considered peaks</span>
 <span class="sd">    peak_rise: float</span>
 <span class="sd">        relative height with respect to the 20th tallest events in signal</span>
-<span class="sd">        to consider events as peak. The default is 0.75.</span>
-<span class="sd">    ground : integer, optional</span>
-<span class="sd">        Column in the input signal to be considered as a ground channel.</span>
-<span class="sd">        This signal will be then substracted from the other channels.</span>
-<span class="sd">        The default is None.</span>
+<span class="sd">        to consider events as peak. The default is 0.5.</span>
 <span class="sd">    high_pass : float, optional</span>
 <span class="sd">        High-pass filtering frequency (in Hz). Only if filtering option</span>
-<span class="sd">        is not None. The default is 0.6.</span>
+<span class="sd">        is not None. The default is 0.1.</span>
 <span class="sd">    low_pass : float, optional</span>
 <span class="sd">        Low-pass filtering frequency (in Hz). Only if filtering option</span>
-<span class="sd">        is not None. The default is 5.0.</span>
+<span class="sd">        is not None. The default is 0.5.</span>
 <span class="sd">    outpath : string, optional</span>
 <span class="sd">        If provided, Path where report the HTML report,</span>
 <span class="sd">        averaged filtered signal and corrected peaks will be saved.</span>
@@ -148,9 +140,9 @@
 <span class="sd">        Dictionary with the filtered signal and (corrected) peak locations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">ecg_signal</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">resp_signal</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-    <span class="n">signal</span> <span class="o">=</span> <span class="n">validate_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">ground</span><span class="o">=</span><span class="n">ground</span><span class="p">)</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">validate_signal</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
 
     <span class="n">outpath</span> <span class="o">=</span> <span class="n">validate_outpath</span><span class="p">(</span><span class="n">outpath</span><span class="p">)</span>
 
@@ -167,61 +159,65 @@
     <span class="n">signal_filt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">outpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;transformed_signal_ecg.txt&quot;</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;transformed_signal_resp.txt&quot;</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed ECG signal saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transformed pneumatic belt signal saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">fig1</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> \
-        <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span> <span class="o">=</span> <span class="n">plot_filtered_data</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
-                                              <span class="n">signal_filt</span><span class="p">,</span>
-                                              <span class="n">fs</span><span class="p">,</span>
-                                              <span class="n">peak_rise</span><span class="p">,</span>
-                                              <span class="n">delta</span><span class="p">)</span>
+    <span class="n">fig1</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> \
+        <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span> <span class="o">=</span> <span class="n">plot_transformed_resp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
+                                                   <span class="n">signal_filt</span><span class="p">,</span>
+                                                   <span class="n">fs</span><span class="p">,</span>
+                                                   <span class="n">peak_rise</span><span class="p">,</span>
+                                                   <span class="n">delta</span><span class="p">)</span>
 
-    <span class="n">hr_df</span> <span class="o">=</span> <span class="n">generate_rate_df</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">)</span>
-    <span class="n">rr_df</span> <span class="o">=</span> <span class="n">generate_interval_df</span><span class="p">(</span><span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span><span class="p">)</span>
+    <span class="n">rr_df</span> <span class="o">=</span> <span class="n">generate_rate_df</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">)</span>
+    <span class="n">ipi_df</span> <span class="o">=</span> <span class="n">generate_interval_df</span><span class="p">(</span><span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span><span class="p">)</span>
 
-    <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span> <span class="o">=</span> <span class="n">correct_anomalies</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+    <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span> <span class="o">=</span> <span class="n">correct_anomalies</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span>
+                                                                  <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+                                                                  <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+                                                                  <span class="p">)</span>
     <span class="c1"># Compute differences between corrected peaks</span>
     <span class="n">corrected_peak_diffs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">corrected_peaks</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">outpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;corrected_peaks_ecg.txt&quot;</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;peaks_resp.txt&quot;</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">corrected_peaks</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ECG peaks saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peaks from pneumatic belt signal saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">fig2</span><span class="p">,</span> <span class="n">c_heart_rate</span><span class="p">,</span> <span class="n">c_mean_RR</span><span class="p">,</span> <span class="n">c_median_RR</span><span class="p">,</span> <span class="n">c_stdev_RR</span><span class="p">,</span> <span class="n">c_snr_RR</span><span class="p">,</span>\
-        <span class="n">c_inst_hr</span> <span class="o">=</span> <span class="n">plot_corrected_ecg</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span>
-                                       <span class="n">corrected_peaks</span><span class="p">,</span>
+    <span class="n">fig2</span><span class="p">,</span> <span class="n">c_resp_rate</span><span class="p">,</span> <span class="n">c_mean_ipi</span><span class="p">,</span> <span class="n">c_median_ipi</span><span class="p">,</span> <span class="n">c_stdev_ipi</span><span class="p">,</span> <span class="n">c_snr_ipi</span><span class="p">,</span>\
+        <span class="n">c_inst_resp</span> <span class="o">=</span> <span class="n">plot_corrected_resp</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span>
+                                          <span class="n">corrected_peaks</span><span class="p">,</span>
+                                          <span class="n">corrected_peak_diffs</span><span class="p">,</span>
+                                          <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+
+    <span class="n">corrected_rr_df</span> <span class="o">=</span> <span class="n">generate_rate_df</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span>
                                        <span class="n">corrected_peak_diffs</span><span class="p">,</span>
-                                       <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+                                       <span class="n">c_resp_rate</span><span class="p">)</span>
+    <span class="n">corrected_ipi_df</span> <span class="o">=</span> <span class="n">generate_interval_df</span><span class="p">(</span><span class="n">c_mean_ipi</span><span class="p">,</span> <span class="n">c_median_ipi</span><span class="p">,</span>
+                                            <span class="n">c_stdev_ipi</span><span class="p">,</span>
+                                            <span class="n">c_snr_ipi</span><span class="p">)</span>
 
-    <span class="n">corrected_hr_df</span> <span class="o">=</span> <span class="n">generate_rate_df</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span>
-                                       <span class="n">corrected_peak_diffs</span><span class="p">,</span>
-                                       <span class="n">c_heart_rate</span><span class="p">)</span>
-    <span class="n">corrected_rr_df</span> <span class="o">=</span> <span class="n">generate_interval_df</span><span class="p">(</span><span class="n">c_mean_RR</span><span class="p">,</span> <span class="n">c_median_RR</span><span class="p">,</span> <span class="n">c_stdev_RR</span><span class="p">,</span>
-                                           <span class="n">c_snr_RR</span><span class="p">)</span>
-
-    <span class="n">fig3</span> <span class="o">=</span> <span class="n">plot_comparison_ecg</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">,</span>
-                               <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span>
-                               <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">corrected_peak_diffs</span><span class="p">,</span>
-                               <span class="n">c_heart_rate</span><span class="p">,</span> <span class="n">c_mean_RR</span><span class="p">,</span> <span class="n">c_median_RR</span><span class="p">,</span>
-                               <span class="n">c_stdev_RR</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">fig3</span> <span class="o">=</span> <span class="n">plot_comparison_resp</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">,</span>
+                                <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span>
+                                <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">corrected_peak_diffs</span><span class="p">,</span>
+                                <span class="n">c_resp_rate</span><span class="p">,</span> <span class="n">c_mean_ipi</span><span class="p">,</span> <span class="n">c_median_ipi</span><span class="p">,</span>
+                                <span class="n">c_stdev_ipi</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
 
     <span class="c1"># generate html report</span>
-    <span class="n">report</span> <span class="o">=</span> <span class="n">_generate_ecg_html</span><span class="p">(</span><span class="n">fig1</span><span class="p">,</span> <span class="n">fig2</span><span class="p">,</span> <span class="n">fig3</span><span class="p">,</span> <span class="n">hr_df</span><span class="p">,</span> <span class="n">rr_df</span><span class="p">,</span>
-                                <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span><span class="p">,</span>
-                                <span class="n">corrected_hr_df</span><span class="p">,</span> <span class="n">corrected_rr_df</span><span class="p">,</span>
-                                <span class="n">fs</span><span class="p">,</span>
-                                <span class="n">high_pass</span><span class="p">,</span>
-                                <span class="n">low_pass</span><span class="p">,</span>
-                                <span class="n">delta</span><span class="p">,</span>
-                                <span class="n">peak_rise</span><span class="p">)</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">_generate_resp_html</span><span class="p">(</span><span class="n">fig1</span><span class="p">,</span> <span class="n">fig2</span><span class="p">,</span> <span class="n">fig3</span><span class="p">,</span> <span class="n">rr_df</span><span class="p">,</span> <span class="n">ipi_df</span><span class="p">,</span>
+                                 <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span><span class="p">,</span>
+                                 <span class="n">corrected_rr_df</span><span class="p">,</span> <span class="n">corrected_ipi_df</span><span class="p">,</span>
+                                 <span class="n">fs</span><span class="p">,</span>
+                                 <span class="n">high_pass</span><span class="p">,</span>
+                                 <span class="n">low_pass</span><span class="p">,</span>
+                                 <span class="n">delta</span><span class="p">,</span>
+                                 <span class="n">peak_rise</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">outpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;ecg_qc.html&quot;</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">opj</span><span class="p">(</span><span class="n">outpath</span><span class="p">,</span> <span class="s2">&quot;resp_qc.html&quot;</span><span class="p">)</span>
         <span class="n">report</span><span class="o">.</span><span class="n">save_as_html</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QC report for ECG signal saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;QC report for pneumatic belt signal saved in: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Store filtered data and peaks in a dictionary for output</span>
     <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filtered_signal&#39;</span><span class="p">:</span> <span class="n">signal_filt</span><span class="p">,</span>
@@ -231,21 +227,21 @@
     <span class="k">return</span> <span class="n">report</span><span class="p">,</span> <span class="n">output_dict</span></div>
 
 
-<span class="k">def</span> <span class="nf">plot_filtered_signal</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">):</span>
-    <span class="c1"># plots comparison between unfiltered and filtered signal (one panel)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;unfiltered signal&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;filtered signal&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">plot_transformed_signal_resp</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">):</span>
+    <span class="c1"># plots comparison between raw and transformed signal (one panel)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;raw signal&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;transformed signal&quot;</span><span class="p">)</span>
     <span class="c1"># ax.set_xlim([5000, 7000])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">ax</span>
 
 
-<span class="k">def</span> <span class="nf">plot_power_spectrum_ecg</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
-    <span class="c1"># plots power spectrum of unfiltered, filtered signal (one panel)</span>
-    <span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span> <span class="o">=</span> <span class="n">welch</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="s2">&quot;spectrum&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;unfiltered signal&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">plot_power_spectrum_resp</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
+    <span class="c1"># plots power spectrum of raw, transformed signal (one panel)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span> <span class="o">=</span> <span class="n">welch</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="s2">&quot;spectrum&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;raw signal&quot;</span><span class="p">)</span>
     <span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span> <span class="o">=</span> <span class="n">welch</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="s2">&quot;spectrum&quot;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;filtered signal&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Pxx</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;transformed signal&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (Hz)&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Power spectrum&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
@@ -254,43 +250,42 @@
     <span class="k">return</span> <span class="n">ax</span>
 
 
-<span class="k">def</span> <span class="nf">plot_rr_hist</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_ipi_hist</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">):</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">diff_peaks</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;RR interval (ms)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;IPI (ms)&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Probability density&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ax</span>
 
 
-<span class="k">def</span> <span class="nf">plot_inst_hr</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_inst_resp</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">):</span>
 
-    <span class="n">inst_hr</span> <span class="o">=</span> <span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inst_hr</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+    <span class="n">inst_resp</span> <span class="o">=</span> <span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">inst_resp</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
     <span class="c1"># ax.set_xlabel(&quot;RR interval number&quot;)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;BPM&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Breaths per minute&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">ax</span><span class="p">,</span> <span class="n">inst_hr</span>
+    <span class="k">return</span> <span class="n">ax</span><span class="p">,</span> <span class="n">inst_resp</span>
 
 
-<span class="k">def</span> <span class="nf">plot_filtered_data</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">peak_rise</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_transformed_resp</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">peak_rise</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 
-    <span class="c1"># Limits for signal plots of 5 secs</span>
     <span class="n">x_i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">x_f</span> <span class="o">=</span> <span class="n">fs</span><span class="o">*</span><span class="mi">5</span>
+    <span class="n">x_f</span> <span class="o">=</span> <span class="mi">10000</span>
     <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">x_f</span><span class="p">:</span>
         <span class="c1"># In the unlikely case where mean signal duration is less than 5 secs</span>
         <span class="n">x_f</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plot_filtered_signal</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">plot_transformed_signal_resp</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">x_i</span><span class="p">,</span> <span class="n">x_f</span><span class="p">])</span>
 
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ax2</span> <span class="o">=</span> <span class="n">plot_power_spectrum_ecg</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">plot_power_spectrum_resp</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="c1"># Compute peaks</span>
@@ -298,8 +293,8 @@
                                <span class="n">peak_rise</span><span class="o">=</span><span class="n">peak_rise</span><span class="p">,</span>
                                <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">)</span>
     <span class="n">diff_peaks</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">peaks</span><span class="p">))</span>
-    <span class="c1"># Heart rate using the difference time between peaks</span>
-    <span class="n">heart_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
+    <span class="c1"># Respiration rate using the difference time between peaks</span>
+    <span class="n">resp_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
 
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">plot_peaks</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">)</span>
@@ -309,38 +304,36 @@
     <span class="c1"># Compute signal around peaks</span>
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">plot_average_signal</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: Heart rate = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: Respiration rate = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-    <span class="c1"># Compute mean, median, stdev, snr of RR interval</span>
-    <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span> <span class="o">=</span> <span class="n">compute_stats</span><span class="p">(</span><span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="c1"># Compute mean, median, stdev, snr of IPI</span>
+    <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span> <span class="o">=</span> <span class="n">compute_stats</span><span class="p">(</span><span class="n">diff_peaks</span><span class="p">)</span>
 
-    <span class="c1"># Compute peaks and plot histogram of RR interval</span>
+    <span class="c1"># Compute peaks and plot histogram of IPI</span>
     <span class="n">ax5</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax5</span> <span class="o">=</span> <span class="n">plot_rr_hist</span><span class="p">(</span><span class="n">ax5</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax5</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;E: RR mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+    <span class="n">ax5</span> <span class="o">=</span> <span class="n">plot_ipi_hist</span><span class="p">(</span><span class="n">ax5</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax5</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;E: IPI mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
                   <span class="s2">&quot;median = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">),</span>
+                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">),</span>
                   <span class="n">size</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
 
-    <span class="c1"># Compute and plot instantaneous HR</span>
+    <span class="c1"># Compute and plot instantaneous resp rate</span>
     <span class="n">ax6</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ax6</span><span class="p">,</span> <span class="n">inst_hr</span> <span class="o">=</span> <span class="n">plot_inst_hr</span><span class="p">(</span><span class="n">ax6</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax6</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;F: Instantaneous heart rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax6</span><span class="p">,</span> <span class="n">inst_resp</span> <span class="o">=</span> <span class="n">plot_inst_resp</span><span class="p">(</span><span class="n">ax6</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax6</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;F: Instantaneous respiration rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span>
 
 
-<span class="k">def</span> <span class="nf">plot_corrected_ecg</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_corrected_resp</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
 
-    <span class="c1"># As before, limits for signal plots of 5 secs</span>
-
     <span class="n">x_i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">x_f</span> <span class="o">=</span> <span class="n">fs</span><span class="o">*</span><span class="mi">5</span>
+    <span class="n">x_f</span> <span class="o">=</span> <span class="mi">10000</span>
     <span class="k">if</span> <span class="n">signal_filt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">x_f</span><span class="p">:</span>
         <span class="c1"># In the unlikely case where mean signal duration is less than 5 secs</span>
         <span class="n">x_f</span> <span class="o">=</span> <span class="n">signal_filt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -350,78 +343,78 @@
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
     <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">x_i</span><span class="p">,</span> <span class="n">x_f</span><span class="p">])</span>
 
-    <span class="c1"># Heart rate using the difference time between peaks</span>
-    <span class="n">heart_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
+    <span class="c1"># Respiration rate using the difference time between peaks</span>
+    <span class="n">resp_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">diff_peaks</span><span class="p">)</span><span class="o">*</span><span class="mi">60</span>
 
     <span class="c1"># Compute signal around peaks</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plot_average_signal</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;B: Corrected HR = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;B: Corrected respiration rate = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-    <span class="c1"># Compute mean, median, stdev, snr of RR interval</span>
-    <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span> <span class="o">=</span> <span class="n">compute_stats</span><span class="p">(</span><span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="c1"># Compute mean, median, stdev, snr of IPI</span>
+    <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span> <span class="o">=</span> <span class="n">compute_stats</span><span class="p">(</span><span class="n">diff_peaks</span><span class="p">)</span>
 
-    <span class="c1"># Compute peaks and plot histogram of RR interval</span>
+    <span class="c1"># Compute peaks and plot histogram of IPI</span>
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax3</span> <span class="o">=</span> <span class="n">plot_rr_hist</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;C: RR mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;median = </span><span class="si">%.2f</span><span class="s2">,stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_RR</span><span class="p">,</span>
-                                                  <span class="n">median_RR</span><span class="p">,</span>
-                                                  <span class="n">stdev_RR</span><span class="p">),</span>
+    <span class="n">ax3</span> <span class="o">=</span> <span class="n">plot_ipi_hist</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;C: IPI mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+                  <span class="s2">&quot;median = </span><span class="si">%.2f</span><span class="s2">,stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_ipi</span><span class="p">,</span>
+                                                  <span class="n">median_ipi</span><span class="p">,</span>
+                                                  <span class="n">stdev_ipi</span><span class="p">),</span>
                   <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-    <span class="c1"># Compute and plot instantaneous HR</span>
+    <span class="c1"># Compute and plot instantaneous respiration rate</span>
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ax4</span><span class="p">,</span> <span class="n">inst_hr</span> <span class="o">=</span> <span class="n">plot_inst_hr</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: Corrected Instantaneous heart rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="p">,</span> <span class="n">inst_resp</span> <span class="o">=</span> <span class="n">plot_inst_resp</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: Corrected Instantaneous respiration rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stdev_RR</span><span class="p">,</span> <span class="n">snr_RR</span><span class="p">,</span> <span class="n">inst_hr</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stdev_ipi</span><span class="p">,</span> <span class="n">snr_ipi</span><span class="p">,</span> <span class="n">inst_resp</span>
 
 
-<span class="k">def</span> <span class="nf">plot_comparison_ecg</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">heart_rate</span><span class="p">,</span>
-                        <span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stddev_RR</span><span class="p">,</span>
-                        <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">,</span>
-                        <span class="n">corrected_heart_rate</span><span class="p">,</span> <span class="n">c_mean_RR</span><span class="p">,</span> <span class="n">c_median_RR</span><span class="p">,</span>
-                        <span class="n">c_stdev_RR</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_comparison_resp</span><span class="p">(</span><span class="n">signal_filt</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">,</span> <span class="n">resp_rate</span><span class="p">,</span>
+                         <span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stddev_ipi</span><span class="p">,</span>
+                         <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">,</span>
+                         <span class="n">corrected_resp_rate</span><span class="p">,</span> <span class="n">c_mean_ipi</span><span class="p">,</span> <span class="n">c_median_ipi</span><span class="p">,</span>
+                         <span class="n">c_stdev_ipi</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">fs</span><span class="p">):</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
 
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">ax1</span> <span class="o">=</span> <span class="n">plot_average_signal</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
-    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A: HR = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">heart_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;A: Respiration rate = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">resp_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">ax2</span> <span class="o">=</span> <span class="n">plot_average_signal</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">corrected_peaks</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">signal_filt</span><span class="p">)</span>
-    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;B: Corrected HR = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">corrected_heart_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;B: Corrected respiration rate = </span><span class="si">%.2f</span><span class="s2"> bpm&quot;</span> <span class="o">%</span> <span class="n">corrected_resp_rate</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-    <span class="c1"># Plot histogram of RR interval</span>
+    <span class="c1"># Plot histogram of IPI</span>
     <span class="n">ax3</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax3</span> <span class="o">=</span> <span class="n">plot_rr_hist</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;C: RR mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;median = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_RR</span><span class="p">,</span> <span class="n">median_RR</span><span class="p">,</span> <span class="n">stddev_RR</span><span class="p">),</span>
+    <span class="n">ax3</span> <span class="o">=</span> <span class="n">plot_ipi_hist</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;C: IPI mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+                  <span class="s2">&quot;med = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean_ipi</span><span class="p">,</span> <span class="n">median_ipi</span><span class="p">,</span> <span class="n">stddev_ipi</span><span class="p">),</span>
                   <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">ax4</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ax4</span> <span class="o">=</span> <span class="n">plot_rr_hist</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">)</span>
-    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: RR mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;median = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
-                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c_mean_RR</span><span class="p">,</span>
-                                    <span class="n">c_median_RR</span><span class="p">,</span>
-                                    <span class="n">c_stdev_RR</span><span class="p">),</span>
+    <span class="n">ax4</span> <span class="o">=</span> <span class="n">plot_ipi_hist</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">)</span>
+    <span class="n">ax4</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;D: IPI mean = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+                  <span class="s2">&quot;med = </span><span class="si">%.2f</span><span class="s2">, &quot;</span>
+                  <span class="s2">&quot;stdev = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c_mean_ipi</span><span class="p">,</span>
+                                    <span class="n">c_median_ipi</span><span class="p">,</span>
+                                    <span class="n">c_stdev_ipi</span><span class="p">),</span>
                   <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-    <span class="c1"># Plot instantaneous HR</span>
+    <span class="c1"># Plot instantaneous respiration rate</span>
     <span class="n">ax5</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">ax5</span><span class="p">,</span> <span class="n">inst_hr</span> <span class="o">=</span> <span class="n">plot_inst_hr</span><span class="p">(</span><span class="n">ax5</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
-    <span class="n">ax5</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;E: Instantaneous heart rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax5</span><span class="p">,</span> <span class="n">inst_resp</span> <span class="o">=</span> <span class="n">plot_inst_resp</span><span class="p">(</span><span class="n">ax5</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">diff_peaks</span><span class="p">)</span>
+    <span class="n">ax5</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;E: Instantaneous respiration rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">ax6</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">ax6</span><span class="p">,</span> <span class="n">c_inst_hr</span> <span class="o">=</span> <span class="n">plot_inst_hr</span><span class="p">(</span><span class="n">ax6</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">)</span>
-    <span class="n">ax6</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;F: Corrected instantaneous heart rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+    <span class="n">ax6</span><span class="p">,</span> <span class="n">c_inst_resp</span> <span class="o">=</span> <span class="n">plot_inst_resp</span><span class="p">(</span><span class="n">ax6</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">corrected_diff_peaks2</span><span class="p">)</span>
+    <span class="n">ax6</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;F: Corrected instantaneous respiration rate&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -429,11 +422,11 @@
     <span class="k">return</span> <span class="n">fig</span>
 
 
-<span class="k">def</span> <span class="nf">_generate_ecg_html</span><span class="p">(</span><span class="n">fig1</span><span class="p">,</span> <span class="n">fig2</span><span class="p">,</span> <span class="n">fig3</span><span class="p">,</span> <span class="n">hr_df</span><span class="p">,</span> <span class="n">rr_df</span><span class="p">,</span>
-                       <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span><span class="p">,</span>
-                       <span class="n">corrected_hr_df</span><span class="p">,</span> <span class="n">corrected_rr_df</span><span class="p">,</span>
-                       <span class="n">fs</span><span class="p">,</span> <span class="n">high_pass</span><span class="p">,</span> <span class="n">low_pass</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">peak_rise</span>
-                       <span class="p">):</span>
+<span class="k">def</span> <span class="nf">_generate_resp_html</span><span class="p">(</span><span class="n">fig1</span><span class="p">,</span> <span class="n">fig2</span><span class="p">,</span> <span class="n">fig3</span><span class="p">,</span> <span class="n">rr_df</span><span class="p">,</span> <span class="n">ipi_df</span><span class="p">,</span>
+                        <span class="n">max_indices</span><span class="p">,</span> <span class="n">min_indices</span><span class="p">,</span>
+                        <span class="n">corrected_rr_df</span><span class="p">,</span> <span class="n">corrected_ipi_df</span><span class="p">,</span>
+                        <span class="n">fs</span><span class="p">,</span> <span class="n">high_pass</span><span class="p">,</span> <span class="n">low_pass</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">peak_rise</span>
+                        <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Returns HTMLReport object for a QC report which shows</span>
 <span class="sd">    results of signal processing and anomaly correction.</span>
 <span class="sd">    The object can be opened in a browser, displayed in a notebook,</span>
@@ -457,7 +450,7 @@
                                            <span class="s1">&#39;report_head.html&#39;</span><span class="p">)</span>
 
     <span class="n">html_body_template_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HTML_TEMPLATE_ROOT_PATH</span><span class="p">,</span>
-                                           <span class="s1">&#39;report_body_ecg.html&#39;</span><span class="p">)</span>
+                                           <span class="s1">&#39;report_body_resp.html&#39;</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">html_head_template_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">html_head_file_obj</span><span class="p">:</span>
         <span class="n">html_head_template_text</span> <span class="o">=</span> <span class="n">html_head_file_obj</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -468,36 +461,36 @@
     <span class="n">report_body_template</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">Template</span><span class="p">(</span><span class="n">html_body_template_text</span><span class="p">)</span>
 
     <span class="n">page_title</span> <span class="o">=</span> <span class="s1">&#39;niphlem&#39;</span>
-    <span class="n">page_heading</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;niphlem: ECG signal processing and &#39;</span>
+    <span class="n">page_heading</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;niphlem: pneumatic belt signal processing and &#39;</span>
                     <span class="s1">&#39;peak detection QC report&#39;</span><span class="p">)</span>
 
     <span class="n">fig1_html</span> <span class="o">=</span> <span class="n">_plot_to_svg</span><span class="p">(</span><span class="n">fig1</span><span class="p">)</span>
     <span class="n">fig2_html</span> <span class="o">=</span> <span class="n">_plot_to_svg</span><span class="p">(</span><span class="n">fig2</span><span class="p">)</span>
     <span class="n">fig3_html</span> <span class="o">=</span> <span class="n">_plot_to_svg</span><span class="p">(</span><span class="n">fig3</span><span class="p">)</span>
 
-    <span class="n">hr_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">hr_df</span><span class="p">,</span>
+    <span class="n">rr_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">rr_df</span><span class="p">,</span>
                                  <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                                  <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                  <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span>
                                  <span class="p">)</span>
 
-    <span class="n">rr_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">rr_df</span><span class="p">,</span>
-                                 <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                                 <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                 <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                 <span class="p">)</span>
-
-    <span class="n">corrected_hr_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">corrected_hr_df</span><span class="p">,</span>
-                                           <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                                           <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                           <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                           <span class="p">)</span>
+    <span class="n">ipi_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">ipi_df</span><span class="p">,</span>
+                                  <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                  <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="p">)</span>
 
     <span class="n">corrected_rr_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">corrected_rr_df</span><span class="p">,</span>
                                            <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                                            <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                            <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                            <span class="p">)</span>
+
+    <span class="n">corrected_ipi_html</span> <span class="o">=</span> <span class="n">_dataframe_to_html</span><span class="p">(</span><span class="n">corrected_ipi_df</span><span class="p">,</span>
+                                            <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                            <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                            <span class="n">sparsify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                            <span class="p">)</span>
 
     <span class="n">report_values_head</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page_title&#39;</span><span class="p">:</span> <span class="n">escape</span><span class="p">(</span><span class="n">page_title</span><span class="p">)}</span>
     <span class="n">report_values_body</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;page_heading&#39;</span><span class="p">:</span> <span class="n">page_heading</span><span class="p">,</span>
@@ -507,13 +500,13 @@
                           <span class="s1">&#39;delta&#39;</span><span class="p">:</span> <span class="n">delta</span><span class="p">,</span>
                           <span class="s1">&#39;peak_rise&#39;</span><span class="p">:</span> <span class="n">peak_rise</span><span class="p">,</span>
                           <span class="s1">&#39;fig1_html&#39;</span><span class="p">:</span> <span class="n">fig1_html</span><span class="p">,</span>
-                          <span class="s1">&#39;hr_html&#39;</span><span class="p">:</span> <span class="n">hr_html</span><span class="p">,</span>
                           <span class="s1">&#39;rr_html&#39;</span><span class="p">:</span> <span class="n">rr_html</span><span class="p">,</span>
+                          <span class="s1">&#39;ipi_html&#39;</span><span class="p">:</span> <span class="n">ipi_html</span><span class="p">,</span>
                           <span class="s1">&#39;max_indices&#39;</span><span class="p">:</span> <span class="n">max_indices</span><span class="p">,</span>
                           <span class="s1">&#39;min_indices&#39;</span><span class="p">:</span> <span class="n">min_indices</span><span class="p">,</span>
                           <span class="s1">&#39;fig2_html&#39;</span><span class="p">:</span> <span class="n">fig2_html</span><span class="p">,</span>
-                          <span class="s1">&#39;corrected_hr_html&#39;</span><span class="p">:</span> <span class="n">corrected_hr_html</span><span class="p">,</span>
                           <span class="s1">&#39;corrected_rr_html&#39;</span><span class="p">:</span> <span class="n">corrected_rr_html</span><span class="p">,</span>
+                          <span class="s1">&#39;corrected_ipi_html&#39;</span><span class="p">:</span> <span class="n">corrected_ipi_html</span><span class="p">,</span>
                           <span class="s1">&#39;fig3_html&#39;</span><span class="p">:</span> <span class="n">fig3_html</span>
                           <span class="p">}</span>
 

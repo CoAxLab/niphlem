@@ -39,15 +39,10 @@ Variation
    :members:
    :inherited-members:
 
-Downsample
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: niphlem.models.DownsamplePhysio
-   :members:
-   :inherited-members:
-
 
 Report
 ----------------
 
 .. autofunction:: niphlem.report.make_ecg_report
+.. autofunction:: niphlem.report.make_pulseox_report
+.. autofunction:: niphlem.report.make_resp_report

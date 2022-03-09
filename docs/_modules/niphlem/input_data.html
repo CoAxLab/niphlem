@@ -75,6 +75,7 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 
 
 <span class="k">def</span> <span class="nf">get_lines</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
@@ -221,9 +222,10 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">interp1d</span>
+    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
 
     <span class="c1"># TODO: Add checks of filename and info dict</span>
+    <span class="n">info_dict</span> <span class="o">=</span> <span class="n">info_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="n">lines</span> <span class="o">=</span> <span class="n">get_lines</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
@@ -284,7 +286,8 @@
 
     <span class="n">signal</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">s_channel</span> <span class="ow">in</span> <span class="n">full_signal</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">s_channel</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">)</span>
+        <span class="c1"># Use a mask to interpolate possible zero/nan artifacts</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">s_channel</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">s_channel</span><span class="p">)</span>
         <span class="n">signal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interp1d</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">s_channel</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
                                <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)(</span><span class="n">new_time</span><span class="p">))</span>
     <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
@@ -387,12 +390,109 @@
         <span class="n">mpl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="load_bids_physio"><a class="viewcode-back" href="../../api.html#niphlem.input_data.load_bids_physio">[docs]</a><span class="k">def</span> <span class="nf">load_bids_physio</span><span class="p">():</span>
+<div class="viewcode-block" id="load_bids_physio"><a class="viewcode-back" href="../../api.html#niphlem.input_data.load_bids_physio">[docs]</a><span class="k">def</span> <span class="nf">load_bids_physio</span><span class="p">(</span><span class="n">data_file</span><span class="p">,</span> <span class="n">json_file</span><span class="p">,</span> <span class="n">resample_freq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sync_scan</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Load physiological data in BIDS format</span>
+<span class="sd">    Load physiological data in BIDS format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_file : str, pathlike</span>
+<span class="sd">        Path to recording bids physio file.</span>
+<span class="sd">    json_file : str, pathlike</span>
+<span class="sd">        Path to the sidecar json file of the input bids physio.</span>
+<span class="sd">    resample_freq : float, optional</span>
+<span class="sd">        Frequency to resample the data. The default is None.</span>
+<span class="sd">    sync_scan : bool, optional</span>
+<span class="sd">        Whether we want the signal to be synchronized</span>
+<span class="sd">        with the scanner times. The default is True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    signal : ndarray</span>
+<span class="sd">        The signal, where each columns corresponds to a particular</span>
+<span class="sd">        recording, whose names can wh be identfied in the meta_info</span>
+<span class="sd">        dictionary returned, and the rows to observations.</span>
+<span class="sd">    meta_info : dict</span>
+<span class="sd">        Meta information that at least contains the sampling frequency,</span>
+<span class="sd">        the start time of the signals, and the name of each signal column.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># TODO</span>
-    <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+
+    <span class="c1"># Validate input data</span>
+    <span class="k">if</span> <span class="n">data_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;physio.tsv.gz&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data file should end with physio.tsv.gz&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">json_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;physio.json&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Sidecar file should end with physio.json&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check that both files have the same name without extensions</span>
+    <span class="k">if</span> <span class="n">data_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.tsv.gz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">json_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.json&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data file and json file do not have the same &quot;</span>
+                         <span class="s2">&quot;name (without extensions), which invalidates &quot;</span>
+                         <span class="s2">&quot; BIDS specification&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Load sidecar information</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">meta_info</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="c1"># Validate fields in JSON file according to BIDS</span>
+    <span class="n">req_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Columns&#39;</span><span class="p">,</span> <span class="s1">&#39;SamplingFrequency&#39;</span><span class="p">,</span> <span class="s1">&#39;StartTime&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_fields</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">meta_info</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">missing_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_fields</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">meta_info</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The following required fields appear to be missing &quot;</span>
+                         <span class="s2">&quot;in the BIDS JSON file: &quot;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_fields</span><span class="p">)</span>
+                         <span class="p">)</span>
+    <span class="c1"># Load data file</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Check that the number of columns in data is the same as the number of</span>
+    <span class="c1"># names in &quot;Columns&quot; of the json file. If not, a warning will be prompted.</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;Columns&#39;</span><span class="p">]):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The number of columns in the data file does not &quot;</span>
+                      <span class="s2">&quot; match the number of names in the metafield &#39;Columns&#39;&quot;</span>
+                      <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">resample_freq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">resample_freq</span> <span class="o">=</span> <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;SamplingFrequency&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">resample_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">resample_freq</span><span class="p">)</span>
+
+    <span class="c1"># Define init and end time recording</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">init_physio</span> <span class="o">=</span> <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;StartTime&#39;</span><span class="p">]</span>
+    <span class="n">end_physio</span> <span class="o">=</span> <span class="n">init_physio</span> <span class="o">+</span> <span class="n">n_obs</span><span class="o">/</span><span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;SamplingFrequency&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Define time ticks then</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">init_physio</span><span class="p">,</span> <span class="n">end_physio</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n_obs</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Number of times, depending on whether we are resampling or not</span>
+    <span class="n">n_resample</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">n_obs</span> <span class="o">*</span> <span class="p">(</span><span class="n">resample_freq</span> <span class="o">/</span> <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;SamplingFrequency&#39;</span><span class="p">]))</span>
+        <span class="p">)</span>
+    <span class="n">new_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">init_physio</span><span class="p">,</span> <span class="n">end_physio</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n_resample</span><span class="p">,</span>
+                           <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sync_scan</span><span class="p">:</span>
+        <span class="n">new_num</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">new_time</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Resample to init time 0, keeping the same number of obs after 0</span>
+        <span class="n">new_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_physio</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">new_num</span><span class="p">,</span>  <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;StartTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">signal</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s_channel</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
+        <span class="c1"># Use a mask to interpolate possible zero/nan artifacts</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">s_channel</span> <span class="o">!=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">s_channel</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interp1d</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">s_channel</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
+                               <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)(</span><span class="n">new_time</span><span class="p">))</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+    <span class="c1"># Update field in meta information object</span>
+    <span class="n">meta_info</span><span class="p">[</span><span class="s1">&#39;SamplingFrequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resample_freq</span>
+
+    <span class="k">return</span> <span class="n">signal</span><span class="p">,</span> <span class="n">meta_info</span></div>
 
 
 <span class="c1">###############################################################################</span>
