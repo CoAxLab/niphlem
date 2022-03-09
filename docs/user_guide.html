@@ -176,8 +176,8 @@
 <p><span class="caption-text">RETROICOR algorithm procedure (borrowed from Verstynen, 2011).</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
-<p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio">RetroicorPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
-<p><em>Refernces</em>:</p>
+<p><em>Niphlem</em> has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RetroicorPhysio">RetroicorPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
+<p><em>References</em>:</p>
 <ul class="simple">
 <li><p>Glover, G.H., Li, T.-Q. and Ress, D. (2000), Image-based method for retrospective correction of physiological motion effects in fMRI: RETROICOR. Magn. Reson. Med., 44: 162-167.</p></li>
 <li><p>Verstynen TD, Deshpande V. Using pulse oximetry to account for high and low frequency physiological artifacts in the BOLD signal. Neuroimage. 2011 Apr 15;55(4):1633-44.</p></li>
@@ -185,10 +185,10 @@
 </section>
 <section id="variation-models">
 <h2>4-Variation Models<a class="headerlink" href="#variation-models" title="Permalink to this headline"></a></h2>
-<p>Niphlem can also generate nuisance regressors for variation in breathing rate/volume and heart rate.</p>
+<p><em>Niphlem</em> can also generate nuisance regressors for variation in breathing rate/volume and heart rate.</p>
 <section id="variation-in-breathing-rate-volume-regressors">
 <h3>4.1- Variation in breathing rate/volume regressors<a class="headerlink" href="#variation-in-breathing-rate-volume-regressors" title="Permalink to this headline"></a></h3>
-<p>The algorithm for variability artifacts fromo breathing rate/volume is as follows:</p>
+<p>The algorithm for variability artifacts from breathing rate/volume is as follows:</p>
 <ol class="arabic simple">
 <li><p>Computation of the standard deviation of the signal within a time window centered at each TR. Such a time window has been usually taken as 3*TR long (Chang, 2009). This operation thus yields a time series at the scanner acquisition time resolution.</p></li>
 <li><p>Z-score normalization.</p></li>
@@ -196,7 +196,7 @@
 </ol>
 <div class="math notranslate nohighlight">
 \[RRF(t) = 0.6 t^{2.1} e^{-t/1.6} - 0.0023 t^{3.54} e^{-t/4.25}\]</div>
-<p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RVPhysio">RVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
+<p><em>Niphlem</em> has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.RVPhysio">RVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
 <figure class="align-center" id="id6">
 <img alt="_images/variations_rv.jpg" src="_images/variations_rv.jpg" />
 <figcaption>
@@ -214,7 +214,7 @@
 </ol>
 <div class="math notranslate nohighlight">
 \[CRF(t) = 0.6 t^{2.7}e^{-t/1.6} - \frac{16}{\sqrt{18 \pi }}e^{-\frac{1}{2}\frac{(t-12)^2}{9}}\]</div>
-<p>Niphlem has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.HVPhysio">HVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
+<p><em>Niphlem</em> has a class <a class="reference external" href="https://coaxlab.github.io/niphlem/api.html#niphlem.models.HVPhysio">HVPhysio</a>, which preprocesses the initial data (transform and filter) and implements this algorithm to generate such regressors. For a detailed example of how to use this class, we recommend visiting the <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial3.html">tutorial 3</a> and <a class="reference external" href="https://coaxlab.github.io/niphlem/tutorials/tutorial4.html">tutorial 4</a>.</p>
 <figure class="align-center" id="id7">
 <img alt="_images/variations_hv.jpg" src="_images/variations_hv.jpg" />
 <figcaption>
