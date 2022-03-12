@@ -1,5 +1,5 @@
 =====================================================================
-*niphlem*: Physiological Log Extraction for Modeling in Neuroimaging
+*niphlem*: NeuroImaging-oriented Physiological Log Extraction for Modeling
 =====================================================================
 
 *niphlem* is a toolbox that extracts physiological signals recorded coincidentally with functional MRI data and estimates the signal phases so that they can be used as a covariate in subsequent analyses.

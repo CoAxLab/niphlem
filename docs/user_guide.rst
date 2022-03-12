@@ -9,7 +9,7 @@
 1.1- What is Niphlem?
 ------------------------
 
-Nilearn-dependent Physiological Log Extraction for Modeling (*Niphlem*) is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data. 
+NeuroImaging-oriented Physiological Log Extraction for Modeling (*Niphlem*) is a toolbox designed to preprocess phsyiological signals collected during MRI scannings. It is able to estimate covariates from these recordings that can be used later in general linear model (GLM) analyses of fMRI data. 
 
 This is the python version of the original PhLEM toolbox written in Matlab (and no longer supported). The aim is to be as simple, flexible, and open as possible. Such flexibility thus assumes a very basic knowledge of Python. If you do not feel confortable or are not familiar with this programming language, we recommed that you learn at least the most basic notions. For example, a good source for this may be the `scipy lecture notes <http://scipy-lectures.org/>`_.
 
