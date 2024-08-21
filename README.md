@@ -24,7 +24,7 @@ Python 3.6 or greater is required. Any of the below dependencies compatible wth 
 
 ## Install
 
-    pip install - U niphlem
+    pip install -U niphlem
 
  Alternatively, if you are interested in installing the latest version under development, you may clone the github repository and install it from there directly:
 
